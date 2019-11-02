@@ -86,7 +86,6 @@ parties with respect to its subject matter and it supersedes all prior or contem
 oral or written agreements and representations concerning the subject matter herein. This 
 Agreement may be amended only in a written document signed by both parties. This Agreement 
 shall not be interpreted or construed against the party preparing it.
-
 10.  Counterparts and Facsimile Signatures. This Agreement may be executed in counterparts 
 all of which taken together shall constitute one single agreement between the parties. A 
 facsimile transmission of the executed signature page of this Agreement shall constitute 
@@ -247,13 +246,19 @@ Data is always expected to be transmitted at the Double Data Rate. A terminated
 implementation shall support a minimum clock rate no greater than 8 GHz and Double 
 Data Rate operation. 
 
-|--------------|--------------|--------------|--------------|--------------|
-|Configuration | Centered 2   | Heading 3    | Heading 4    | Heading 5    |
-+--------------:------------:+--------------|--------------|--------------+
-| Cell 1       | Cell 2       | Cell 3       | Cell 4       | Cell 5       |
-| Cell 1       | Cell 2       | Cell 3       | Cell 4       | Cell 5       |
-|--------------|--------------|--------------|--------------|--------------|
-{  }
+~Center
+|--------------|-------------|-----------------|----------------|----------------|
+|Configuration | Clock Data  |Operating Clock  | Operating Data | Termination    |
+|              |relationship |rate             | rate           |                |
++:------------:+:-----------:+:----------------+:---------------+:---------------+
+| BoW          | DDR         | <= 2.5 GHz      | <= 5 Gbps      | No, up to 10mm |
+|              |             | <= 4Ghz         | <= 8 Gbps      | No *<1mm only  |
++--------------+-------------+-----------------+----------------+----------------|
+| Termination  | DDR         | <= 8 GHz        | <= 16 Gbps     | Yes            |
+| Mode         |             |                 |                |                |
+|--------------|-------------|-----------------|----------------|----------------|
+~
+
 
 
 

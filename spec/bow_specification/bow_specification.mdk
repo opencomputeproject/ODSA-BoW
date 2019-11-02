@@ -95,9 +95,14 @@ compliance points is discussed in the specification.
 The BoW interfaces implement a physical-layer or PHY interconnect protocol, implementing 
 Layer 1 of the 5-layer TCP/IP reference model.
 
-[figure 1]: /images/bowspec_figure1.jpg
 
-![figure 1]
+~ Center
+![bowspec_figure1]
+
+Figure 1: BoW in the TCP/IP Reference Model
+~
 
 ### BoW Configurations
+
+[bowspec_figure1]: images/bowspec_figure1.JPG "bowspec_figure1" { width:auto; max-width:90% }
 

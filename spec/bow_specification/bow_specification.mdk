@@ -135,5 +135,40 @@ BoW interface in some configurations.
 
 A high level view of the BoW Interface Data-rate ranges is shown below:
 
+~ Center
+![bowspec_figure2]
+~
+
+[bowspec_figure2]: images/bowspec_figure2.jpg "bowspec_figure2" { width:auto; max-width:100% }
+
+Note that the BoW Unterminated mode can support datarates of >5Gbps only when trace length 
+is minimized (<1mm) due to reflections.
+
+#### BoW 
+A BoW implementation shall support a clock rate no greater than 2.5 Gigahertz (GHz) / 5 Gbps 
+DDR data rate for typical trace lengths and 4.0 GHz / 8 Gbps DDR data rate  for traces <1mm.  
+DDR is double datarate defined as one data bit per rising and falling edge of the clock. 
+Laminate trace lengths for BoW mode should be limited to 10mm to avoid reflections.
+
+#### Terminated mode
+Termination mode is expected to use lane termination to minimize signal reflection and 
+improve the data rate per line, improving the data rate per millimeter of chiplet edge. 
+Data is always expected to be transmitted at the Double Data Rate. A terminated 
+implementation shall support a minimum clock rate no greater than 8 GHz and Double 
+Data Rate operation. 
+
+|--------------|--------------|--------------|--------------|--------------|
+|Configuration | Centered 2   | Heading 3    | Heading 4    | Heading 5    |
++--------------:------------:+--------------|--------------|--------------+
+| Cell 1       | Cell 2       | Cell 3       | Cell 4       | Cell 5       |
+| Cell 1       | Cell 2       | Cell 3       | Cell 4       | Cell 5       |
+|--------------|--------------|--------------|--------------|--------------|
+{  }
+
+
+
+
+
+
 
 

@@ -248,8 +248,8 @@ Data Rate operation.
 
 ~Center
 |--------------|-------------|-----------------|----------------|----------------|
-|Configuration | Clock Data  |Operating Clock  | Operating Data | Termination    |
-|              |relationship |rate             | rate           |                |
+|Configuration | Clock Data  |Operating        | Operating      | Termination    |
+|              |relationship |Clock rate       | Data rate      |                |
 +:------------:+:-----------:+:----------------+:---------------+:---------------+
 | BoW          | DDR         | <= 2.5 GHz      | <= 5 Gbps      | No, up to 10mm |
 |              |             | <= 4Ghz         | <= 8 Gbps      | No *<1mm only  |
@@ -258,6 +258,42 @@ Data Rate operation.
 | Mode         |             |                 |                |                |
 |--------------|-------------|-----------------|----------------|----------------|
 ~
+
+### BoW Interface
+The BoW interface defines three signal types:
+
+* Data signals
+  * Inputs (RX): data input signals received by the interface
+ * Outputs (TX): data output signals transmitted from the interface
+* Clocks
+  * Data clock out (ns_fwd_clk), sent to the receiving chiplet
+  * Data clock in (fs_fwd_clk): received from the receiving chiplet
+* FEC
+  * Optional FEC bits (1 bit recommended)
+
+# Design Assumptions
+Short connections\
+Organic substrate spacing\
+Low loss implementations\
+Need low end2end latency\
+Low power\
+
+# Standard Compatibility
+The Bunch of Wires (BoW) is a simple Double Data Rate source synchronous interface 
+that has much in common with other parallel interfaces including Intel AIB, High 
+Bandwidth Memory and other simple source synchronous interfaces.
+
+* A defined dataword width of 16 data bits per differential clock
+* Support only for Double Data Rate (DDR) mode to simplify clocking
+* Multiple supported datarates and modes
+    * BoW Unterminated is most similar to AIB using un-terminated CMOS IO 
+    to reduce power at low datarates
+    * BoW Terminated uses terminated IO to improve SI and datarates
+
+Due to reduced ESD requirements, the BoW specification is not expected to be 
+compliant to off-package IO standards, though it may interoperate with other 
+chiplets using CMOS IO buffers.
+
 
 
 

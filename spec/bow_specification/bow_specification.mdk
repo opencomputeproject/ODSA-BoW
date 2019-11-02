@@ -1,0 +1,103 @@
+Title         : Bunch of Wires Specification
+Author        : The Open Domain-Specific Architecture Workstream
+Logo          : True
+
+[TITLE]
+
+# Introduction 
+
+The Bunch of Wires (BoW) specification is a very simple, open and interoperable 
+physical interface between any 2 or more  chiplets or chip-scale-packages (CSP) 
+on a common package.
+
+## Overview
+
+This specification will describe the BoW interface.  The specification also leaves 
+open the possibility of pin-compatible interfaces that operate at higher data rates 
+for increased throughput per chip edge.  This specification also describes a 
+terminated mode that operates at increased data rates.  It is also possible 
+that in the future other BoW-compatible technology enhancements will further 
+increase throughput per chipedge.  Examples of this include previous discussions 
+on a Turbo mode using simultaneous bidirectional communication.  That mode is not 
+covered in this draft.
+
+### Objectives
+
+The BoW interface is intended to meet the following design objectives:
+
+* Be inexpensive to implement 
+* Portable across process nodes ranging from 28nm to 5nm
+* Portable across multiple bump pitches
+* Have the Flexibility to support advancing packaging technology
+* Be unencumbered by technology license costs
+* Very low power (<`pJ/bit)
+* Very low latency
+
+### Advantages
+
+The Bunch of Wires interface provides several key advantages for chiplet based systems:
+
+* Can operate at higher data rates per pin than existing parallel standards
+  *  -or-  lower data rates for compatibility with existing parallel standards
+* Can be implemented in legacy technologies (process nodes) with generally available IP
+* Terminated mode can be implemented in less effort than a traditional SERDES
+* Does not require silicon based interconnect
+* Is not constrained or intended to be used with a specific bump pitch
+  * Two BoW interfaces can each be implemented at different bump pitches and can be 
+  directly connected on an organic substrate, through fanout technology or through 
+  silicon based interconnect.
+
+While the advantages and simplicity are excellent benefits, the BoW interface does 
+require more package routing traces than other serial based XSR or USR interconnect.
+This drives BoW implementations that need the highest bandwidth to use fine bump 
+pitches and ‘stacked’ BoW implementations, adding some complexity and cost in test 
+and packaging.  Lower bandwidth implementations are free to use more standard 
+packaging technology with coarse bump pitch.
+
+### Scope
+The scope of this document and of any contributions to this document are limited to:
+
+1. The specification of the BoW interface that specifies the following functionality:
+  a. Operating modes
+  b. Physical design
+  c. Test and testability
+  d. Operation
+  e. Management controls
+  f. Methods to verify and validate compliance with this specification
+  g. Recommended bump patterns and signal ordering
+  h. Performance estimates
+  i. Other functions or design practices that may be deemed necessary to meet the 
+  design objectives listed above
+
+2. The following activities are outside the scope of this document and contributions 
+to this document:
+  a. Physical implementations of the interface
+  b. Integration of the interface with system-level data flow e.g. adapting a 
+  standard PHY-layer abstraction such as PIPE interface to the BoW
+  c. The actual use of this interface in systems
+  d. The use of this interface outside a package
+
+3. The following activities are intended to be addressed in subsequent versions 
+of this specification:
+  a. Test enablement
+  b. Compliance points
+  c. Initialization
+  d. Security
+
+### Compliance Summary
+
+Table summarizes the compliance points that shall be met in order to meet the BoW requirements. Each of the 
+compliance points is discussed in the specification.
+
+<to be completed in subsequent draft>
+
+## BoW Architecture
+The BoW interfaces implement a physical-layer or PHY interconnect protocol, implementing 
+Layer 1 of the 5-layer TCP/IP reference model.
+
+[figure 1]: images/bowspec_figure1.jpg
+
+![figure 1]
+
+### BoW Configurations
+

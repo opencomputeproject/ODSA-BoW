@@ -2,6 +2,96 @@ Title         : Bunch of Wires Specification
 Author        : The Open Domain-Specific Architecture Workstream
 Logo          : True
 
+This document to be released under the following OCP copyright release:\
+~center
+COPYRIGHT LICENSE AGREEMENT
+~
+
+
+This Agreement (“Agreement”) is entered into on the date set forth below, 
+(the “Effective Date”) by and between the Open Compute Project Foundation a 
+Delaware corporation (“OCP”) and the entity identified below (“Licensor”).
+
+WHEREAS, Licensor is the owner of and/or has certain rights in or to the 
+works of authorship identified in the attached Exhibits (collectively, the “Work”).
+ 
+WHEREAS, OCP desires to copy, distribute, make derivative works of and publish 
+the Work and derivate works thereof, including without limitation in one or more 
+OCP publications and/or on OCP’s website, and Licensor will benefit from OCP’s 
+use of the Work as described in this Agreement.
+
+NOW THEREFORE, in consideration of the promises in this Agreement, the parties 
+agree as follows:
+
+1.     Structure of the Agreement. There may be multiple Exhibits to this Agreement. 
+Each Exhibit will be signed by an authorized representative and will be governed by 
+and subject to the terms set forth in this Agreement, with the licenses applicable 
+to the Work described therein effective as of the date the Exhibit is signed.
+
+2.     License. Licensor hereby grants to OCP a non-exclusive, transferable (in 
+accordance with Section 7 below), royalty free, fully-paid, perpetual, irrevocable, 
+worldwide license, under Licensor’s copyrights in the Work, with the right to sublicense, 
+to use, reproduce, create derivative works, distribute, and publicly display and 
+perform the Work and derivative works thereof, in whole or in part, as a separate 
+work or as part of a collective work. The foregoing will apply to all mediums now 
+known or hereafter existing.
+
+3.     Ownership of the Work / Other Rights Reserved. Except for the foregoing 
+license, as between OCP and Licensor, Licensor retains all right, title and interest 
+in and to the Work and all intellectual property rights therein. Licensor hereby 
+reserves all rights not expressly granted in this Agreement. No additional licenses 
+or rights whatsoever (including without limitation any patent licenses) are granted 
+by implication, exhaustion, estoppel or otherwise.
+
+4.     Representations and Indemnification. Licensor represents to OCP that: (i) Licensor 
+is the sole and exclusive owner of the Work and all copyrights therein or Licensor has 
+the right and authority to grant the licenses set forth in this Agreement and (ii) OCP’s 
+exercise of the licenses set forth in this Agreement will not result in any infringement 
+of any third party’s copyrights or the misappropriation of any third party’s trade secrets. 
+Licensor agrees to indemnify and hold OCP harmless from and against any losses, damages, 
+liabilities, settlement amount, costs and expenses (including reasonable attorneys’ fees) 
+incurred by OCP in connection with any breach of the foregoing representations. This 
+Section will survive the termination of this Agreement.
+
+5.     Term and Termination. This Agreement will commence on the Effective Date and will 
+terminate upon the written agreement of the parties or by written notice by OCP.
+
+6.     Governing Law and Forum. This Agreement shall be solely and exclusively governed, 
+construed and enforced in accordance with the laws of the Texas, USA, without reference 
+to conflict of laws principles. Any suit, action or proceeding arising from or relating 
+to this Agreement must be brought, solely and exclusively, in courts located in Travis 
+County, Texas and each party irrevocably consents to the jurisdiction and venue of any 
+such court.
+
+7.     Assignment. OCP may assign this Agreement (a) with the consent of Licensor, not 
+to be unreasonably withheld or delayed, or (b) upon notice, but without such consent, in 
+connection with a merger, acquisition, change of control, or sale of substantially all 
+the assets of OCP. This Agreement shall be binding upon and inure to the benefit of the 
+parties and their successors and permitted assigns.
+
+8.     Mutual Limits on Liability. Except as set forth below, in no event shall either 
+party be liable to the other party in any manner, under any theory of liability, whether 
+in contract, tort (including negligence), or other theory, for any indirect, consequential, 
+incidental, exemplary, punitive, statutory or special damages, including lost profits, 
+regardless of whether such party was advised of or was aware of the possibility of such 
+damages. Except as set forth below, in no event shall the total, cumulative liability 
+of either party regarding any and all claims and causes of action, under any theory of 
+liability, whether in contract, tort (including negligence), or otherwise, exceed One 
+Thousand Dollars ($1,000). The limitations set forth in this Section will not apply to 
+liability arising under Section 4 (Representations and Indemnification) above. This 
+Section will survive termination of this Agreement.
+
+9.     Entire Agreement. This Agreement constitutes the entire agreement between the 
+parties with respect to its subject matter and it supersedes all prior or contemporaneous 
+oral or written agreements and representations concerning the subject matter herein. This 
+Agreement may be amended only in a written document signed by both parties. This Agreement 
+shall not be interpreted or construed against the party preparing it.
+
+10.  Counterparts and Facsimile Signatures. This Agreement may be executed in counterparts 
+all of which taken together shall constitute one single agreement between the parties. A 
+facsimile transmission of the executed signature page of this Agreement shall constitute 
+due and proper execution of this Agreement by the applicable party.
+
 [TITLE]
 
 # Introduction 
@@ -100,7 +190,7 @@ Layer 1 of the 5-layer TCP/IP reference model.
 ![bowspec_figure1]
 ~
 
-[bowspec_figure1]: images/bowspec_figure1.JPG "bowspec_figure1" { width:auto; max-width:90% }
+[bowspec_figure1]: images/bowspec_figure1.JPG "bowspec_figure1" { width:auto; max-width:40% }
 
 ### BoW Configurations
 

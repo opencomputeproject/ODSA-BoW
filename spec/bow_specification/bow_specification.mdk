@@ -1,5 +1,5 @@
 Title         : Bunch of Wires Specification
-Author        : The Open Domain-Specific Architecture Workstream
+Author        : Mark Kuemerle, Ramin Farjad, Behzad Bahador, Bapi Vinnakota (the Open Domain Specific Architecture BoW Workstream) 
 Logo          : True
 
 This document to be released under the following OCP copyright release:\
@@ -91,7 +91,9 @@ all of which taken together shall constitute one single agreement between the pa
 facsimile transmission of the executed signature page of this Agreement shall constitute 
 due and proper execution of this Agreement by the applicable party.
 
+
 [TITLE]
+
 
 # Introduction 
 
@@ -294,12 +296,135 @@ Due to reduced ESD requirements, the BoW specification is not expected to be
 compliant to off-package IO standards, though it may interoperate with other 
 chiplets using CMOS IO buffers.
 
+# Interface Specifications
 
+## Block Diagram
 
+~center
+![bowspec_figure3]
+~
 
+[bowspec_figure3]: images/bowspec_figure3.jpg "bowspec_figure3" { width:auto; max-width:90% }
 
+## Signals
 
+~center
+|--------------|---------|--------------|-------------|
+| Function     | # Bumps | Bump Names   | Notes       |
++:-------------+:-------:+:-------------+:------------+
+| TX Data      | 16      | TXDQ [15:0]  |             |
++--------------|---------|--------------|-------------|
+| TX Data Clock| 2       | TXCLK+/TXCLK-| Differential|
+|--------------|---------|--------------|-------------|
+|TX Data FEC   |1-2      |TXFEC         |RS(34, 32)   |
+|(optional)    |         |              |or other     |
++--------------+---------+--------------+-------------|
+|RX Data       |16       |RXDQ [15:0    |             |
+|--------------|---------|--------------|-------------|
+| RX Data Clock| 2       | RXCLK+/RXCLK-| Differential|
+|--------------|---------|--------------|-------------|
+|TX Data FEC   |1-2      |TXFEC         |RS(34, 32)   |
+|(optional)    |         |              |or other     |
+|--------------|---------|--------------|-------------|
 
+~
+
+## Calibration Mode Signals
+
+\<To be included in a future release of the specification>
+
+# Timing
+
+## Supported Datarates
+BOW supports the following datarates:
+
+~center
+
+|----------|-------------|-------|-----------|------------|------------------|
+|Clock Rate|Datarate     |SDR/DDR|Termination|Hybrid TX/RX|Mode              |
++:--------:+:-----------:+:-----:+:---------:+:----------:+:-----------------+
+|1-2.5 GHz |2Gbps-5Gbps  |DDR    |No         |No          |BoW               |
+|1-4 GHz   |2Gbps-8 Gbps*|DDR    |Yes        |No          |*for traces < 1 mm|
++--------- +------------ +-------+-----------+------------+------------------+
+|2-8 GHz   |4Gbps-16Gbps |DDR    |Yes        |No          |Terminated mode   |
++--------- +------------ +-------+-----------+------------+------------------+
+~
+
+At a minimum all BoW implementations must support the minimum 1 Ghz clock rate, 
+2Gbps datarate using unterminated IO.  For ease of integration, increased 
+datarates should support 1 Gbps increments from the floor 2Gbps datarate.
+
+## Clocking
+Rising to rising and rising to falling edge specifications for the TX clock 
+rate (TXCLK pin) must achieve better than +/- 5% accuracy.
+
+Additional requirements will be documented in future releases of the specification.
+
+# Electrical Specifications
+
+## Voltages
+Where possible BoW IO should reside on the VDD rail to simplify design of chiplets 
+and provide current to controller logic from the BoW recommended bump patterns.
+BoW should support a range of voltages from 0.7 nominal to 0.95 nominal (0.66 to 
+0.99 with standard +/- 5% power supply tolerances) where possible.
+All BoW implementations must support at least 0.9V nominal (0.85 to 0.95V).
+
+## ESD Requirements
+BOW IO should be designed to support 50 V CDM (Charged Device Model) and 
+250 V HBM (Human Body Model).  This requirement is similar to other die to die 
+interface standards.
+
+## Termination Requirements
+BoW datarates (Typically 5Gbps, up to 8Gbps for <1mm trace length) do not 
+require termination.  Higher datarates (up to 16 Gbps) requires termination, 
+and must be built with selectable termination.
+
+## Target Channel Requirements
+
+### Channel loss line limits
+
+![bowspec_figure4]
+
+[bowspec_figure4]: images/bowspec_figure4.jpg "bowspec_figure4" { width:auto; max-width:90% }
+
+BoW channel limit is limited by the round trip reflection delay and limited to <10mm for 
+a 5Gbaud with proper slew rate control
+
+Enabling termination enables longer channel regardless of baud rate, but to minimize 
+the equalization requirement, it shall meet the provided Insertion Loss limit line.
+
+### Return loss line limits
+
+![bowspec_figure5]
+
+[bowspec_figure5]: images/bowspec_figure5.jpg "bowspec_figure5" { width:auto; max-width:90% }
+
+BoW channel is expected to be unterminated in the default mode and does not need to 
+follow any Return Loss spec. 
+
+Enabling Termination mode requires meeting the provided Return Loss limit line for 
+proper operation and meeting target BER.
+
+### Power Sum Crosstalk Limit Line
+
+![bowspec_figure6]
+
+[bowspec_figure6]: images/bowspec_figure6.jpg "bowspec_figure5" { width:auto; max-width:90% }
+
+Crosstalk is defined in form of the sum of crosstalk power of all aggressors on a target trace.
+
+The proposed power-sum crosstalk spec for termination mode:
+PS Xtalk Limit = -10 dB -37dB.e^(-f/8GHz)
+
+A victim trace in between two aggressor traces on the same package substrate layer with air 
+gap spacing of 50 um (or more) with at least a reference plane under or above will meet the 
+proposed power-sum crosstalk limit.
+
+#  Logic Interface
+
+\<To be completed in subsequent version of specification>
+
+# Physical Constraints
 
 
 

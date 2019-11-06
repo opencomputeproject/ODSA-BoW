@@ -25,7 +25,6 @@ This document to be released under the following OCP copyright release:
 COPYRIGHT LICENSE AGREEMENT
 ~
 
-
 This Agreement (“Agreement”) is entered into on the date set forth below, 
 (the “Effective Date”) by and between the Open Compute Project Foundation a 
 Delaware corporation (“OCP”) and the entity identified below (“Licensor”).
@@ -198,6 +197,8 @@ of this specification:
 
 Table summarizes the compliance points that shall be met in order to meet the BoW requirements. Each of the 
 compliance points is discussed in the specification.
+
+This section will also include a discussion on interoperability.
 
 <to be completed in subsequent draft>
 

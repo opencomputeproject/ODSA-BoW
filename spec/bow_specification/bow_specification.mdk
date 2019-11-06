@@ -2,7 +2,25 @@ Title         : Bunch of Wires Specification
 Author        : Mark Kuemerle, Ramin Farjad, Bapi Vinnakota (the Open Domain Specific Architecture BoW Workstream) 
 Logo          : True
 
-This document to be released under the following OCP copyright release:\
+Heading depth: 5
+Document Class: [11pt]article
+Package: [top=1in, bottom=1.25in, left=1in, right=1in]geometry
+Package: fancyhdr
+
+title,titlenote,titlefooter,authors,h1,h2,h3,h4,h5 {
+  font-weight: bold;
+}
+
+~center
+![bowspec_logo]
+
+[bowspec_logo]: images/bowspec_logo.jpg "bowspec_logo" { width:auto; max-width:90% }
+~
+
+
+This document to be released under the following OCP copyright release:
+{ page-break-before: always }
+
 ~center
 COPYRIGHT LICENSE AGREEMENT
 ~
@@ -14,7 +32,7 @@ Delaware corporation (“OCP”) and the entity identified below (“Licensor”
 
 WHEREAS, Licensor is the owner of and/or has certain rights in or to the 
 works of authorship identified in the attached Exhibits (collectively, the “Work”).
- 
+
 WHEREAS, OCP desires to copy, distribute, make derivative works of and publish 
 the Work and derivate works thereof, including without limitation in one or more 
 OCP publications and/or on OCP’s website, and Licensor will benefit from OCP’s 
@@ -90,10 +108,11 @@ shall not be interpreted or construed against the party preparing it.
 all of which taken together shall constitute one single agreement between the parties. A 
 facsimile transmission of the executed signature page of this Agreement shall constitute 
 due and proper execution of this Agreement by the applicable party.
+{ page-break-after: always }
 
+[TOC]
 
 [TITLE]
-
 
 # Introduction 
 

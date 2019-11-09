@@ -1,0 +1,84 @@
+Ramin: D2D uses core voltage since it's on package, don't want to create a separate supply voltage. Not treated as I/O.
+
+Millind: Why wouldn't you want to go to as low a VDD as possible?. 
+
+Ramin: Still aiming to avoid a requirement for a separate VDD for on-package I/O.
+
+Millind: For interoperation, I/O voltage has to be fixed. 
+
+Ahmad: Going forward, core voltage is expected to be lower. Are dealing with a lot of different core voltages optimized for the logic. Matching I/O to core may cause problems. All of these parts are expected to have DDR output.
+
+Ramin: Cannot go to 0.4V for BoW terminated. Separate VDD for BoW Basic and Terminated?
+
+Halil: Fix the swing, independent of the supply voltage. 
+
+Millind: We really need to prove that LPDDR is the wrong choice. What problem do we solve by making the I/O voltage match the core voltage.
+
+Rod: If we choose  a voltage - we may be pushing a core voltage on the whole die
+
+Ahmad: If we make separate Vdd for BoW basic and Terminated/BiDi. Would we lose interoperability
+
+Halil: Can be solved by adding independent power bumps. Is there space?
+
+Kenneth: Voltages are trending lower. Why are we picking a higher voltage
+
+Ahmad: 3nm is going to be a lower supply.
+
+Bapi: Bear in mind the need to support heterogeneous integration. Wanted to support voltages as far back as 28nm
+
+Millind: Does the I/O need to be tied to core. One core at 0.7 and one core at 1
+
+Ramin: Core need not be tied to I/O. One of the sides will need an extra supply. Majority of the process nodes are
+at 0.7 to 0.9. If the core is at 0.5, then it will require a separate voltage 
+
+David: Define the transmit launch amplitude. How they get there is their problem. 
+
+Ramin: BoW is single ended. Need a reference. Preferably capacitively decoupled. Cannot define a launch amplitude
+without a reference. Could reference to gnd - requires current mode drivers that are not power efficient.
+
+Prakash: General topology and swing needs to be defined. Could we go with terminate low. 
+
+Ramin: Not good for power purposes. What are the ramifications of 0.4 or 0.5  Look at the trade-off across Basic,
+TD, BiDi. Should we relax the compatibility requirements
+
+Millind: If we want one range, what is the scope of that range? Within a range, we need one required voltage. 0.9
+seems too high. Is such a wide range possible. 
+
+Ahmad: BoW interface will need the core side supply. BoW interface will always end up with two voltages.
+
+Ramin: Level shifters need not be under the bumps. Can be somewhere else
+
+Ahmad: Level shifters need to be a part of the BoW IP. Implies multiple supply voltages.
+
+Ramin: Could be a separate "level-shifter" layer between chip and i/f. This could be done without a separate
+bump.
+
+Kenneth: Slide walk through
+
+Ramin: BoW does not say 0.9. Supply voltage is at 0.7-0.9. Not forced to be core voltage. 
+
+Prakash: Don't need to be compatible. But leverage what's out there. And recharacterize what's out there.
+
+Ramin: Let's focus on what's best for D2D. Should not be constrained by existing power supplies. 
+
+Ahmad: As a user want to leverage existing supplies. We want IP providers to minimize the effort. Usability
+needs to be a constraint. 
+
+Ramin: Terminated and bidi have to be implemented in current mode. Not power efficient.
+
+Someone: There exist low power current mode drivers.
+
+Bapi: Really talking about a band shift. Lowest voltage could be non terminated. Lots of commonality.
+When terminated interoperates with unterminated - choose 0.7
+
+Ahmad: Support the compatibility requirement. 
+
+Possible point of convergence: Lower midpoint range, 
+
+Shahab: Let's come in with something that DDR and HBM cannot cover. 
+
+Ramin: Really focus on what's good for D2D. Why constrain it with existing PHYs. 
+
+Proposal 1: Lowering the midpoint while still overlapping with the previous range
+Proposal 2: Heavy emphasis on leveraging existing PHY: (a) prove that it's needed - Ramin; 
+(b) prove that it's not needed - Millind/Kenneth

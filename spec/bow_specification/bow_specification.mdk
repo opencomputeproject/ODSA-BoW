@@ -385,9 +385,9 @@ Additional requirements will be documented in future releases of the specificati
 ## Voltages
 Where possible BoW IO should reside on the VDD rail to simplify design of chiplets 
 and provide current to controller logic from the BoW recommended bump patterns.
-BoW should support a range of voltages from 0.7 nominal to 0.95 nominal (0.66 to 
-0.99 with standard +/- 5% power supply tolerances) where possible.
-All BoW implementations must support at least 0.9V nominal (0.85 to 0.95V).
+All BoW implementations must support a range of voltages from 0.75 V nominal to 0.8 V nominal.
+These voltages must be supported with +/- 5% tolerance at the bump, 0.7125 V to 0.84 V.
+Other lower or higher voltages may be supported beyond the required range.
 
 ## ESD Requirements
 BOW IO should be designed to support 50 V CDM (Charged Device Model) and 
@@ -487,7 +487,7 @@ Example Bump Pattern (based on 130 um staggered bump pitch) shown below:
 +----------+-------+---------------------------+
 |09/20/2019|0.7    |Initial version for release|
 |----------|-------|---------------------------|
-|          |       |                           |
+|03/31/2020|0.8    |Voltage Updates            |
 |----------|-------|---------------------------|
 
 # Known Feature Request

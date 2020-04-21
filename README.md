@@ -49,30 +49,47 @@ If you'd prefer to avoid the command line on the whole, user Kirstie James has c
 with a solution to use GitHub to sync the fork to the main repo via the browser. You 
 can find the instructions [here](https://github.com/KirstieJane/STEMMRoleModels/wiki/Syncing-your-fork-to-the-original-repository-via-the-browser)
 
+## Making a Branch
+Next, make a branch for the group of changes you plan. Branching your fork allows you to work on more than one topic without mixing topics in one pull request. In the Branch box type in the name for a new branch. Then you can use that branch box to select which branch you are viewing.
+
 ## Creating and Editing Specs
 Depending on your contribution, you may be creating and adding new specs or editing and 
-adjusting existing specs based on open issues (more an issues below).
+adjusting existing specs based on open issues (more on issues below).
 
 If you're creating a new spec, you can open a new document using the 
 Madoko [live editor](https://madoko.net/editor.html) and start writing right away. 
 If you're editing an existing spec, simply open the file in Madoko and start making edits. 
 
+## Editing an Existing Document in Madoko
+Open https://madoko.net/editor.html in a browser tab.  Then:
+
+1. In the folder icon at upper left, use "Open"
+2. Select GitHub. If you haven't already allowed Madoko access to your account, do so now.
+3. Choose your forked version of the repo and the correct branch for this topic and navigate to the file
+4. Edit
+5. Use "Synchronize" to save your edits. This makes a commit to GitHub in your branch.
+
+Note that using "Save To" is for creating a new file. It creates a new level of folder hierarchy and does not save to the existing file.
+
 ## Saving a New File in Madoko
-Once you've created a new document or made edits to the existing documents, here's how you 
+Once you've created a new document, here's how you 
 commit those changes to your forked repo. 
 
 1. Find the folder icon in the top left corner and click the "Save To" option.
 2. Madoko will present a variety of options from your local drive to cloud storage 
 options like DropBox and, very conveniently, GitHub. 
 3. Select GitHub. If you haven't already allowed Madoko access to your account, do so now. 
-4. Find the forked version of the repo, and then where in the repo you'd like to save your file. 
+4. Find the forked and branched version of the repo, and then where in the repo you'd like to save your file. 
 
 Madoko's integration with GitHub means that when you save the file, you're actually 
 officially committing the file to GitHub. Write a short, but descriptive commit message 
 and save the file. 
 
-If you find the forked repository on your GitHub account, it should register the commit 
+If you now look at the forked repository on your GitHub account, it should register the commit 
 you just made. 
+
+## Deleting Files
+Unwanted files in GitHub can be deleted in the web interface (one at a time) by opening the file and using the Trash icon. Folders can be deleted directly in a local repo copy, but in the web interface, you must delete each file in the folder (one by one) and then the folder goes away.
 
 ## Creating a Pull Request
 Once you have committed all the changes to your fork, it's time to create a pull request. In 

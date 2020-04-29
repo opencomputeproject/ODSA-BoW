@@ -134,13 +134,41 @@ covered in this draft.
 
 The BoW interface is intended to meet the following design objectives:
 
+* A set of backward compatible die-to-die parallel interfaces that provides the 
+flexibility to trade off Throughput/wire, design complexity, cost, packaging technology. 
+  * Backward as defined by every new mode being compatible with the "Basic mode" defined in 
+this specification. 
+  * Each future version of this specification is expected to be compatible 
+with at least two previous significant versions.
 * Be inexpensive to implement 
-* Portable across process nodes ranging from 28nm to 5nm
-* Portable across multiple bump pitches
-* Have the Flexibility to support advancing packaging technology
-* Be unencumbered by technology license costs
-* Very low power (<`pJ/bit)
-* Very low latency
+  * Portable across process nodes ranging from 28nm to 5nm
+  * Portable across multiple bump pitches
+  * Have the Flexibility to support advancing packaging technology
+  * Be unencumbered by technology license costs
+* Very low power, < 1 pJ/bit, as defined by Tx IO Pad, wire and Rx IO Pad.
+* Very low latency: <5ns without FEC, <15 ns with FEC. 
+  * Latency as  defined from the PCS parallel interface at the source, 
+  through Tx interface, channel, Rx interface received at the PCS parallel 
+  interface at the receiver. 
+  * Based on experience, the 5 ns target meets the latency requirements of 
+  high-performance applications and has been demonstrated to be achievable.
+* Throughput/Chip Edge target range (Rx+Tx):
+  * 100Gbps/mm with all packaging options. As a reference example, be able to 
+  achieve this goal at a bump pitch of 150um and with a die edge stack depth 
+  no greater than 2 routing layer with organic laminate packaging
+  * 1Tbps/mm with an advanced packaging option. As a reference example, be 
+  able to achieve this goal with a bump pitch of 50 um and with a die edge 
+  stack depth no greater than 4 routing layers with advanced packaging.
+* Trace length ranges on laminate substrate:
+  * Unterminated: <10mm
+  * Terminated: <50mm
+  * Enable higher throughput at very short reach < 1 mm.
+* Single supply solution supporting a range of Vdds compatible
+with new process technologies.
+* Target BER of <1E-15 without FEC and with Optional FEC for ultra-low 
+BER < 1E-25. 
+  * Target defined from industry and user feedback. 
+  * Measure defined to be compatible with the definition for BER for SerDes PHYs.
 
 ### Advantages
 

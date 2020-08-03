@@ -383,11 +383,15 @@ Additional requirements will be documented in future releases of the specificati
 # Electrical Specifications
 
 ## Voltages
-Where possible BoW IO should reside on the VDD rail to simplify design of chiplets 
-and provide current to controller logic from the BoW recommended bump patterns.
-BoW should support a range of voltages from 0.7 nominal to 0.95 nominal (0.66 to 
-0.99 with standard +/- 5% power supply tolerances) where possible.
-All BoW implementations must support at least 0.9V nominal (0.85 to 0.95V).
+Where possible BoW IO should reside on the VDD rail to simplify design of 
+chiplets and provide current to controller logic.  However, to support a 
+wide range of technologies BoW does not enforce a common VDD power rail 
+Voltage.  In order to ensure that there is at least one common interoperable 
+mode BoW implementations must support electrical specifications targeting 
+rail to rail signaling based on a 0.75 V +/- 5% power supply (see electrical 
+specifications).  BoW interfaces can support higher or lower signaling 
+voltages without limit but must support 0.75 V based signaling at 2Gbps 
+Double Data Rate (DDR) to ensure interoperability.
 
 ## ESD Requirements
 BOW IO should be designed to support 50 V CDM (Charged Device Model) and 

@@ -143,24 +143,27 @@ The BoW interface aims to meet the following design objectives:
 * Be inexpensive to implement 
 * Portable across process nodes ranging from 28nm to 5nm
 * Portable across multiple bump pitches
-* Have the Flexibility to support advancing packaging technology
+* Have the flexibility to support advancing packaging technology
 * Be unencumbered by technology license costs
-* Very low power (<`pJ/bit) as defined by Tx IO Pad, wire and Rx IO Pad.
+* Very low power (< 1 pJ/bit) as defined by Tx IO Pad, wire and Rx IO Pad.
 * Very low latency: <5ns without FEC, <15 ns with FEC. Latency as 
 defined from the PCS parallel interface at the source, through Tx 
 interface, channel, Rx interface received at the PCS parallel 
 interface at the receiver. Based on experience, the 5 ns 
 target meets the latency requirements of high-performance 
 applications and has been demonstrated to be achievable.
-* Unidirectional throughput/Chip Edge target range (Rx+Tx):
-  - Target 100 Gbps with all packaging options. As a reference example, 
-  be able to achieve   this goal at a bump pitch of 150um and with a die 
-  edge stack depth no greater than 2 routing layer with organic laminate 
-  packaging as a reference example.
-  - Target 1 Tbps/mm with preferred packaging option. As a reference example, 
-  be able to achieve this goal with a bump pitch of 50 um and with a die edge 
-  stack depth no greater than 4 routing layers with advanced packaging.
-  - Enable higher throughput at very short reach < 1 mm.
+* Unidirectional throughput/Chip Edge target range:
+  - Minimum Targets
+    - 100 Gbps/mm with all packaging options
+    - 1 Tbps/mm with advanced packaging options
+    - Enable higher throughput at very short reach < 1 mm.
+  - As reference examples, with a data rate of 4 Gbps/wire
+    - achieve 200+ Gbps/mm with a bump pitch of 130um and with a die 
+    edge stack depth no greater than 2 routing layers with organic 
+    laminate packaging.
+    - achieve 1+ Tbps/mm with a bump pitch of 50 um and with a die edge 
+    stack depth no greater than 4 routing layers with advanced 
+    packaging.
 
 ### Advantages
 

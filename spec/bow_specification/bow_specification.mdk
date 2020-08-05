@@ -383,13 +383,11 @@ Additional requirements will be documented in future releases of the specificati
 # Electrical Specifications
 
 ## Voltages
-Where possible BoW IO should reside on the VDD rail to simplify design of 
-chiplets and provide current to controller logic.  However, to support a 
-wide range of technologies BoW does not enforce a common VDD power rail 
-Voltage.  In order to ensure that there is at least one common interoperable 
-mode BoW implementations must support electrical specifications targeting 
+To support a wide range of technologies BoW does not enforce a common 
+VDD power rail Voltage. In order to ensure that there is at least one common 
+interoperable mode BoW implementations must support electrical specifications targeting 
 rail to rail signaling based on a 0.75 V +/- 5% power supply (see electrical 
-specifications).  BoW interfaces can support higher or lower signaling 
+specifications). BoW interfaces can support higher or lower signaling 
 voltages without limit but must support 0.75 V based signaling at 2Gbps 
 Double Data Rate (DDR) to ensure interoperability.
 

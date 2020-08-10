@@ -485,8 +485,38 @@ A minimal example link is shown in Figure X2.
 Figure X2: BoW Minimal Link Example
 ~
 
-xx
+A minimal bidirectional BoW link is shown in Figure X2. 
+Each chiplet has one Tx and one Rx slice, arranged in a single stack on each chiplet.
+The position-A slices (at the edges) are connected together on the topmost routing 
+layer used for signals and the position-B slices are connected together on the next layer used for signals.
 
+This example shows one possible set of bump patterns. 
+This example uses hexagonal closest packing for the bumps, two rows for signal bumps and
+one row for power and ground bumps. But none of this is required; only the signal ordering at 
+the chip edge is required for interoperability. 
+
+## Cross Section
+
+The cross section for an organic laminate package is shown in Figure X3.
+
+~center
+![bowspec_figure_pkg_cross_section]
+
+[bowspec_figure_pkg_cross_section]: images/bowspec_figure_pkg_cross_section.PNG "bowspec_figure_pkg_cross_section" { width:auto; max-width:70% }
+Figure X3: Organic Laminate Package CrosssSection
+~
+
+In an organic laminate package, signal layers are alternated with ground layers 
+in order to maintain a controlled impedance of 50 ohms. 
+In interposer or other high-density packaging, this may not be necessary.
+
+The position-A slice on chiplet A is connected to the position-A slice on chiplet B 
+(one must be configured for Tx and one for Rx). The position-B slices are connected together, and so on.
+
+There is no specified limit to the number of slices in a stack. 
+In organic laminate, the practical limit in 2020 is 4 slices with an 8-2-8 laminate. 
+Layers on the bottom side of the package typically cannot be used due to low via density passing through
+the thick central core layer.
 
 ## Signal Ordering
 
@@ -502,37 +532,30 @@ then from stack to stack clockwise.
 * The Rx slices in a link are numbered from 0 at the upper right, through the Rx slices in a stack,
 then stack to stack counterclockwise.
 
-In organic packages, signal layers alternate with ground layers to maintain controlled impedance 
-lines. The slice nearest the edge is routing on the topmost signal layer, 
-and the slice next nearest to the edge is routed on the second-topmost signal layer.
+These rules allow chiplets to be connected regardless of rotations.
 
+In organic packages, each slice position is associated with one signal layer and there is no mixing 
+of signals from multiple slices.
 In interposer or other dense routing technologies, signals from multiple slices in a stack 
-may be interleaved in one signal layer, but the slices are still conencted from chiplet to chiplet in 
-the same ascending order.
+may be interleaved in a signal layer, but chiplet A's slice A is still connected to chiplet B's slice A 
+and similarly for position B, C, etc.
 
+## Checkerboard Slice Pattern
 
-## Preferred Bump Patterns
-BoW does not dictate a specific bump pitch but does have a defined bump pattern.
-By not specifying a bump pitch, implementations can be built on both legacy and 
-leading edge technologies.  Specifying a signal pattern, however, allows package 
-routing between interfaces with limited signal crossings.
-
-BoW can be implemented with any number of stacked interfaces, however such stacking 
-should implement the bump pattern with an alternating stagger of signals.
+For bidirectional links with more than one stack on each side, a checkerboard pattern of 
+Tx and Rx slices is preferred.  This allows connection of chiplets with differing stack depths and 
+numbers of stacks to be as efficient as possible.
 
 ~center
-![bowspec_figure7]
+![bowspec_figure_checkerboard]
 
-[bowspec_figure7]: images/bowspec_figure7.jpg "bowspec_figure7" { width:auto; max-width:90% }
+[bowspec_figure_checkerboard]: images/bowspec_figure_checkerboard.PNG "bowspec_figure_checkerboard" { width:auto; max-width:70% }
+Figure X4: Organic Laminate Package CrosssSection
 ~
-Additional interfaces alternate as shown above.
 
-Example Bump Pattern (based on 130 um staggered bump pitch) shown below:
-~center
-![bowspec_figure8]
-
-[bowspec_figure8]: images/bowspec_figure8.jpg "bowspec_figure8" { width:auto; max-width:90% }
-~
+An alternate approach is to provision every slice to operate as either Rx or Tx. 
+This allows complete flexibility in interoperability and provides an opportunity for
+wafer-test loopback testing as well.
 
 #Testability
 

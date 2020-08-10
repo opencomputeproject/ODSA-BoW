@@ -448,7 +448,68 @@ proposed power-sum crosstalk limit.
 
 # Physical Constraints
 
+## BoW Components
+
+~center
+![bowspec_figure_components]
+
+[bowspec_figure_components]: images/bowspec_figure_components.PNG "bowspec_figure_components" { width:auto; max-width:50% }
+Figure X1: BoW Link Components
+~
+A BoW link between two chiplets is made up of
+wires, slices, and stacks. The basic unit is a slice,
+with 18 or 20 signal bumps: 2 for the differential
+clock, 16 single-ended data and optional signals AUX and FEC. 
+The long edge of a slice is parallel to the chip edge.
+Multiple slices may be placed in a stack. The slice locations are
+designated A, B, C, etc, starting with the slice closest to the edge of the chip.
+A link from one chiplet to another is composed of one or more
+stacks placed along the chip edge. A link is typically
+configured with equal numbers of Rx and Tx slices,
+but may be asymmetric or one-way.
+
+XXX
+A 4-slice stack is
+approximately 10 x 10 bump pitches. 
+In organic packaging at 130 um bump pitch, this is about 1.3 x 1.3 mm. 
+XXX
+
+## Example Link
+
+A minimal example link is shown in Figure X2.
+
+~center
+![bowspec_figure_min_link]
+
+[bowspec_figure_min_link]: images/bowspec_figure_min_link.PNG "bowspec_figure_min_link" { width:auto; max-width:50% }
+Figure X2: BoW Minimal Link Example
+~
+
+xx
+
+
 ## Signal Ordering
+
+Although example bump patterns are shown, BoW does not specify bump pattern nor bump pitch. 
+A BoW interface must conform to these wire order rules at the edge of the chip:
+
+* The signals for a Tx slice are in the following order at the chip edge, 
+going clockwise around the chiplet: AUX, D0, D1, D2, D3, D4, D5, D6, D7, CLK+, CLK-, D8, D9, D10, D11, D12, D13, D14, D15, FEC
+* The signals for an Rx slice are in the reversed order (ascending goes counter-clockwise)
+* The Tx slices in a link are numbered from 0 at the upper left edge of the link 
+(facing from the chip center to the edge) and ascending through the Tx slices in a stack, 
+then from stack to stack clockwise.
+* The Rx slices in a link are numbered from 0 at the upper right, through the Rx slices in a stack,
+then stack to stack counterclockwise.
+
+In organic packages, signal layers alternate with ground layers to maintain controlled impedance 
+lines. The slice nearest the edge is routing on the topmost signal layer, 
+and the slice next nearest to the edge is routed on the second-topmost signal layer.
+
+In interposer or other dense routing technologies, signals from multiple slices in a stack 
+may be interleaved in one signal layer, but the slices are still conencted from chiplet to chiplet in 
+the same ascending order.
+
 
 ## Preferred Bump Patterns
 BoW does not dictate a specific bump pitch but does have a defined bump pattern.

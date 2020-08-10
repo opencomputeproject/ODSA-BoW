@@ -446,16 +446,16 @@ proposed power-sum crosstalk limit.
 
 \<To be completed in subsequent version of specification>
 
-# Physical Constraints
+# Physical Arrangements
 
 ## BoW Components
 
-~center
-![bowspec_figure_components]
-
-[bowspec_figure_components]: images/bowspec_figure_components.PNG "bowspec_figure_components" { width:auto; max-width:50% }
-Figure X1: BoW Link Components
+~ Figure { #fig-components; caption: "BoW Link Components" }
+![components]
 ~
+[components]: images/bowspec_figure_components.PNG { width:auto; max-width:70% }
+
+
 A BoW link between two chiplets is made up of
 wires, slices, and stacks. The basic unit is a slice,
 with 18 or 20 signal bumps: 2 for the differential
@@ -468,63 +468,69 @@ stacks placed along the chip edge. A link is typically
 configured with equal numbers of Rx and Tx slices,
 but may be asymmetric or one-way.
 
-XXX
-A 4-slice stack is
-approximately 10 x 10 bump pitches. 
-In organic packaging at 130 um bump pitch, this is about 1.3 x 1.3 mm. 
-XXX
-
 ## Example Link
 
-A minimal example link is shown in Figure X2.
+A minimal bidirectional example link is shown in Figure [#fig-min_link].
 
-~center
-![bowspec_figure_min_link]
-
-[bowspec_figure_min_link]: images/bowspec_figure_min_link.PNG "bowspec_figure_min_link" { width:auto; max-width:50% }
-Figure X2: BoW Minimal Link Example
+~ Figure { #fig-min_link; caption: "BoW Minimal Link Example" }
+![min_link]
+[min_link]: images/bowspec_figure_min_link.PNG { width:auto; max-width:70% }
 ~
 
-A minimal bidirectional BoW link is shown in Figure X2. 
-Each chiplet has one Tx and one Rx slice, arranged in a single stack on each chiplet.
-The position-A slices (at the edges) are connected together on the topmost routing 
+In this example, each chiplet has one Tx slice and one Rx slice, arranged in a single stack on each chiplet.
+The position-A slices (at the chips' edges) are connected together on the topmost routing 
 layer used for signals and the position-B slices are connected together on the next layer used for signals.
 
 This example shows one possible set of bump patterns. 
-This example uses hexagonal closest packing for the bumps, two rows for signal bumps and
-one row for power and ground bumps. But none of this is required; only the signal ordering at 
-the chip edge is required for interoperability. 
+It uses hexagonal closest packing for the bumps: two rows for signal bumps and
+one row for power and ground bumps. 
+In this pattern, the wire pitch is half the bump pitch.
+In order to maintain the closest packing, slices in rows B and D must have a different bump
+pattern than slices A and C.
+But bump patterns are not specified by BoW; only the signal *ordering* at 
+the chip edge is specified for interoperability. 
+
+Alternate bump arrangements include:
+90-degree rotation of the hexagonal packing direction to decrease the wire pitch 14%;
+square bump arrays instead of hexagonal for regularity of layout; 
+more than two rows of signal bumps to decrease the wire pitch;
+different ordering of power and ground bumps;
+multiple power and ground rows.
+
+Somewhat different wire and bump pitches between two chiplets can be accomodated with 
+fan-out in the chip-to-chip wires. This is limited in BoW Basic by the 10 mm max wire length 
+and the likely need to route from chiplet to chiplet in just one layer.
+Note that the longest wires (slice position D) are already 5-6 mm in an organic package.
 
 ## Cross Section
 
-The cross section for an organic laminate package is shown in Figure X3.
+A cross section for an organic laminate (a.k.a. "buildup") package is shown in 
+Figure [#fig-pkg_cross_section].
 
-~center
-![bowspec_figure_pkg_cross_section]
-
-[bowspec_figure_pkg_cross_section]: images/bowspec_figure_pkg_cross_section.PNG "bowspec_figure_pkg_cross_section" { width:auto; max-width:70% }
-Figure X3: Organic Laminate Package CrosssSection
+~ Figure { #fig-pkg_cross_section; caption: "Checkerboard Pattern of Tx and Rx slices" }
+![pkg_cross_section]
+[pkg_cross_section]: images/bowspec_figure_pkg_cross_section.PNG { width:auto; max-width:70% }
 ~
 
 In an organic laminate package, signal layers are alternated with ground layers 
 in order to maintain a controlled impedance of 50 ohms. 
-In interposer or other high-density packaging, this may not be necessary.
+In interposer or other high-density packaging, the use of layers may be different.
 
-The position-A slice on chiplet A is connected to the position-A slice on chiplet B 
+In any technology, the position-A slice on chiplet A is connected to the position-A slice on chiplet B 
 (one must be configured for Tx and one for Rx). The position-B slices are connected together, and so on.
 
 There is no specified limit to the number of slices in a stack. 
 In organic laminate, the practical limit in 2020 is 4 slices with an 8-2-8 laminate. 
-Layers on the bottom side of the package typically cannot be used due to low via density passing through
-the thick central core layer.
+Layers on the bottom side of the package typically cannot be used for BoW signals 
+due to low via density passing through the thick central core layer.
 
 ## Signal Ordering
 
-Although example bump patterns are shown, BoW does not specify bump pattern nor bump pitch. 
-A BoW interface must conform to these wire order rules at the edge of the chip:
+A BoW interface must conform to these wire and slice order rules at the edge of the chip:
 
 * The signals for a Tx slice are in the following order at the chip edge, 
-going clockwise around the chiplet: AUX, D0, D1, D2, D3, D4, D5, D6, D7, CLK+, CLK-, D8, D9, D10, D11, D12, D13, D14, D15, FEC
+going clockwise around the chiplet: 
+AUX, D0, D1, D2, D3, D4, D5, D6, D7, CLK+, CLK-, D8, D9, D10, D11, D12, D13, D14, D15, FEC
 * The signals for an Rx slice are in the reversed order (ascending goes counter-clockwise)
 * The Tx slices in a link are numbered from 0 at the upper left edge of the link 
 (facing from the chip center to the edge) and ascending through the Tx slices in a stack, 
@@ -532,7 +538,7 @@ then from stack to stack clockwise.
 * The Rx slices in a link are numbered from 0 at the upper right, through the Rx slices in a stack,
 then stack to stack counterclockwise.
 
-These rules allow chiplets to be connected regardless of rotations.
+These rules allow BoW chiplets to be connected regardless of rotations.
 
 In organic packages, each slice position is associated with one signal layer and there is no mixing 
 of signals from multiple slices.
@@ -543,19 +549,27 @@ and similarly for position B, C, etc.
 ## Checkerboard Slice Pattern
 
 For bidirectional links with more than one stack on each side, a checkerboard pattern of 
-Tx and Rx slices is preferred.  This allows connection of chiplets with differing stack depths and 
-numbers of stacks to be as efficient as possible.
+Tx and Rx slices is preferred (Figure [#fig-checkerboard]).  This allows connection of chiplets with differing stack depths and 
+numbers of stacks to be as efficient as possible. 
+The figure shows a bidirectional link with 4 stacks, for 8 Tx and 8 Rx slices on each chiplet.
 
-~center
-![bowspec_figure_checkerboard]
 
-[bowspec_figure_checkerboard]: images/bowspec_figure_checkerboard.PNG "bowspec_figure_checkerboard" { width:auto; max-width:70% }
-Figure X4: Organic Laminate Package CrosssSection
+~ Figure { #fig-checkerboard; caption: "Checkerboard Pattern of Tx and Rx slices" }
+![checkerboard]
+[checkerboard]: images/bowspec_figure_checkerboard.PNG { width:auto; max-width:70% }
 ~
 
 An alternate approach is to provision every slice to operate as either Rx or Tx. 
-This allows complete flexibility in interoperability and provides an opportunity for
-wafer-test loopback testing as well.
+This allows complete flexibility in interoperability and also provides an opportunity for
+wafer-test loopback testing.
+
+In BoW Base at 5 Gb/s, link in Figure [#fig-checkerboard] provides a total of 1.25 Tb/s.
+In an organic substrate using the hexagonal bump pattern of Figure [#fig-min_link], 
+if the bump pitch is 130 um, 
+the total edge width is 4.16 mm without AUX and FEC, or 5.2 mm with; the depth from the edge is 1.35 mm.
+In an interposer, if the bump pitch is 40 um, the edge width is 1.28 or 1.60 mm and the depth is 0.42 mm.
+
+
 
 #Testability
 

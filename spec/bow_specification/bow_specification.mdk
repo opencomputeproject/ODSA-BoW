@@ -280,16 +280,18 @@ is minimized (<1mm) due to reflections.
 
 #### BoW 
 A BoW implementation shall support a clock rate no greater than 2.5 Gigahertz (GHz) / 5 Gbps 
-DDR data rate for typical trace lengths and 4.0 GHz / 8 Gbps DDR data rate  for traces <1mm.  
+DDR data rate for typical trace lengths and 4.0 GHz / 8 Gbps DDR data rate  for traces <1 mm.  
 DDR is double datarate defined as one data bit per rising and falling edge of the clock. 
 Laminate trace lengths for BoW mode should be limited to 10mm to avoid reflections.
 
 #### Terminated mode
-Termination mode is expected to use lane termination to minimize signal reflection and 
+Terminatied mode is expected to use lane termination to minimize signal reflection and 
 improve the data rate per line, improving the data rate per millimeter of chiplet edge. 
 Data is always expected to be transmitted at the Double Data Rate. A terminated 
 implementation shall support a minimum clock rate no greater than 8 GHz and Double 
 Data Rate operation. 
+
+#### Data rates
 
 ~Center
 |--------------|-------------|-----------------|----------------|----------------|
@@ -297,7 +299,7 @@ Data Rate operation.
 |              |relationship |Clock rate       | Data rate      |                |
 +:------------:+:-----------:+:----------------+:---------------+:---------------+
 | BoW          | DDR         | <= 2.5 GHz      | <= 5 Gbps      | No, up to 10mm |
-|              |             | <= 4Ghz         | <= 8 Gbps      | No *<1mm only  |
+|              |             | <= 4 GHz        | <= 8 Gbps      | No *<1mm only  |
 +--------------+-------------+-----------------+----------------+----------------|
 | Termination  | DDR         | <= 8 GHz        | <= 16 Gbps     | Yes            |
 | Mode         |             |                 |                |                |
@@ -305,23 +307,25 @@ Data Rate operation.
 ~
 
 ### BoW Interface
-The BoW interface defines three signal types:
+The BoW interface defines several signal types:
 
-* Data signals
-  * Inputs (RX): data input signals received by the interface
- * Outputs (TX): data output signals transmitted from the interface
-* Clocks
-  * Data clock out (ns_fwd_clk), sent to the receiving chiplet
-  * Data clock in (fs_fwd_clk): received from the receiving chiplet
-* FEC
-  * Optional FEC bits (1 bit recommended)
+* Data (D0-D15) : data bits
+* Clock (CLK+, CLK-) : differential clock
+* FEC : Forward Error Correction bits
+* AUX : Other uses
+
+Except for the clocks, the bits are single-ended and DDR clocked.
+FEC and AUX are optional.
+All the signals in a slice in BoW Basic and BoW Fast are unidirectional 
+and flow the same direction. There may be a full-duplex extension in the future.
+
 
 # Design Assumptions
-Short connections\
-Organic substrate spacing\
-Low loss implementations\
-Need low end2end latency\
-Low power\
+* Short connections, confined inside a package
+* Supports package technologies from organic laminate to interposer
+* Low signal loss
+* Low latency
+* Low energy per bit
 
 # Standard Compatibility
 The Bunch of Wires (BoW) is a simple Double Data Rate source synchronous interface 
@@ -343,59 +347,64 @@ chiplets using CMOS IO buffers.
 
 ## Block Diagram
 
-~center
-![bowspec_figure3]
+~ Figure { #fig-slice_signals; caption: "BoW Single Slice Signals" }
+![slice_signals]
+[slice_signals]: images/bowspec_figure_slice_signals.PNG { width:auto; max-width:70% }
 ~
-
-[bowspec_figure3]: images/bowspec_figure3.jpg "bowspec_figure3" { width:auto; max-width:90% }
 
 ## Signals
 
-~center
-|--------------|---------|--------------|-------------|
-| Function     | # Bumps | Bump Names   | Notes       |
-+:-------------+:-------:+:-------------+:------------+
-| TX Data      | 16      | TXDQ [15:0]  |             |
-+--------------|---------|--------------|-------------|
-| TX Data Clock| 2       | TXCLK+/TXCLK-| Differential|
-|--------------|---------|--------------|-------------|
-|TX Data FEC   |1-2      |TXFEC         |RS(34, 32)   |
-|(optional)    |         |              |or other     |
-+--------------+---------+--------------+-------------|
-|RX Data       |16       |RXDQ [15:0    |             |
-|--------------|---------|--------------|-------------|
-| RX Data Clock| 2       | RXCLK+/RXCLK-| Differential|
-|--------------|---------|--------------|-------------|
-|TX Data FEC   |1-2      |TXFEC         |RS(34, 32)   |
-|(optional)    |         |              |or other     |
-|--------------|---------|--------------|-------------|
+Each BoW slice consists of a differential clock pair, 16 single-ended data wires, 
+and optional FEC and AUX wires. Each BoW slice is unidirectional when in operation.
+A chiplet may be designed with with Rx-only and Tx-only slices, or
+each slice may have both Tx and Rx capability which is configured at runtime. 
+A bidirectional link is composed of some number of slices configured for Rx and some for Tx.
 
+FEC (Forward Error Correction) is an optional signal that allows using FEC to 
+improve the bit error rate (BER).  AUX is an optional signal that can be used for purposes
+such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
+the details on FEC and AUX usage.
+
+A BoW link is only specified for operation inside a package for reach and ESD reasons.
+
+~ TableFigure {#tab-signals; caption: "BoW Signals"; }
+|--------------|---------|------------|-------------|
+| Function     | # Signals| Signal Name| Notes      |
++:-------------+:-------:+:-----------+:------------+
+| Clock        | 2       | CLK+, CLK- | Differential|
+|--------------|---------|------------|-------------|
+| Data         | 16      | D0-15      |             |
+|--------------|---------|------------|-------------|
+|Forward Error | 1       |FEC         | Optional    |
+|Correction    |         |            |             |
++--------------+---------+------------+-------------|
+|Auxilliary    |1        |AUX         | Optional    |
+|--------------|---------|------------|-------------|
 ~
 
-## Calibration Mode Signals
-
-\<To be included in a future release of the specification>
 
 # Timing
 
-## Supported Datarates
-BOW supports the following datarates:
+## Supported Data Rates
 
-~center
+BOW supports the following data rates:
 
-|----------|-------------|-------|-----------|------------|------------------|
-|Clock Rate|Datarate     |SDR/DDR|Termination|Hybrid TX/RX|Mode              |
-+:--------:+:-----------:+:-----:+:---------:+:----------:+:-----------------+
-|1-2.5 GHz |2Gbps-5Gbps  |DDR    |No         |No          |BoW               |
-|1-4 GHz   |2Gbps-8 Gbps*|DDR    |Yes        |No          |*for traces < 1 mm|
-+--------- +------------ +-------+-----------+------------+------------------+
-|2-8 GHz   |4Gbps-16Gbps |DDR    |Yes        |No          |Terminated mode   |
-+--------- +------------ +-------+-----------+------------+------------------+
+~ TableFigure {#tab-rates; caption: "BoW Data Rates"; width:100%; max-width:100% }
+|----------|-------------|-------------|-------|-----------|----------------|                  
+|BoW Mode  |Clock Rate   |Data Rate    |SDR/DDR|Load Termination| Reach     |
++:--------:+:-----------:+:-----------:+:-----:+:---------:+:---------------+
+|BoW Basic |1-2.5 GHz    |2-5 Gbps     |DDR    |No         |       10 mm   |
++----------+-------------+-------------+-------+-----------+----------------+
+|BoW Basic |1-4 GHz      |2-8 Gbps     |DDR    |Yes        | 1 mm on interposer |
++----------+-------------+-------------+-------+-----------+----------------+
+|BoW Fast  |2-8 GHz      |4-16 Gbps    |DDR    |Yes        |       50 mm    |   
++----------+-------------+-------------+-------+-----------+----------------+   
 ~
 
-At a minimum all BoW implementations must support the minimum 1 Ghz clock rate, 
-2Gbps datarate using unterminated IO.  For ease of integration, increased 
-datarates should support 1 Gbps increments from the floor 2Gbps datarate.
+All BoW implementations must support the minimum 1 GHz clock rate, 
+2 Gbps data rate using unterminated I/O.
+For ease of integration, it is recommended that data rate multiples of 
+N Gbps are supported for integer N>=2.
 
 ## Clocking
 Rising to rising and rising to falling edge specifications for the TX clock 

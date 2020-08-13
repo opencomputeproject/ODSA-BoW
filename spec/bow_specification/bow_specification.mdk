@@ -417,7 +417,7 @@ N Gbps are supported for integer N>=2.
 
 ~ Figure { #fig-clocking; caption: "BoW Clock and Data" }
 ![clocking]
-[clocking]: images/bowspec_figure_clocking.PNG { width:auto; max-width:100% }
+[clocking]: images/bowspec_figure_PHY_block.PNG { width:auto; max-width:100% }
 ~
 
 ~ Framed {color: blue}

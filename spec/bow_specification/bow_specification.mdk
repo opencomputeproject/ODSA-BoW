@@ -415,15 +415,9 @@ N Gbps are supported for integer N>=2.
 
 ## Clocking
 
-~ Figure { #fig-clocking; caption: "BoW Clock and Data" }
+~ Figure { #fig-clocking; caption: "BoW Clock and Data Block Diagram - One Tx Slice, One Rx Slice" }
 ![clocking]
 [clocking]: images/bowspec_figure_PHY_block.PNG { width:auto; max-width:100% }
-~
-
-~ Framed {color: blue}
-Ken Todo: on Fig [#fig-clocking]:  logic -> Link layer; show arrows form link to logic core;
-no DLL units; label ref clock; PLL optional; label CLK+,-, D0-15; needs CLK Rx, needs Rx sampler; 
-PLL dashed
 ~
 
 Figure [#fig-clocking] shows the clock and data flow for a single Tx slice and Rx slice.
@@ -450,7 +444,7 @@ Is a self-contained DLL alignment a Shall, Should or May?
 If not self-contained, it can be SW-controlled.   
 This is a tradeoff of whether to put this complexity in HW or SW.
 
-Possible text for self-contained:  
+Possible text for Shall:  
 The PHY shall include control logic to self-align the slicer clock for correct sampling of the data.
 Alignment is started by signal AlignDll from the Link Layer; 
 the PHY provides a signal DllAligned to the Link Layer when it is complete.

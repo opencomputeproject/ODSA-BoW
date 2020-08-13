@@ -420,17 +420,50 @@ BOW IO should be designed to support 50 V CDM (Charged Device Model) and
 interface standards.
 
 ## Termination Requirements
-BoW datarates (Typically 5Gbps, up to 8Gbps for <1mm trace length) do not 
-require termination.  Higher datarates (up to 16 Gbps) requires termination, 
-and must be built with selectable termination.
+BoW Basic transmitters shall be source-terminated to approximate 50 ohms.
+BoW Basic receivers shall be unterminated.
 
-## Target Channel Requirements
+BoW Fast transmitters and receivers shall be terminated in 50 ohms.
+
+~Framed {color: blue}
+Is the termination to ground or 0.375 V?  
+If to ground, the receiver needs a switchable threshold to go along with the switchable termination.
+If to 0.375 V, the receiver need to generate that voltage.
+~
+
+## BoW Basic Channel Requirements
+
+BoW Basic channels longer than 2 mm should meet these specs:
+
+~ TableFigure {#tab-clocks; caption: "BoW Clock Specifications"; width:100%;  }
+|----------|-------------|-------------|                 
+|Parameter  |Value       | Comment     |
++:--------:+:-----------:+:-----------:+
+|Impedance | 50\+-5 ohms |             |
++----------+-------------+-------------+
+| Ccross/Ctotal ratio |  < 20??%  |             |
++----------+-------------+-------------+
+|          |             |             |
++----------+-------------+-------------+
+~
+Ccross is the total capacitance of a wire to all its neighboring wires.
+Ctotal is the total capacitance of a wire including to grounds.
+Stripline (buried) wires with 25 um line, 40 um space and ?? um dielectric thickness have 
+Ccross/Ctotal of ?? %.
+
+Channels shorter than 2 mm (e.g., on interposer) may have different requirements, 
+not yet specified.
+
+## BoW Fast Channel Requirements
+
+BoW Fast channels should meet the following characteristics.
 
 ### Channel loss line limits
 
+~center
 ![bowspec_figure4]
-
-[bowspec_figure4]: images/bowspec_figure4.jpg "bowspec_figure4" { width:auto; max-width:90% }
+[bowspec_figure4]: images/bowspec_figure4.jpg "bowspec_figure4" { width:auto; max-width:60% }
+~
 
 BoW channel limit is limited by the round trip reflection delay and limited to <10mm for 
 a 5Gbaud with proper slew rate control
@@ -440,9 +473,10 @@ the equalization requirement, it shall meet the provided Insertion Loss limit li
 
 ### Return loss line limits
 
+~center
 ![bowspec_figure5]
-
-[bowspec_figure5]: images/bowspec_figure5.jpg "bowspec_figure5" { width:auto; max-width:90% }
+[bowspec_figure5]: images/bowspec_figure5.jpg "bowspec_figure5" { width:auto; max-width:60% }
+~
 
 BoW channel is expected to be unterminated in the default mode and does not need to 
 follow any Return Loss spec. 
@@ -454,18 +488,22 @@ proper operation and meeting target BER.
 
 ~center
 ![bowspec_figure6]
-
-[bowspec_figure6]: images/bowspec_figure6.jpg "bowspec_figure6" { width:auto; max-width:90% }
-
-Crosstalk is defined in form of the sum of crosstalk power of all aggressors on a target trace.
+[bowspec_figure6]: images/bowspec_figure6.jpg "bowspec_figure6" { width:auto; max-width:60% }
 ~
-
+Crosstalk is defined in form of the sum of crosstalk power of all aggressors on a target trace.
 The proposed power-sum crosstalk spec for termination mode:
 PS Xtalk Limit = -10 dB -37dB.e^(-f/8GHz)
 
 A victim trace in between two aggressor traces on the same package substrate layer with air 
 gap spacing of 50 um (or more) with at least a reference plane under or above will meet the 
 proposed power-sum crosstalk limit.
+
+~Framed {color: blue}
+What is the origin of the Xtalk Limit equation?   
+"Air gap" does not seem appropriate - I assume this means "line spacing"?
+This statement is not complete without spec'ing the dielectric thickness 
+to the ground plane and the trace width.
+~
 
 #  Logic Interface
 

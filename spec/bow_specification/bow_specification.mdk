@@ -436,15 +436,20 @@ If to 0.375 V, the receiver need to generate that voltage.
 BoW Basic channels longer than 2 mm should meet these specs:
 
 ~ TableFigure {#tab-clocks; caption: "BoW Clock Specifications"; width:100%;  }
-|----------|-------------|-------------|                 
-|Parameter  |Value       | Comment     |
-+:--------:+:-----------:+:-----------:+
-|Impedance | 50\+-5 ohms |             |
-+----------+-------------+-------------+
-| C~cross~/C~total~ ratio |  < 40%  |             |
-+----------+-------------+-------------+
-|          |             |             |
-+----------+-------------+-------------+
+|-------------------------|----------------|---------|
+|Parameter                |Value           | Comment |
++:-----------------------:+:--------------:+:-------:+
+| Length                  | 10 mm @ 5 Gbps |         |
+|                         |  5 mm @ 8 Gbps |         |
++-------------------------+----------------+---------+
+| Length mismatch within a slice |  1 mm   | = ~6 ps <= 0.05 UI |
++-------------------------+----------------+---------+
+|Impedance                | 50\+-5 ohms    |         |
++-------------------------+----------------+---------+
+| C~cross~/C~total~ ratio | < 40%          |         |
++-------------------------+----------------+---------+
+|                         |                |         |
++-------------------------+----------------+---------+
 ~
 C~cross~ is the total capacitance of a wire to all its neighboring wires.
 C~total~ is the total capacitance of a wire including to grounds.
@@ -453,6 +458,12 @@ C~cross~/C~total~ of 28% and an impedance of 48 ohms.
 
 Channels shorter than 2 mm (e.g., on interposer) may have different requirements, 
 not yet specified.
+
+BoW Basic channel length is limited by the round trip reflection delay to 10 mm for 5 Gbps.
+
+~Framed {color: blue}
+Ken todo: add line twist diagram for clock?
+~
 
 ## BoW Fast Channel Requirements
 
@@ -465,8 +476,7 @@ BoW Fast channels should meet the following characteristics.
 [bowspec_figure4]: images/bowspec_figure4.jpg "bowspec_figure4" { width:auto; max-width:60% }
 ~
 
-BoW channel limit is limited by the round trip reflection delay and limited to <10mm for 
-a 5Gbaud with proper slew rate control
+
 
 Enabling termination enables longer channel regardless of baud rate, but to minimize 
 the equalization requirement, it shall meet the provided Insertion Loss limit line.
@@ -494,7 +504,6 @@ Crosstalk is defined in form of the sum of crosstalk power of all aggressors on 
 The proposed power-sum crosstalk spec for termination mode:  
 ~center
 XtalkLimit = -37*e^-f/8GHz^-10 dB
-~
 
 A victim trace in between two aggressor traces on the same package substrate layer with air 
 gap spacing of 50 um (or more) with at least a reference plane under or above will meet the 

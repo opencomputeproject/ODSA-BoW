@@ -441,15 +441,15 @@ BoW Basic channels longer than 2 mm should meet these specs:
 +:--------:+:-----------:+:-----------:+
 |Impedance | 50\+-5 ohms |             |
 +----------+-------------+-------------+
-| Ccross/Ctotal ratio |  < 20??%  |             |
+| C~cross~/C~total~ ratio |  < 40%  |             |
 +----------+-------------+-------------+
 |          |             |             |
 +----------+-------------+-------------+
 ~
-Ccross is the total capacitance of a wire to all its neighboring wires.
-Ctotal is the total capacitance of a wire including to grounds.
-Stripline (buried) wires with 25 um line, 40 um space and ?? um dielectric thickness have 
-Ccross/Ctotal of ?? %.
+C~cross~ is the total capacitance of a wire to all its neighboring wires.
+C~total~ is the total capacitance of a wire including to grounds.
+Stripline (buried) wires with 25 um line, 40 um space and 33 um dielectric thickness have 
+C~cross~/C~total~ of 28% and an impedance of 48 ohms.
 
 Channels shorter than 2 mm (e.g., on interposer) may have different requirements, 
 not yet specified.
@@ -491,8 +491,10 @@ proper operation and meeting target BER.
 [bowspec_figure6]: images/bowspec_figure6.jpg "bowspec_figure6" { width:auto; max-width:60% }
 ~
 Crosstalk is defined in form of the sum of crosstalk power of all aggressors on a target trace.
-The proposed power-sum crosstalk spec for termination mode:
-PS Xtalk Limit = -10 dB -37dB.e^(-f/8GHz)
+The proposed power-sum crosstalk spec for termination mode:  
+~center
+XtalkLimit = -37*e^-f/8GHz^-10 dB
+~
 
 A victim trace in between two aggressor traces on the same package substrate layer with air 
 gap spacing of 50 um (or more) with at least a reference plane under or above will meet the 

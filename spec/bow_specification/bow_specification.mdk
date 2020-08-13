@@ -1,5 +1,5 @@
 Title         : Bunch of Wires Specification
-Author        : Mark Kuemerle, Ramin Farjad, Bapi Vinnakota (the Open Domain Specific Architecture BoW Workstream) 
+Author        : Mark Kuemerle, Ramin Farjad, Bapi Vinnakota, Ken Poulton, Suresh Subramaniam (the Open Domain Specific Architecture BoW Workstream) 
 Logo          : True
 
 Heading depth: 5
@@ -140,13 +140,13 @@ specification. Each future version of this specification is expected
 to be compatible with at least two previous significant versions.
 The BoW interface aims to meet the following design objectives:
 
-* Be inexpensive to implement 
+* Inexpensive to implement 
 * Portable across process nodes ranging from 28nm to 5nm
 * Portable across multiple bump pitches
 * Have the flexibility to support advancing packaging technology
-* Be unencumbered by technology license costs
+* Unencumbered by technology license costs
 * Very low power (< 1 pJ/bit) as defined by Tx IO Pad, wire and Rx IO Pad.
-* Very low latency: <5ns without FEC, <15 ns with FEC. Latency as 
+* Very low latency: <5 ns without FEC, <15 ns with FEC. Latency as 
 defined from the PCS parallel interface at the source, through Tx 
 interface, channel, Rx interface received at the PCS parallel 
 interface at the receiver. Based on experience, the 5 ns 
@@ -215,6 +215,21 @@ of this specification:
   b. Compliance points
   c. Initialization
   d. Security
+
+### Language
+* "Shall" or "must" indicates a requirement.
+Failure to meet the requirement results in non-compliance
+* "Should" indicates a strong suggestion, but not a requirement.
+Failure to implement the suggestion does not result in non-compliance.
+* "May" indicates an option.
+* The lack of one of the above verbs indicates the material is informative.
+* "Reference" indicates a reference design that is provided as example for explanation, 
+but is not a requirement.
+
+~Framed {color: blue}
+Temporary note to spec writers: 
+Each of the above specification verbs should be in its own sentence to avoid confusion.
+~
 
 ### Compliance Summary
 

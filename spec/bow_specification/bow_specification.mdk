@@ -226,14 +226,14 @@ Failure to implement the suggestion does not result in non-compliance.
 * "Reference" indicates a reference design that is provided as example for explanation, 
 but is not a requirement.
 
-~Framed {color: blue}
-Temporary note to spec writers: 
-Each of the above specification verbs should be in its own sentence to avoid confusion.
-~
+<XX
+Note to spec writers: 
+Avoid using more than one of the above specification verbs in a single sentence to avoid confusion. 
+XX>
 
 ### Compliance Summary
 
-Table summarizes the compliance points that shall be met in order to meet the BoW requirements. Each of the 
+Table XX will summarize the compliance points that shall be met in order to meet the BoW requirements. Each of the 
 compliance points is discussed in the specification.
 
 This section will also include a discussion on interoperability.

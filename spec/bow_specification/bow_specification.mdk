@@ -446,7 +446,7 @@ proposed power-sum crosstalk limit.
 
 \<To be completed in subsequent version of specification>
 
-# Physical Arrangements
+# Physical
 
 ## BoW Components
 
@@ -457,70 +457,80 @@ proposed power-sum crosstalk limit.
 
 
 A BoW link between two chiplets is made up of
-wires, slices, and stacks. The basic unit is a slice,
-with 18 or 20 signal bumps: 2 for the differential
-clock, 16 single-ended data and optional signals AUX and FEC. 
-The long edge of a slice is parallel to the chip edge.
-Multiple slices may be placed in a stack. The slice locations are
+wires, slices, and stacks. 
+
+* The basic unit is a slice with 18 or 20 signal bumps. 
+It must have 2 signals for the differential
+clock and 16 single-ended data. 
+It may also have the optional single-ended signals AUX and FEC. 
+In the reference bump map, the long edge of a slice is parallel to the chip edge.
+* Multiple slices may be placed in a stack. The slice positions are
 designated A, B, C, etc, starting with the slice closest to the edge of the chip.
-A link from one chiplet to another is composed of one or more
-stacks placed along the chip edge. A link is typically
+* A link from one chiplet to another must be composed of one or more
+stacks placed along the chip edge. A link may be
 configured with equal numbers of Rx and Tx slices,
-but may be asymmetric or one-way.
+or it may be asymmetric or one-way.
 
 ## Example Link
 
-A minimal bidirectional example link is shown in Figure [#fig-min_link].
+The minimal bidirectional reference link is shown in Figure [#fig-min_link].
 
-~ Figure { #fig-min_link; caption: "BoW Minimal Link Example" }
+~ Figure { #fig-min_link; caption: "BoW Minimal Bidirectional Reference Link" }
 ![min_link]
 [min_link]: images/bowspec_figure_min_link.PNG { width:auto; max-width:70% }
 ~
 
-In this example, each chiplet has one Tx slice and one Rx slice, arranged in a single stack on each chiplet.
+In this example, each chiplet has one Tx slice and one Rx slice, 
+arranged in a single stack on each chiplet.
 The position-A slices (at the chips' edges) are connected together on the topmost routing 
-layer used for signals and the position-B slices are connected together on the next layer used for signals.
+layer used for signals and the position-B slices are connected together on the next 
+layer used for signals.
 
-This example shows one possible set of bump patterns. 
-It uses hexagonal closest packing for the bumps: two rows for signal bumps and
+This reference example uses hexagonal closest packing for the bumps: two rows for signal bumps and
 one row for power and ground bumps. 
 In this pattern, the wire pitch is half the bump pitch.
-In order to maintain the closest packing, slices in rows B and D must have a different bump
+In order to maintain the closest bump packing, slices in rows B and D must have a different bump
 pattern than slices A and C.
 But bump patterns are not specified by BoW; only the signal *ordering* at 
 the chip edge is specified for interoperability. 
 
-Alternate bump arrangements include:
+Alternate bump arrangements may include:
 90-degree rotation of the hexagonal packing direction to decrease the wire pitch 14%;
 square bump arrays instead of hexagonal for regularity of layout; 
 more than two rows of signal bumps to decrease the wire pitch;
 different ordering of power and ground bumps;
 multiple power and ground rows.
 
+An alternate slice arrangement may be to place the Tx and Rx slices side by side at the 
+chip edges. This would take up more chip edge, but allow all the signals to run on the same 
+package layer.
+
 Somewhat different wire and bump pitches between two chiplets can be accomodated with 
 fan-out in the chip-to-chip wires. This is limited in BoW Basic by the 10 mm max wire length 
-and the likely need to route from chiplet to chiplet in just one layer.
-Note that the longest wires (slice position D) are already 5-6 mm in an organic package.
+and the practical advantages of routing from chiplet to chiplet in just one package layer.
+(Note that even straight wires in slice position D are likely 5-6 mm long using 130-um bump pitch with 
+the reference bump map in an organic package.)
 
 ## Cross Section
 
 A cross section for an organic laminate (a.k.a. "buildup") package is shown in 
 Figure [#fig-pkg_cross_section].
 
-~ Figure { #fig-pkg_cross_section; caption: "Checkerboard Pattern of Tx and Rx slices" }
+~ Figure { #fig-pkg_cross_section; caption: "Cross section of a BoW Link in an Organic Laminate Package" }
 ![pkg_cross_section]
 [pkg_cross_section]: images/bowspec_figure_pkg_cross_section.PNG { width:auto; max-width:70% }
 ~
 
-In an organic laminate package, signal layers are alternated with ground layers 
+In an organic laminate package, signal layers should be alternated with ground layers 
 in order to maintain a controlled impedance of 50 ohms. 
 In interposer or other high-density packaging, the use of layers may be different.
 
-In any technology, the position-A slice on chiplet A is connected to the position-A slice on chiplet B 
-(one must be configured for Tx and one for Rx). The position-B slices are connected together, and so on.
+In any technology, the position-A slice on chiplet A must be connected to the position-A 
+slice on chiplet B (one must be configured for Tx and one for Rx). 
+The position-B slices are connected together, and so on.
 
 There is no specified limit to the number of slices in a stack. 
-In organic laminate, the practical limit in 2020 is 4 slices with an 8-2-8 laminate. 
+In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supports 4 slices. 
 Layers on the bottom side of the package typically cannot be used for BoW signals 
 due to low via density passing through the thick central core layer.
 
@@ -538,28 +548,30 @@ then from stack to stack clockwise.
 * The Rx slices in a link are numbered from 0 at the upper right, through the Rx slices in a stack,
 then stack to stack counterclockwise.
 
-These rules allow BoW chiplets to be connected regardless of rotations.
+These rules allow BoW chiplets to be connected without signal reordering regardless of chiplet rotations.
 
-In organic packages, each slice position is associated with one signal layer and there is no mixing 
+In organic packages, each slice position should be associated with one signal layer and there is no mixing 
 of signals from multiple slices.
 In interposer or other dense routing technologies, signals from multiple slices in a stack 
-may be interleaved in a signal layer, but chiplet A's slice A is still connected to chiplet B's slice A 
+may be interleaved in a signal layer, but chiplet A's slice A is still 
+connected to chiplet B's slice A 
 and similarly for position B, C, etc.
 
 ## Checkerboard Slice Pattern
 
 For bidirectional links with more than one stack on each side, a checkerboard pattern of 
-Tx and Rx slices is preferred (Figure [#fig-checkerboard]).  This allows connection of chiplets with differing stack depths and 
+Tx and Rx slices should be used (Figure [#fig-checkerboard]).
+This allows connection of chiplets with differing stack depths and 
 numbers of stacks to be as efficient as possible. 
-The figure shows a bidirectional link with 4 stacks, for 8 Tx and 8 Rx slices on each chiplet.
+Figure [#fig-checkerboard] shows a bidirectional link with 4 stacks or 4 slices each, 
+for 8 Tx and 8 Rx slices on each chiplet.
 
-
-~ Figure { #fig-checkerboard; caption: "Checkerboard Pattern of Tx and Rx slices" }
+~ Figure { #fig-checkerboard; caption: "Checkerboard Pattern of Tx and Rx Slices in a 1.25 Tb/s Link" }
 ![checkerboard]
 [checkerboard]: images/bowspec_figure_checkerboard.PNG { width:auto; max-width:70% }
 ~
 
-An alternate approach is to provision every slice to operate as either Rx or Tx. 
+An alternate approach may be used: provision every slice to operate as either Rx or Tx. 
 This allows complete flexibility in interoperability and also provides an opportunity for
 wafer-test loopback testing.
 

@@ -409,9 +409,9 @@ supporting data for 8 Gbps and 50 mm cases?
 ~
 
 All BoW implementations must support the minimum 1 GHz clock rate, 
-2 Gbps data rate using unterminated I/O.
-For ease of integration, it is recommended that data rate multiples of 
-N Gbps are supported for integer N>=2.
+2 Gbps data rate using source-terminated I/O.
+For ease of interoperation, data rate multiples of 
+N Gbps should be supported for integer N>=2 to the max rate for that implementation.
 
 ## Clocking
 
@@ -421,34 +421,33 @@ N Gbps are supported for integer N>=2.
 ~
 
 Figure [#fig-clocking] shows the clock and data flow for a single Tx slice and Rx slice.
-The data bits (and optional FEC and AUX bits) come from the link layer, and are serialized to the 
-line rate. At the Rx side, they are sampled with a common clock in BoW Basic. 
-BoW Fast may optionally implement per-bit delay adjust or per-bit resampling clock adjust.
+On the Tx side, data bits (and optional FEC and AUX bits) come from the link layer, 
+and are serialized to the line rate. 
+At the Rx side, they are sampled with a common slicer clock in BoW Basic. 
+BoW Fast may optionally implement per-bit delay adjust or per-bit slicer clock adjust.
 
-All BoW interfaces shall be DDR (Double Data Rate): the data rate is twice the clock frequency, 
+All BoW interfaces shall be DDR (Double Data Rate): the data bit rate is twice the clock frequency, 
 so data is clocked in on both edges of the clock in the Rx slice.
 
-The DDR clock CLK+,CLK- is derived from a reference on the Tx chip, typically with a PLL.
-The PLL may exist within each Tx slice, or it may come from a shared PLL elsewhere on the 
-Tx side, or it may come from the received clock of an Rx slice on the same chip. 
-In order to meet duty cycle requirements, a Duty Cycle Corrector (DCC) may be needed.
+The DDR clock TxClk is provided to the PHY from elsewhere on Chiplet-A.
+This may come from an on-chip PLL (typically shared across multiple slices) or it 
+can be routed from the RxClk of an Rx slice on Chiplet-A. 
+In order to meet duty cycle requirements, a Duty Cycle Corrector (DCC) may be needed in the
+Tx slice. TxClk is is used to drive the serializers and provide the output CLK+,CLK- to
+Chiplet-B.
 
 All BoW interfaces shall be source synchronous within a slice. 
-Clock alignment from slice to slice is not specified.
+Clock alignment from slice to slice is not specified. 
+On both the Tx and Rx sides, the Link layer should include a Clock Domain Crossing (CDC) to 
+align the data between CoreClk and PhyClk. 
+The Rx CDC should also be able to absorb the slice-to-slice clock skew across the whole
+link.
 
-On the Rx side, the clock must be aligned to sample the data correctly with the slicers.
+On the Rx side, the slicer clock must be aligned to sample the data correctly.
 This may be done with a DLL or adjustable delays or other methods.
-
-~ Framed {color: blue}
-Is a self-contained DLL alignment a Shall, Should or May?   
-If not self-contained, it can be SW-controlled.   
-This is a tradeoff of whether to put this complexity in HW or SW.
-
-Possible text for Shall:  
 The PHY shall include control logic to self-align the slicer clock for correct sampling of the data.
-Alignment is started by signal AlignDll from the Link Layer; 
-the PHY provides a signal DllAligned to the Link Layer when it is complete.
-~
+Alignment is started by signal AlignDll? from the Rx Link Layer; 
+the PHY provides a signal DllAligned? to the Link Layer when it is complete.
 
 BoW Basic interfaces do not require per-wire delay adjustment - the non-clock signals
 within a slice are aligned sufficiently well by matching their paths.

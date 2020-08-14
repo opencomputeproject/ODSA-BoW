@@ -429,19 +429,12 @@ BoW Fast may optionally implement per-bit delay adjust or per-bit slicer clock a
 All BoW interfaces shall be DDR (Double Data Rate): the data bit rate is twice the clock frequency, 
 so data is clocked in on both edges of the clock in the Rx slice.
 
-The DDR clock TxClk is provided to the PHY from elsewhere on Chiplet-A.
+The DDR clock TxClk is provided to the Tx PHY from elsewhere on Chiplet-A.
 This may come from an on-chip PLL (typically shared across multiple slices) or it 
 can be routed from the RxClk of an Rx slice on Chiplet-A. 
 In order to meet duty cycle requirements, a Duty Cycle Corrector (DCC) may be needed in the
-Tx slice. TxClk is is used to drive the serializers and provide the output CLK+,CLK- to
+Tx slice. TxClk is used to drive the serializers and provide the output CLK+,CLK- to
 Chiplet-B.
-
-All BoW interfaces shall be source synchronous within a slice. 
-Clock alignment from slice to slice is not specified. 
-On both the Tx and Rx sides, the Link layer should include a Clock Domain Crossing (CDC) to 
-align the data between CoreClk and PhyClk. 
-The Rx CDC should also be able to absorb the slice-to-slice clock skew across the whole
-link.
 
 On the Rx side, the PHY must align the slicer clock to sample the data correctly.
 This may be done with a DLL or adjustable delays or other methods.
@@ -449,23 +442,34 @@ The PHY shall include control logic to self-align the slicer clock for correct s
 Alignment is started by signal AlignDll? from the Rx Link Layer; 
 the PHY provides a signal DllAligned? to the Link Layer when it is complete.
 
-BoW Basic interfaces do not require per-wire delay adjustment - the non-clock signals
+BoW Basic interfaces do not require per-wire alignment - the signals
 within a slice are aligned sufficiently well by matching their paths.
 BoW Fast interfaces may need per-wire delay adjustment or per-slicer clock adjustment.
 
+All BoW interfaces shall be source synchronous within a slice. 
+However clock skew between all the slices in a link depends on the implementation of the
+TxClk distribution on the Tx slices in a link; this skew must be no more than 3 ns.
+On both the Tx and Rx sides, the Link layer must include a Clock Domain Crossing (CDC) to 
+align the data between CoreClk and PhyClk. 
+These CDCs must also be able to absorb the slice-to-slice clock skew and 
+core clock distribution skew across the whole link.
+
 If DCCs are included in the PHY and they need an alignment cycle, they shall include 
-control logic to perform self-alignment on a signal from the Link layer and a completion 
+control logic to perform self-alignment on a signal from the Link layer and send a completion 
 signal back to the Link layer.
 
-Since these signals do not leave the package, these specs must be verified with simulation.
+## Clock and Data Specifications
 
+<XX
 ~ Framed {color: blue}
 
-This is a list of possible specs.
+This is a list of possible specs within a slice
 
 * Clock to data alignment   NA before align, 50 ps after align = 0.20 UI
-* data to data alignment    mismatch sim, fanout estimate, clock distn est
-* slice to slice clock alignment   NA
+* data to data alignment    18 ps
+  * mismatch: 0.6 ps rms at Rx input, 1.1 ps rums at Rx output
+  * fanout skew: 1 mm = 6 ps as a tline
+  * clock distn within slice: 0.6 mm = 7 ps as an RC line
 * clock rise/fall time   80 ps = 0.30 UI
 * clock duty cycle   50+-5% 
 * CLK+ vs CLK- skew    10 ps = 0.04 UI
@@ -474,23 +478,51 @@ This is a list of possible specs.
 * Eye: 400 mV, 50 ps ??    330 mV, 50 ps barely works in 65 nm sim at 8 Gbps
 * clock slip   0 ppm
 
+Slice to slice:
 
-The following table is is just a dummy  for now:
+* slice to slice clock skew across width of a link   < 3 ns 
+   * 2.5 ns to go 30 mm, across 22 slices
+~
+>
+
+The CLK and data signals within any BoW Basic slice on laminate should meet the 
+specifications in the following table.
+
+~ TableFigure {#tab-clocks; caption: "BoW Clock Specifications"; width:100%; }
+<This table generated with https://www.tablesgenerator.com/markdown_tables# >
+<any plus signs need a backslash added manually >
+
+
+| Spec                              | Value (time) | Value (UI)    | Condition           |
+|:----------------------------------|--------------|---------------|---------------------|
+| Data to data skew                 | 18 ps        | 0.14 UI       |                     |
+| CLK to mean data skew             | 12 ps        | 0.10 UI       | after DLL alignment |
+| CLK duty cycle                    | 50%          | 0.50 UI       |                     |
+| CLK duty cycle error              | 5%           | 0.05 UI       |                     |
+| CLK+ vs. CLK- skew                | 10 ps        | 0.04 UI       |                     |
+| CLK cycle-to-cycle random jitter  |              |               |                     |
+| CLK cycle-to-cycle bounded jitter |              |               |                     |
+| CLK min rise/fall time            |              | 0.20 UI       |                     |
+| CLK max rise/fall time            |              | 0.30 UI       |                     |
+| Data min rise/fall time           |              | 0.20 UI       |                     |
+| Data max rise/fall time           |              | 0.30 UI       |                     |
+| Data Eye width                    | 50 ps        | 0.40 UI       |                     |
+| Data Eye height                   | 400 mV       |               |                     |
+| Data overshoot/undershoot         | 190 mV       | 25% of Vswing |                     |
+
 ~
 
-~ TableFigure {#tab-clocks; caption: "BoW Clock Specifications"; width:100%; max-width:100%; color: blue }
-|----------|-------------|-------------|-------|-----------|----------------|                  
-|BoW Mode  |Clock Rate   |Data Rate    |SDR/DDR|Load Termination| Reach     |
-+:--------:+:-----------:+:-----------:+:-----:+:---------:+:---------------+
-|BoW Basic |1-2.5 GHz    |2-5 Gbps     |DDR    |No         |       10 mm   |
-+----------+-------------+-------------+-------+-----------+----------------+
-|BoW Basic |1-4 GHz      |2-8 Gbps     |DDR    |Yes        | 1 mm on interposer |
-+----------+-------------+-------------+-------+-----------+----------------+
-|BoW Fast  |2-8 GHz      |4-16 Gbps    |DDR    |Yes        |       50 mm    |   
-+----------+-------------+-------------+-------+-----------+----------------+   
+The CLK and data signals must meet this condition:
+~center
+DataEyeWidth - CLK+vsCLK-skew - CLKdutyCycleError - CLKtoMeanDataSkew - DataToDataSkew > 0.10 UI
 ~
 
+The slice to slice clock skew across the width of a link must be less than 3 ns.
+This is dominated by the TxClk distribution network.
 
+Since these signals do not leave the package, most of these specs must be verified with simulation.
+If the slice implementation allows programmatic control of the DLL alignment values, 
+varying those values after locking the DLL may provide margin information.
 
 # Electrical Specifications
 

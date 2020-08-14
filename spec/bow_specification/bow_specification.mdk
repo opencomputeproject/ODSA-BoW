@@ -406,34 +406,56 @@ Additional requirements will be documented in future releases of the specificati
 # Electrical Specifications
 
 ## Voltages
-To support a wide range of technologies BoW does not enforce a common 
-VDD power rail Voltage. In order to ensure that there is at least one common 
-interoperable mode BoW implementations must support electrical specifications targeting 
-rail to rail signaling based on a 0.75 V +/- 5% power supply (see electrical 
-specifications). BoW interfaces can support higher or lower signaling 
-voltages without limit but must support 0.75 V based signaling at 2Gbps 
-Double Data Rate (DDR) to ensure interoperability.
 
-## ESD Requirements
-BOW IO should be designed to support 50 V CDM (Charged Device Model) and 
-250 V HBM (Human Body Model).  This requirement is similar to other die to die 
+In order to ensure that there is at least one common 
+interoperable mode, BoW implementations must support signaling from ground to 0.75 V +/- 5% . 
+BoW interfaces can support higher or lower signaling 
+voltages without limit but must support 0.75 V based signaling at 2 Gbps 
+Double Data Rate (DDR) to ensure interoperability.
+BoW does not enforce a common VDD power rail voltage. 
+
+## ESD 
+BOW I/O shall be designed to withstand 50 V CDM (Charged Device Model) and 
+250 V HBM (Human Body Model).  This requirement is similar to other die-to-die 
 interface standards.
 
-## Termination Requirements
-BoW Basic transmitters shall be source-terminated to approximate 50 ohms.
+## Termination and Return Loss
+
+On laminate or similar packages, 
+BoW Basic and BoW Fast transmitters shall be source-terminated to 50 +/-8 ohms.
+
 BoW Basic receivers shall be unterminated.
+BoW Fast receivers shall be terminated in 50 +/-8 ohms to V~swing~/2 +/- 5% where V~swing~
+is the signal voltage swing without a receiver termination.
 
-BoW Fast transmitters and receivers shall be terminated in 50 ohms.
+A BoW Basic transmitter (both data and clock) shall meet the return loss specified in
+figure [#fig-s11] when outputting a logic 0, 1 or at the midscale voltage.
+A BoW Fast transmitter and receiver shall meet the return loss specified in the same figure, 
+when outputting a logic 0, 1 or at the midscale voltage.
 
-~Framed {color: blue}
-Is the termination to ground or 0.375 V?  
-If to ground, the receiver needs a switchable threshold to go along with the switchable termination.
-If to 0.375 V, the receiver need to generate that voltage.
+~ Figure { #fig-S11; caption: "BoW Termination Return Loss S11 and S22" }
+![S11]
+~
+[S11]: images/bowspec_figure_S11.PNG { width:auto; max-width:60% }
+
+A Source-Series-Terminated (SST) transmitter can meet the the BoW Basic specification.
+
+
+# Chip-to-Chip Channel Specifications
+
+The channel (wires) between chips is not a required part of the specification of the PHY, 
+but implementations should meet the following specs to ensure signal integrity.
+
+~framed {color:blue}
+Should the channel between chips be Shall or Should?
 ~
 
-## BoW Basic Channel Requirements
+## BoW Basic Channel Specifications
 
-BoW Basic channels longer than 2 mm should meet these specs:
+BoW Basic channel length on laminate 
+is limited by the round trip reflection delay to 10 mm for 5 Gbps.
+
+BoW Basic channels longer than 2 mm (e.g., on laminate) should meet these specs:
 
 ~ TableFigure {#tab-clocks; caption: "BoW Clock Specifications"; width:100%;  }
 |-------------------------|----------------|---------|
@@ -448,7 +470,7 @@ BoW Basic channels longer than 2 mm should meet these specs:
 +-------------------------+----------------+---------+
 | C~cross~/C~total~ ratio | < 40%          |         |
 +-------------------------+----------------+---------+
-|                         |                |         |
+|   R~series~             |  < 4 ohms      |         |
 +-------------------------+----------------+---------+
 ~
 C~cross~ is the total capacitance of a wire to all its neighboring wires.
@@ -456,64 +478,71 @@ C~total~ is the total capacitance of a wire including to grounds.
 Stripline (buried) wires with 25 um line, 40 um space and 33 um dielectric thickness have 
 C~cross~/C~total~ of 28% and an impedance of 48 ohms.
 
-Channels shorter than 2 mm (e.g., on interposer) may have different requirements, 
+Channels shorter than 2 mm (e.g., on interposer) will have different requirements, 
 not yet specified.
 
-BoW Basic channel length is limited by the round trip reflection delay to 10 mm for 5 Gbps.
+<XXXXX Comment XXXXX
+Interposers have only 4 layers, very thin dielectrics, 
+cannot reach 50 ohm impedances without huge series R.  So they need to be designed differently.
+Kens quick study found wire lengths from 570 to 1380 um (for 55 um bump pitch, 4-slice stack).
+The best config looked like 3 um line and space, alternating signal and ground layers.
+This gives a wire pitch of 1/9 the bump pitch, so we could even support 4 slices in just one
+signal layer.
+The line C for 1400 um is 0.76 pF, the R is 14 ohms, the RC is 11 ps, which is okay for 
+8 Gb/s.
+Source termination is probably not wanted in this case since there is so much Rline and
+we cant build a reasonable controlled impedance line.
+XXXXX>
+
 
 ~Framed {color: blue}
-Ken todo: add line twist diagram for clock?
+Ken todo: add wire twist diagram for clock?
 ~
 
-## BoW Fast Channel Requirements
+## BoW Fast Channel Specifications
 
 BoW Fast channels should meet the following characteristics.
 
-### Channel loss line limits
+### Channel Loss
 
-~center
-![bowspec_figure4]
-[bowspec_figure4]: images/bowspec_figure4.jpg "bowspec_figure4" { width:auto; max-width:60% }
+To minimize the need for equalization, the channel should meet the limit in Figure [#fig-loss].
+
+~ Figure { #fig-loss; caption: "BoW Fast Wire Channel Loss Limit" }
+![loss]
 ~
+[loss]: images/bowspec_figure4.jpg { width:auto; max-width:60% }
 
 
+### Crosstalk
 
-Enabling termination enables longer channel regardless of baud rate, but to minimize 
-the equalization requirement, it shall meet the provided Insertion Loss limit line.
+The crosstalk in the channel should meet the limit in Figure [#fig-xtalk].
 
-### Return loss line limits
-
-~center
-![bowspec_figure5]
-[bowspec_figure5]: images/bowspec_figure5.jpg "bowspec_figure5" { width:auto; max-width:60% }
+~ Figure { #fig-xtalk; caption: "BoW Fast Wire Crosstalk Limit" }
+![xtalk]
 ~
+[xtalk]: images/bowspec_figure6.jpg { width:auto; max-width:60% }
 
-BoW channel is expected to be unterminated in the default mode and does not need to 
-follow any Return Loss spec. 
-
-Enabling Termination mode requires meeting the provided Return Loss limit line for 
-proper operation and meeting target BER.
-
-### Power Sum Crosstalk Limit Line
-
-~center
-![bowspec_figure6]
-[bowspec_figure6]: images/bowspec_figure6.jpg "bowspec_figure6" { width:auto; max-width:60% }
-~
-Crosstalk is defined in form of the sum of crosstalk power of all aggressors on a target trace.
-The proposed power-sum crosstalk spec for termination mode:  
+Power-sum crosstalk is the sum of crosstalk power of all aggressors on a target trace.
+The limit is
 ~center
 XtalkLimit = -37*e^-f/8GHz^-10 dB
+~
 
 A victim trace in between two aggressor traces on the same package substrate layer with air 
 gap spacing of 50 um (or more) with at least a reference plane under or above will meet the 
 proposed power-sum crosstalk limit.
 
 ~Framed {color: blue}
-What is the origin of the Xtalk Limit equation?   
+What is the origin of the Xtalk Limit equation?  Is there a paper reference?
+
 "Air gap" does not seem appropriate - I assume this means "line spacing"?
 This statement is not complete without spec'ing the dielectric thickness 
-to the ground plane and the trace width.
+to the ground plane and the trace width and whether this is microstrip or stripline.
+
+Proposed text:
+
+An example geometry which meets this limit is microstrip (surface) lines with 
+X um line and Y um space, on Z um dielectric over a ground plane.
 ~
 
 #  Logic Interface

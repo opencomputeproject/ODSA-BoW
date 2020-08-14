@@ -443,7 +443,7 @@ align the data between CoreClk and PhyClk.
 The Rx CDC should also be able to absorb the slice-to-slice clock skew across the whole
 link.
 
-On the Rx side, the slicer clock must be aligned to sample the data correctly.
+On the Rx side, the PHY must align the slicer clock to sample the data correctly.
 This may be done with a DLL or adjustable delays or other methods.
 The PHY shall include control logic to self-align the slicer clock for correct sampling of the data.
 Alignment is started by signal AlignDll? from the Rx Link Layer; 
@@ -453,8 +453,11 @@ BoW Basic interfaces do not require per-wire delay adjustment - the non-clock si
 within a slice are aligned sufficiently well by matching their paths.
 BoW Fast interfaces may need per-wire delay adjustment or per-slicer clock adjustment.
 
-Since these signals do not leave the package, these specs must be verified with simulation.
+If DCCs are included in the PHY and they need an alignment cycle, they shall include 
+control logic to perform self-alignment on a signal from the Link layer and a completion 
+signal back to the Link layer.
 
+Since these signals do not leave the package, these specs must be verified with simulation.
 
 ~ Framed {color: blue}
 

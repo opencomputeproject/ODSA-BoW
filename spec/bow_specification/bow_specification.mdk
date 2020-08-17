@@ -233,6 +233,10 @@ XX>
 
 ### Compliance Summary
 
+The must specifications must be met over process variation, supply voltage range and 
+temperature range (PVT). 
+Each implementation must document its supported supply voltage range and temperature range.
+
 Table XX will summarize the compliance points that shall be met in order to meet the BoW requirements. Each of the 
 compliance points is discussed in the specification.
 

@@ -473,7 +473,9 @@ signal back to the Link layer.
 
 ## Clock and Data Specifications
 
-<XX
+### Reference Slice Timing
+
+<XX  COMMENT
 ~ Framed {color: blue}
 
 This is a list of possible specs within a slice
@@ -496,48 +498,86 @@ Slice to slice:
 * slice to slice clock skew across width of a link   < 3 ns 
    * 2.5 ns to go 30 mm, across 22 slices
 ~
->
+XX END COMMENT>
 
-The following table shows a clock and data timing for a reference design in 65 nm CMOS on 
-laminate packaging. These values are for CLK and data bits at the bumps of the BoW receiver.
+The following table shows clock and data timing for a 4 Gbps reference design in 65 nm CMOS on 
+laminate packaging. These values are for CLK and data bits at the bumps of the BoW receiver. 
 
-~ TableFigure {#tab-clocks; caption: "BoW Clock Specifications"; width:100%; }
+~ TableFigure {#tab-clocks; caption: "BoW Clock Reference Values"; font-size:small; width:100%; }
 <This table generated with https://www.tablesgenerator.com/markdown_tables# >
 <any plus signs need a backslash added manually >
+<column justification needs a ":" in the first "---" line added manually>
 
-
-| Spec                              | Value (time) | Value (UI)    | Condition           |
-|:----------------------------------|--------------|---------------|---------------------|
-| Data to data skew                 | 18 ps        | 0.14 UI       |                     |
-| CLK to mean data skew             | 12 ps        | 0.10 UI       | after DLL alignment |
-| CLK duty cycle                    | 50%          | 0.50 UI       |                     |
-| CLK duty cycle error              | 5%           | 0.05 UI       |                     |
-| CLK+ vs. CLK- skew                | 10 ps        | 0.04 UI       |                     |
-| CLK cycle-to-cycle random jitter  |              |               |                     |
-| CLK cycle-to-cycle bounded jitter |              |               |                     |
-| CLK min rise/fall time            |              | 0.20 UI       |                     |
-| CLK max rise/fall time            |              | 0.30 UI       |                     |
-| Data min rise/fall time           |              | 0.20 UI       |                     |
-| Data max rise/fall time           |              | 0.30 UI       |                     |
-| Data Eye width                    | 50 ps        | 0.40 UI       |                     |
-| Data Eye height                   | 400 mV       |               |                     |
-| Data overshoot/undershoot         | 190 mV       | 25% of Vswing |                     |
-
+| Spec                              | Value  | Normalized Value | Condition                                           |
+|:----------------------------------|--------|------------------|:----------------------------------------------------|
+| Bit to bit skew: fanout           | 0 ps   | 0.00 UI          | fanout for mismatched bump pitches                  |
+| Bit to bit skew: mismatch         | 3.6 ps | 0.014 UI         | 0.6 ps rms device mismatch (6 sigma)                |
+| Bit to bit skew: clock distn      | 3.9 ps | 0.016 UI         | 0.65 mm from CLK to bits D0, D15                    |
+| CLK to mean data skew             | 12 ps  | 0.05 UI          | error of DLL alignment                              |
+| CLK duty cycle                    | 50%    | 0.50 UI          | target                                              |
+| CLK duty cycle error              | 2%     | 0.02 UI          | after DCC settled                                   |
+| CLK+ vs. CLK- skew                | 3.6 ps | 0.014 UI         |                                                     |
+| CLK cyc-to-cyc random jitter      | TBD    |                  | thermal jitter of the whole Tx clock path           |
+| CLK cyc-to-cyc bounded jitter     | TBD    |                  | bounded jitter of the whole Tx clock path           |
+| CLK rise/fall time                | 43 ps  | 0.17 UI          |                                                     |
+| Data rise/fall time               | 43 ps  | 0.17 UI          |                                                     |
+| Data Eye width                    | 125 ps | 0.50 UI          |                                                     |
+| Data Eye height                   | 450 mV | 60% Vswing    | Vswing = nominal signal voltage swing               |
+| Data overshoot/undershoot         | 75 mV  | 10% Vswing    |                                                     |
 ~
 
-The CLK and data signals must meet this condition:
+
+
+
 ~center
-DataEyeWidth - BitToBitSkewFanout - BitToBitSkewMismatch   
-- BitToBitClockDistn - CLK+vsCLK-skew - CLKdutyCycleError - CLKrandomJitter  
-- CLKtoMeanDataSkew  - DataToDataSkew < 0.10 UI
+DataEyeWidth - BitToBitSkewFanout - BitToBitSkewMismatch    
+- BitToBitClockDistn - CLKtoMeanDataSkew - CLKdutyCycleError  
+- CLKrandomJitter - DataToDataSkew < 0.10 UI
 ~
+
+### Timing Requirements 
+
+Figure [#fig-eye] shows the definition of the eye diagram parameters.
+
+~ Figure { #fig-eye; caption: "BoW Eye Diagram" }
+![eye]
+[eye]: images/bowspec_figure_eye.PNG { width:auto; max-width:100% }
+~
+
+The CLK and data signals at the receiving slice bumps must meet these conditions:
+
+~ TableFigure {#tab-clocks; caption: "BoW Timing Requirements"; width:100%; }
+<This table generated with https://www.tablesgenerator.com/markdown_tables# >
+
+| Symbol  | Spec                    | Value           | Comment               |
+|---------|:------------------------|-----------------|-----------------------|
+| V~hi~   | High signal voltage     | 0.75 V          |                       |
+| V~lo~   | Low signal voltage      | 0.00 V          |                       |
+| V~tol~  | Tolerance of Vhi, Vlo   | \+- 0.037 V     |                       |
+| t~eye~  | Data Eye Width          | 50% UI          |                       |
+| V~eye~  | Data Eye height         | 60% V~hi~-V~lo~ |                       |
+| V~ov~   | Data Overshoot          | 25% V~hi~-V~lo~ |                       |
+| t~skew~ | Slice to slice CLK skew | 3 ns            | across the whole link |
+
+~
+
+V~hi~ of 0.75 V must be supported by all BoW implementations, but other values
+may be supported.
 
 The slice to slice clock skew across the width of a BoW link must be less than 3 ns.
 This is dominated by the TxClk distribution network.
 
-Since these signals do not leave the package, most of these specs must be verified with simulation.
+Since these signals do not leave the package, these values must be verified with simulation.
+
 If the slice implementation allows programmatic control of the DLL alignment values, 
-varying those values after locking the DLL may provide margin information.
+varying those values after locking the DLL may provide timing margin information.
+If the slice implementation allows programmatic control of the receiver voltage 
+thresholds, varying those values may provide vertical margin information.
+
+~framed {color:blue}
+Should we require programmatic DLL control to enable margin testing?  
+Should we require threshold voltage control to enable margin testing?
+~
 
 # Electrical Specifications
 

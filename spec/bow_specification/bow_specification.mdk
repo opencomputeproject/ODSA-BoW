@@ -275,44 +275,55 @@ A high level view of the BoW Interface Data-rate ranges is shown below:
 
 [bowspec_figure2]: images/bowspec_figure2.jpg "bowspec_figure2" { width:auto; max-width:100% }
 
-Note that the BoW Unterminated mode can support datarates of >5Gbps only when trace length 
-is minimized (<1mm) due to reflections.
 
-#### BoW 
-A BoW implementation shall support a clock rate no greater than 2.5 Gigahertz (GHz) / 5 Gbps 
-DDR data rate for typical trace lengths and 4.0 GHz / 8 Gbps DDR data rate  for traces <1 mm.  
-DDR is double datarate defined as one data bit per rising and falling edge of the clock. 
-Laminate trace lengths for BoW mode should be limited to 10mm to avoid reflections.
+#### BoW Basic Mode 
 
-#### Terminated mode
-Terminatied mode is expected to use lane termination to minimize signal reflection and 
-improve the data rate per line, improving the data rate per millimeter of chiplet edge. 
-Data is always expected to be transmitted at the Double Data Rate. A terminated 
-implementation shall support a minimum clock rate no greater than 8 GHz and Double 
-Data Rate operation. 
+In BoW Basic, 
+data rates can go up to 5 or 8 Gbps, depending on the package technology and wire length.
+Wires are source-terminated (in the transmit circuit), but not terminated at the receiver.
 
-#### Data rates
+#### BoW Fast Mode
 
-~Center
-|--------------|-------------|-----------------|----------------|----------------|
-|Configuration | Clock Data  |Operating        | Operating      | Termination    |
-|              |relationship |Clock rate       | Data rate      |                |
-+:------------:+:-----------:+:----------------+:---------------+:---------------+
-| BoW          | DDR         | <= 2.5 GHz      | <= 5 Gbps      | No, up to 10mm |
-|              |             | <= 4 GHz        | <= 8 Gbps      | No *<1mm only  |
-+--------------+-------------+-----------------+----------------+----------------|
-| Termination  | DDR         | <= 8 GHz        | <= 16 Gbps     | Yes            |
-| Mode         |             |                 |                |                |
-|--------------|-------------|-----------------|----------------|----------------|
+In BoW Fast, data rates can go up to 16 Gbps.
+Wires are both source-terminated and receiver-terminated to 
+minimize signal reflections to enable higher data rates and longer wires.
+
+#### Modes and Data Rates
+
+Bow links shall follow the specifications in the following table.
+
+~ TableFigure {#tab-rates1; caption: "BoW Modes and Data Rates"; width:100%;  }
+|--------------|------------|-----------|-----------|-------------|-------|
+|  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
++:------------:+:----------:+:----------+:----------+:------------+-------+
+| BoW Basic    | Interposer | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Fast     | Laminate   | 1-8 GHz   | 2-16 Gbps | Double      | 50 mm |
+|--------------|------------|-----------|-----------|-------------+-------|
 ~
+<Note this table appears in two places!!>
 
-### BoW Interface
-The BoW interface defines several signal types:
+All BoW links are DDR (double data rate). 
+DDR is defined as one data bit transmitted for each rising and each falling edge of the clock.
+
+"Laminate" is intended to include organic laminate packages (a.k.a. buildup) and similar 
+technologies with approximately 25 um line and space rules.
+"Interposer" is intended to include silicon interposer and similar technologies 
+with approximately 1 um line and space rules.
+
+
+### BoW Interface Signals
+
+The BoW interface defines several signal types. Each slice has these signals:
 
 * Data (D0-D15) : data bits
 * Clock (CLK+, CLK-) : differential clock
-* FEC : Forward Error Correction bits
-* AUX : Other uses
+* FEC : Forward Error Correction bit (optional)
+* AUX : Other uses (optional)
 
 Except for the clocks, the bits are single-ended and DDR clocked.
 FEC and AUX are optional.
@@ -389,19 +400,21 @@ A BoW link is only specified for operation inside a package for reach and ESD re
 
 BOW supports the following data rates:
 
-~ TableFigure {#tab-rates; caption: "BoW Data Rates"; width:100%; max-width:100% }
-|---------|-----------|----------|------|----------------|
-|BoW Mode |Package    |Data Rate |Reach |Termination     |
-+:-------:+:---------:+:--------:+:----:+:--------------:+
-| Basic   |laminate   |2-5 Gbps  |10 mm |Source          |
-|         |           |2-8 Gbps  |5 mm  |                |
-+---------+-----------+----------+------+----------------+
-| Basic   |interposer |2-5 Gbps  |2 mm  |Source or Double|
-|         |           |2-8 Gbps  |1 mm  |                |
-+---------+-----------+----------+------+----------------+
-| Fast    |laminate   |2-16 Gbps |50 mm |Double          |
-+---------+-----------+----------+------+----------------+
+~ TableFigure {#tab-rates2; caption: "BoW Modes and Data Rates"; width:100%;  }
+|--------------|------------|-----------|-----------|-------------|-------|
+|  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
++:------------:+:----------:+:----------+:----------+:------------+-------+
+| BoW Basic    | Interposer | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Fast     | Laminate   | 1-8 GHz   | 2-16 Gbps | Double      | 50 mm |
+|--------------|------------|-----------|-----------|-------------+-------|
 ~
+<Note this table appears in two places!!>
+
 
 ~ Framed {color: blue}
 Ken sez: I copied this table from the HotI 2020 paper, but what is our 
@@ -485,8 +498,8 @@ Slice to slice:
 ~
 >
 
-The CLK and data signals within any BoW Basic slice on laminate should meet the 
-specifications in the following table.
+The following table shows a clock and data timing for a reference design in 65 nm CMOS on 
+laminate packaging. These values are for CLK and data bits at the bumps of the BoW receiver.
 
 ~ TableFigure {#tab-clocks; caption: "BoW Clock Specifications"; width:100%; }
 <This table generated with https://www.tablesgenerator.com/markdown_tables# >
@@ -514,10 +527,12 @@ specifications in the following table.
 
 The CLK and data signals must meet this condition:
 ~center
-DataEyeWidth - CLK+vsCLK-skew - CLKdutyCycleError - CLKtoMeanDataSkew - DataToDataSkew > 0.10 UI
+DataEyeWidth - BitToBitSkewFanout - BitToBitSkewMismatch   
+- BitToBitClockDistn - CLK+vsCLK-skew - CLKdutyCycleError - CLKrandomJitter  
+- CLKtoMeanDataSkew  - DataToDataSkew < 0.10 UI
 ~
 
-The slice to slice clock skew across the width of a link must be less than 3 ns.
+The slice to slice clock skew across the width of a BoW link must be less than 3 ns.
 This is dominated by the TxClk distribution network.
 
 Since these signals do not leave the package, most of these specs must be verified with simulation.

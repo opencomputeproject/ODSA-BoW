@@ -473,6 +473,72 @@ signal back to the Link layer.
 
 ## Clock and Data Specifications
 
+
+### Timing Requirements 
+
+Figure [#fig-eye] shows the definition of the eye diagram parameters.
+
+~ Figure { #fig-eye; caption: "Eye Diagram Definitions" }
+![eye]
+[eye]: images/bowspec_figure_eye.PNG { width:auto; max-width:80% }
+~
+
+The CLK and data signals at the receiving slice bumps must be able to meet these conditions:
+
+~ TableFigure {#tab-clocks; caption: "BoW Basic Timing Requirements"; width:100%; }
+<This table generated with https://www.tablesgenerator.com/markdown_tables# >
+
+| Symbol  | Spec                    | BoW Basic       | BoW Fast        |
+|---------|:------------------------|-----------------|-----------------|
+| V~hi~   | High signal voltage     | 0.75 V          | 0.562 V         |
+| V~lo~   | Low signal voltage      | 0.00 V          | 0.188 V         |
+| V~tol~  | Tolerance of Vhi, Vlo   | \+- 0.037       | \+- 0.019       |
+| t~eye~  | Data eye width          | 50% UI          | 50% UI          |
+| V~eye~  | Data eye height         | 50% V~hi~-V~lo~ | 50% V~hi~-V~lo~ |
+| V~ov~   | Data and CLK overshoot  | 25% V~hi~-V~lo~ | 50% V~hi~-V~lo~ |
+| t~skew~ | Slice to slice CLK skew | 3 ns            | 3 ns            |
+
+~
+
+V~hi~ of 0.75 V must be supported by all BoW implementations, but other values
+may be supported.
+
+t~eye~ must be evaluated for each of the bits in a slice
+relative to the differential CLK+ - CLK- signal for that slice.
+t~eye~ must be evaluated for CLK edges up to 3 UI earlier than the eye center.
+This is because even though jitter on the data edges is correlated with the CLK jitter at
+the Tx side, the slicer in the Rx side is likely to use a different CLK edge due to
+delays in the Rx-side clock alignment circuit (usually a DLL).
+The evaluation of jitter must include all possible jitter contributors, 
+including reference clock, clock distribution networks, 
+any DCC, PLL and DLL jitter, power-supply noise and switching noise.
+
+~framed {color:blue}
+Ramin, what should we use for these specs for BoW Fast?
+
+All, V~eye~ for BoW Basic is 375 mV in this spec, which our Tx easily delivers and is enough 
+for our Rx even at 8 Gb/s.  But it contrasts with the 90 mV in AIB. It would seem that AIB
+is requiring more gain in the Rx.
+
+The above specs are really just for the Tx side.  Do I need to add Rx-side specs 
+as well?
+~
+
+The slice to slice clock skew t~skew~ across the width of a BoW link must be less than 3 ns.
+This is dominated by the TxClk distribution network.
+
+Since these signals do not leave the package, these values must be verified with simulation.
+
+If the slice implementation allows programmatic control of the DLL alignment values, 
+varying those values after locking the DLL may provide timing margin information.
+If the slice implementation allows programmatic control of the receiver voltage 
+thresholds, varying those values may provide vertical margin information.
+
+~framed {color:blue}
+Should we require programmatic DLL control to enable margin testing?  
+Should we require threshold voltage control to enable margin testing?
+~
+
 ### Reference Slice Timing
 
 <XX  COMMENT
@@ -500,7 +566,8 @@ Slice to slice:
 ~
 XX END COMMENT>
 
-The following table shows clock and data timing for a 4 Gbps reference design in 65 nm CMOS on 
+The following table shows clock and data timing for a 4 Gbps BoW Basic 
+reference design in 65 nm CMOS on 
 laminate packaging. These values are for CLK and data bits at the bumps of the BoW receiver. 
 
 ~ TableFigure {#tab-clocks; caption: "BoW Clock Reference Values"; font-size:small; width:100%; }
@@ -521,13 +588,12 @@ laminate packaging. These values are for CLK and data bits at the bumps of the B
 | CLK cyc-to-cyc bounded jitter     | TBD    |                  | bounded jitter of the whole Tx clock path           |
 | CLK rise/fall time                | 43 ps  | 0.17 UI          |                                                     |
 | Data rise/fall time               | 43 ps  | 0.17 UI          |                                                     |
-| Data Eye width                    | 125 ps | 0.50 UI          |                                                     |
+| Data Eye width                    | 125 ps | 0.50 UI          | not including jitter                    |
 | Data Eye height                   | 450 mV | 60% Vswing    | Vswing = nominal signal voltage swing               |
 | Data overshoot/undershoot         | 75 mV  | 10% Vswing    |                                                     |
 ~
 
-
-
+The jitter in a link should meet:
 
 ~center
 DataEyeWidth - BitToBitSkewFanout - BitToBitSkewMismatch    
@@ -535,49 +601,6 @@ DataEyeWidth - BitToBitSkewFanout - BitToBitSkewMismatch
 - CLKrandomJitter - DataToDataSkew < 0.10 UI
 ~
 
-### Timing Requirements 
-
-Figure [#fig-eye] shows the definition of the eye diagram parameters.
-
-~ Figure { #fig-eye; caption: "BoW Eye Diagram" }
-![eye]
-[eye]: images/bowspec_figure_eye.PNG { width:auto; max-width:100% }
-~
-
-The CLK and data signals at the receiving slice bumps must meet these conditions:
-
-~ TableFigure {#tab-clocks; caption: "BoW Timing Requirements"; width:100%; }
-<This table generated with https://www.tablesgenerator.com/markdown_tables# >
-
-| Symbol  | Spec                    | Value           | Comment               |
-|---------|:------------------------|-----------------|-----------------------|
-| V~hi~   | High signal voltage     | 0.75 V          |                       |
-| V~lo~   | Low signal voltage      | 0.00 V          |                       |
-| V~tol~  | Tolerance of Vhi, Vlo   | \+- 0.037 V     |                       |
-| t~eye~  | Data Eye Width          | 50% UI          |                       |
-| V~eye~  | Data Eye height         | 60% V~hi~-V~lo~ |                       |
-| V~ov~   | Data Overshoot          | 25% V~hi~-V~lo~ |                       |
-| t~skew~ | Slice to slice CLK skew | 3 ns            | across the whole link |
-
-~
-
-V~hi~ of 0.75 V must be supported by all BoW implementations, but other values
-may be supported.
-
-The slice to slice clock skew across the width of a BoW link must be less than 3 ns.
-This is dominated by the TxClk distribution network.
-
-Since these signals do not leave the package, these values must be verified with simulation.
-
-If the slice implementation allows programmatic control of the DLL alignment values, 
-varying those values after locking the DLL may provide timing margin information.
-If the slice implementation allows programmatic control of the receiver voltage 
-thresholds, varying those values may provide vertical margin information.
-
-~framed {color:blue}
-Should we require programmatic DLL control to enable margin testing?  
-Should we require threshold voltage control to enable margin testing?
-~
 
 # Electrical Specifications
 

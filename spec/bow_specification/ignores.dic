@@ -1,3 +1,4 @@
+wire_slice_order
 chiplet
 chiplets
 Tx
@@ -5,3 +6,7 @@ CLK
 accomodated
 arangement
 loopback
+=======
+chiplets
+interoperable
+master

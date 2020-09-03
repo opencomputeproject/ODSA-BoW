@@ -1,5 +1,5 @@
 Title         : Bunch of Wires Specification
-Author        : Mark Kuemerle, Ramin Farjad, Bapi Vinnakota (the Open Domain Specific Architecture BoW Workstream) 
+Author        : Mark Kuemerle, Ramin Farjad, Bapi Vinnakota, Ken Poulton, Suresh Subramaniam (the Open Domain Specific Architecture BoW Workstream) 
 Logo          : True
 
 Heading depth: 5
@@ -140,13 +140,13 @@ specification. Each future version of this specification is expected
 to be compatible with at least two previous significant versions.
 The BoW interface aims to meet the following design objectives:
 
-* Be inexpensive to implement 
+* Inexpensive to implement 
 * Portable across process nodes ranging from 28nm to 5nm
 * Portable across multiple bump pitches
 * Have the flexibility to support advancing packaging technology
-* Be unencumbered by technology license costs
+* Unencumbered by technology license costs
 * Very low power (< 1 pJ/bit) as defined by Tx IO Pad, wire and Rx IO Pad.
-* Very low latency: <5ns without FEC, <15 ns with FEC. Latency as 
+* Very low latency: <5 ns without FEC, <15 ns with FEC. Latency as 
 defined from the PCS parallel interface at the source, through Tx 
 interface, channel, Rx interface received at the PCS parallel 
 interface at the receiver. Based on experience, the 5 ns 
@@ -216,9 +216,28 @@ of this specification:
   c. Initialization
   d. Security
 
+### Language
+* "Shall" or "must" indicates a requirement.
+Failure to meet the requirement results in non-compliance
+* "Should" indicates a strong suggestion, but not a requirement.
+Failure to implement the suggestion does not result in non-compliance.
+* "May" indicates an option.
+* The lack of one of the above verbs indicates the material is informative.
+* "Reference" indicates a reference design that is provided as example for explanation, 
+but is not a requirement.
+
+<XX
+Note to spec writers: 
+Avoid using more than one of the above specification verbs in a single sentence to avoid confusion. 
+XX>
+
 ### Compliance Summary
 
-Table summarizes the compliance points that shall be met in order to meet the BoW requirements. Each of the 
+The must specifications must be met over process variation, supply voltage range and 
+temperature range (PVT). 
+Each implementation must document its supported supply voltage range and temperature range.
+
+Table XX will summarize the compliance points that shall be met in order to meet the BoW requirements. Each of the 
 compliance points is discussed in the specification.
 
 This section will also include a discussion on interoperability.
@@ -689,32 +708,142 @@ proposed power-sum crosstalk limit.
 
 \<To be completed in subsequent version of specification>
 
-# Physical Constraints
+# Physical
+
+## BoW Components
+
+~ Figure { #fig-components; caption: "BoW Link Components" }
+![components]
+~
+[components]: images/bowspec_figure_components.PNG { width:auto; max-width:70% }
+
+
+A BoW link between two chiplets is made up of
+wires, slices, and stacks. 
+
+* The basic unit is a slice with 18 or 20 signal bumps. 
+It must have 2 signals for the differential
+clock and 16 single-ended data. 
+It may also have the optional single-ended signals AUX and FEC. 
+In the reference bump map, the long edge of a slice is parallel to the chip edge.
+* Multiple slices may be placed in a stack. The slice positions are
+designated A, B, C, etc, starting with the slice closest to the edge of the chip.
+* A link from one chiplet to another must be composed of one or more
+stacks placed along the chip edge. A link may be
+configured with equal numbers of Rx and Tx slices,
+or it may be asymmetric or one-way.
+
+## Example Link
+
+The minimal bidirectional reference link is shown in Figure [#fig-min_link].
+
+~ Figure { #fig-min_link; caption: "BoW Minimal Bidirectional Reference Link" }
+![min_link]
+[min_link]: images/bowspec_figure_min_link.PNG { width:auto; max-width:70% }
+~
+
+In this example, each chiplet has one Tx slice and one Rx slice, 
+arranged in a single stack on each chiplet.
+The position-A slices (at the chips' edges) are connected together on the topmost routing 
+layer used for signals and the position-B slices are connected together on the next 
+layer used for signals.
+
+This reference example uses hexagonal closest packing for the bumps: two rows for signal bumps and
+one row for power and ground bumps. 
+In this pattern, the wire pitch is half the bump pitch.
+In order to maintain the closest bump packing, slices in rows B and D must have a different bump
+pattern than slices A and C.
+But bump patterns are not specified by BoW; only the signal *ordering* at 
+the chip edge is specified for interoperability. 
+
+Alternate bump arrangements may include:
+90-degree rotation of the hexagonal packing direction to decrease the wire pitch 14%;
+square bump arrays instead of hexagonal for regularity of layout; 
+more than two rows of signal bumps to decrease the wire pitch;
+different ordering of power and ground bumps;
+multiple power and ground rows.
+
+An alternate slice arrangement may be to place the Tx and Rx slices side by side at the 
+chip edges. This would take up more chip edge, but allow all the signals to run on the same 
+package layer.
+
+Somewhat different wire and bump pitches between two chiplets can be accomodated with 
+fan-out in the chip-to-chip wires. This is limited in BoW Basic by the 10 mm max wire length 
+and the practical advantages of routing from chiplet to chiplet in just one package layer.
+(Note that even straight wires in slice position D are likely 5-6 mm long using 130-um bump pitch with 
+the reference bump map in an organic package.)
+
+## Cross Section
+
+A cross section for an organic laminate (a.k.a. "buildup") package is shown in 
+Figure [#fig-pkg_cross_section].
+
+~ Figure { #fig-pkg_cross_section; caption: "Cross section of a BoW Link in an Organic Laminate Package" }
+![pkg_cross_section]
+[pkg_cross_section]: images/bowspec_figure_pkg_cross_section.PNG { width:auto; max-width:70% }
+~
+
+In an organic laminate package, signal layers should be alternated with ground layers 
+in order to maintain a controlled impedance of 50 ohms. 
+In interposer or other high-density packaging, the use of layers may be different.
+
+In any technology, the position-A slice on chiplet A must be connected to the position-A 
+slice on chiplet B (one must be configured for Tx and one for Rx). 
+The position-B slices are connected together, and so on.
+
+There is no specified limit to the number of slices in a stack. 
+In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supports 4 slices. 
+Layers on the bottom side of the package typically cannot be used for BoW signals 
+due to low via density passing through the thick central core layer.
 
 ## Signal Ordering
 
-## Preferred Bump Patterns
-BoW does not dictate a specific bump pitch but does have a defined bump pattern.
-By not specifying a bump pitch, implementations can be built on both legacy and 
-leading edge technologies.  Specifying a signal pattern, however, allows package 
-routing between interfaces with limited signal crossings.
+A BoW interface must conform to these wire and slice order rules at the edge of the chip:
 
-BoW can be implemented with any number of stacked interfaces, however such stacking 
-should implement the bump pattern with an alternating stagger of signals.
+* The signals for a Tx slice are in the following order at the chip edge, 
+going clockwise around the chiplet: 
+AUX, D0, D1, D2, D3, D4, D5, D6, D7, CLK+, CLK-, D8, D9, D10, D11, D12, D13, D14, D15, FEC
+* The signals for an Rx slice are in the reversed order (ascending goes counter-clockwise)
+* The Tx slices in a link are numbered from 0 at the upper left edge of the link 
+(facing from the chip center to the edge) and ascending through the Tx slices in a stack, 
+then from stack to stack clockwise.
+* The Rx slices in a link are numbered from 0 at the upper right, through the Rx slices in a stack,
+then stack to stack counterclockwise.
 
-~center
-![bowspec_figure7]
+These rules allow BoW chiplets to be connected without signal reordering regardless of chiplet rotations.
 
-[bowspec_figure7]: images/bowspec_figure7.jpg "bowspec_figure7" { width:auto; max-width:90% }
+In organic packages, each slice position should be associated with one signal layer and there is no mixing 
+of signals from multiple slices.
+In interposer or other dense routing technologies, signals from multiple slices in a stack 
+may be interleaved in a signal layer, but chiplet A's slice A is still 
+connected to chiplet B's slice A 
+and similarly for position B, C, etc.
+
+## Checkerboard Slice Pattern
+
+For bidirectional links with more than one stack on each side, a checkerboard pattern of 
+Tx and Rx slices should be used (Figure [#fig-checkerboard]).
+This allows connection of chiplets with differing stack depths and 
+numbers of stacks to be as efficient as possible. 
+Figure [#fig-checkerboard] shows a bidirectional link with 4 stacks or 4 slices each, 
+for 8 Tx and 8 Rx slices on each chiplet.
+
+~ Figure { #fig-checkerboard; caption: "Checkerboard Pattern of Tx and Rx Slices in a 1.25 Tb/s Link" }
+![checkerboard]
+[checkerboard]: images/bowspec_figure_checkerboard.PNG { width:auto; max-width:70% }
 ~
-Additional interfaces alternate as shown above.
 
-Example Bump Pattern (based on 130 um staggered bump pitch) shown below:
-~center
-![bowspec_figure8]
+An alternate approach may be used: provision every slice to operate as either Rx or Tx. 
+This allows complete flexibility in interoperability and also provides an opportunity for
+wafer-test loopback testing.
 
-[bowspec_figure8]: images/bowspec_figure8.jpg "bowspec_figure8" { width:auto; max-width:90% }
-~
+In BoW Base at 5 Gb/s, link in Figure [#fig-checkerboard] provides a total of 1.25 Tb/s.
+In an organic substrate using the hexagonal bump pattern of Figure [#fig-min_link], 
+if the bump pitch is 130 um, 
+the total edge width is 4.16 mm without AUX and FEC, or 5.2 mm with; the depth from the edge is 1.35 mm.
+In an interposer, if the bump pitch is 40 um, the edge width is 1.28 or 1.60 mm and the depth is 0.42 mm.
+
+
 
 #Testability
 

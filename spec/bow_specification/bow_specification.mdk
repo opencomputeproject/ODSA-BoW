@@ -433,14 +433,35 @@ N Gbps should be supported for integer N>=2 to the max rate for that implementat
 [clocking]: images/bowspec_figure_PHY_block.PNG { width:auto; max-width:100% }
 ~
 
-Figure [#fig-clocking] shows the clock and data flow for a single Tx slice and Rx slice.
-On the Tx side, data bits (and optional FEC and AUX bits) come from the link layer, 
+Figure [#fig-clocking] shows the clock and data flow for a single Tx slice and a single Rx slice.
+On the Tx side, data bits (and optional FEC and AUX bits) come in a wide word from the link layer, 
 and are serialized to the line rate. 
 At the Rx side, they are sampled with a common slicer clock in BoW Basic. 
 BoW Fast may optionally implement per-bit delay adjust or per-bit slicer clock adjust.
 
-All BoW interfaces shall be DDR (Double Data Rate): the data bit rate is twice the clock frequency, 
+All BoW interfaces shall be DDR (Double Data Rate) at the chip-to-chip itnerface: the data bit rate is twice the clock frequency, 
 so data is clocked in on both edges of the clock in the Rx slice.
+
+The following table provides clock and data rates for an example with 4 Gbps wire data rate 
+and M=4 to support a 1 Gbps data rate at the Link-PHY interface.
+
+~ TableFigure {#tab-; caption: "Example Clock and Data Rates for Figure [#fig-clocking] with 4 Gbps, M=4"; width:100%;  }
+|---------------------------------|--------|-----------|
+| Signal                          |Rate    |SDR/DDR    |
++:-------------------------------:+:------:+:----------+
+| TxClk                           | 2 GHz  |           |
++---------------------------------+--------+-----------+
+| CLK+,CLK-                       | 2 GHz  |           |
+| D[15:0],AUX,FEC                 | 4 Gbps | DDR       |
+|                                 |        |           |
++---------------------------------+--------+-----------+
+| PhyClk                          | 1 GHz  |           |
+| P_D[63:0],P_AUX[3:0],P_FEC[3:0] | 1 Gbps | SDR       |
+|---------------------------------|--------|-----------|
+~
+
+The ratio M should be limited to integers, preferrably powers of two, and other ratios 
+implemented in a gearbox in the Link layer. 
 
 The DDR clock TxClk is provided to the Tx PHY from elsewhere on Chiplet-A.
 This may come from an on-chip PLL (typically shared across multiple slices) or it 
@@ -488,15 +509,19 @@ The CLK and data signals at the receiving slice bumps must be able to meet these
 ~ TableFigure {#tab-clocks; caption: "BoW Basic Timing Requirements"; width:100%; }
 <This table generated with https://www.tablesgenerator.com/markdown_tables# >
 
-| Symbol  | Spec                    | BoW Basic       | BoW Fast        |
-|---------|:------------------------|-----------------|-----------------|
-| V~hi~   | High signal voltage     | 0.75 V          | 0.562 V         |
-| V~lo~   | Low signal voltage      | 0.00 V          | 0.188 V         |
-| V~tol~  | Tolerance of Vhi, Vlo   | \+- 0.037       | \+- 0.019       |
-| t~eye~  | Data eye width          | 50% UI          | 50% UI          |
-| V~eye~  | Data eye height         | 50% V~hi~-V~lo~ | 50% V~hi~-V~lo~ |
-| V~ov~   | Data and CLK overshoot  | 25% V~hi~-V~lo~ | 50% V~hi~-V~lo~ |
-| t~skew~ | Slice to slice CLK skew | 3 ns            | 3 ns            |
+| Symbol  | Spec                       | BoW Basic        | BoW Fast         |
+|---------|:---------------------------|------------------|------------------|
+| V~hi~   | High signal voltage        | 750 mV           | 562 mV           |
+| V~lo~   | Low signal voltage         | 0 mV             | 188 mV           |
+| V~tol~  | Tolerance of Vhi, Vlo (5%) | \+- 37 mV        | \+- 19 mV        |
+| t~eye~  | Data eye width             | 50% UI           | 50% UI           |
+| V~eye~  | Data eye height            | 40%(V~hi~-V~lo~) | 20%(V~hi~-V~lo~) |
+|         |                            | (300 mV)         | (75 mV)          |
+| V~ov~   | Data and CLK overshoot     | 25%(V~hi~-V~lo~) | 50%(V~hi~-V~lo~) |
+|         |                            | (188 mV)         | (188 mV)         |
+| t~skew~ | Slice to slice CLK skew    | 3 ns             | 3 ns             |
+|         |                            |                  |                  |
+
 
 ~
 
@@ -512,17 +537,6 @@ delays in the Rx-side clock alignment circuit (usually a DLL).
 The evaluation of jitter must include all possible jitter contributors, 
 including reference clock, clock distribution networks, 
 any DCC, PLL and DLL jitter, power-supply noise and switching noise.
-
-~framed {color:blue}
-Ramin, what should we use for these specs for BoW Fast?
-
-All, V~eye~ for BoW Basic is 375 mV in this spec, which our Tx easily delivers and is enough 
-for our Rx even at 8 Gb/s.  But it contrasts with the 90 mV in AIB. It would seem that AIB
-is requiring more gain in the Rx.
-
-The above specs are really just for the Tx side.  Do I need to add Rx-side specs 
-as well?
-~
 
 The slice to slice clock skew t~skew~ across the width of a BoW link must be less than 3 ns.
 This is dominated by the TxClk distribution network.
@@ -540,6 +554,11 @@ Should we require threshold voltage control to enable margin testing?
 ~
 
 ### Reference Slice Timing
+
+~framed {color:blue}
+Is this section worth keeping?
+~
+
 
 <XX  COMMENT
 ~ Framed {color: blue}
@@ -575,22 +594,22 @@ laminate packaging. These values are for CLK and data bits at the bumps of the B
 <any plus signs need a backslash added manually >
 <column justification needs a ":" in the first "---" line added manually>
 
-| Spec                              | Value  | Normalized Value | Condition                                           |
-|:----------------------------------|--------|------------------|:----------------------------------------------------|
-| Bit to bit skew: fanout           | 0 ps   | 0.00 UI          | fanout for mismatched bump pitches                  |
-| Bit to bit skew: mismatch         | 3.6 ps | 0.014 UI         | 0.6 ps rms device mismatch (6 sigma)                |
-| Bit to bit skew: clock distn      | 3.9 ps | 0.016 UI         | 0.65 mm from CLK to bits D0, D15                    |
-| CLK to mean data skew             | 12 ps  | 0.05 UI          | error of DLL alignment                              |
-| CLK duty cycle                    | 50%    | 0.50 UI          | target                                              |
-| CLK duty cycle error              | 2%     | 0.02 UI          | after DCC settled                                   |
-| CLK+ vs. CLK- skew                | 3.6 ps | 0.014 UI         |                                                     |
-| CLK cyc-to-cyc random jitter      | TBD    |                  | thermal jitter of the whole Tx clock path           |
-| CLK cyc-to-cyc bounded jitter     | TBD    |                  | bounded jitter of the whole Tx clock path           |
-| CLK rise/fall time                | 43 ps  | 0.17 UI          |                                                     |
-| Data rise/fall time               | 43 ps  | 0.17 UI          |                                                     |
-| Data Eye width                    | 125 ps | 0.50 UI          | not including jitter                    |
-| Data Eye height                   | 450 mV | 60% Vswing    | Vswing = nominal signal voltage swing               |
-| Data overshoot/undershoot         | 75 mV  | 10% Vswing    |                                                     |
+| Spec                          | Value  | Normalized Value | Condition                                 |
+|:------------------------------|--------|------------------|:------------------------------------------|
+| Bit to bit skew: fanout       | 0 ps   | 0.00 UI          | fanout for mismatched bump pitches        |
+| Bit to bit skew: mismatch     | 3.6 ps | 0.014 UI         | 0.6 ps rms device mismatch (6 sigma)      |
+| Bit to bit skew: clock distn  | 3.9 ps | 0.016 UI         | 0.65 mm from CLK to bits D0, D15          |
+| CLK to mean data skew         | 12 ps  | 0.05 UI          | error of DLL alignment                    |
+| CLK duty cycle                | 50%    | 0.50 UI          | target                                    |
+| CLK duty cycle error          | 2%     | 0.02 UI          | after DCC settled                         |
+| CLK+ vs. CLK- skew            | 3.6 ps | 0.014 UI         |                                           |
+| CLK cyc-to-cyc random jitter  | TBD    |                  | thermal jitter of the whole Tx clock path |
+| CLK cyc-to-cyc bounded jitter | TBD    |                  | bounded jitter of the whole Tx clock path |
+| CLK rise/fall time            | 43 ps  | 0.17 UI          |                                           |
+| Data rise/fall time           | 43 ps  | 0.17 UI          |                                           |
+| Data Eye width                | 125 ps | 0.50 UI          | not including jitter                      |
+| Data Eye height               | 450 mV | 60% Vswing       | Vswing = nominal signal voltage swing     |
+| Data overshoot/undershoot     | 75 mV  | 10% Vswing       |                                           |
 ~
 
 The jitter in a link should meet:

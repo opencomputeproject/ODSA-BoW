@@ -688,11 +688,22 @@ but implementations should meet the following specs to ensure signal integrity.
 ~framed {color:blue}
 Should the channel between chips be Shall or Should?
 ~
+~framed {color:red}
+SS: Since we are specifying an eye mask, other than specifying a 50 Ohm controlled impedance, I don't think 
+any other details on the channel are necessary. How the designer partitions their budgets to the different
+components is up to them. IL/Xtalk/RL etc., are implicit in the eye mask. Even when IL/RL are specified they 
+informative nor normative
+~
 
 ## BoW Basic Channel Specifications
 
 BoW Basic channel length on laminate 
 is limited by the round trip reflection delay to 10 mm for 5 Gbps.
+
+~framed {color:red}
+SS: I don't think the above statement is necessary. Instead if we say targeted use if for up to 10mm (5mm) 
+that would be sufficient
+~
 
 BoW Basic channels longer than 2 mm (e.g., on laminate) should meet these specs:
 
@@ -717,8 +728,17 @@ C~total~ is the total capacitance of a wire including to grounds.
 Stripline (buried) wires with 25 um line, 40 um space and 33 um dielectric thickness have 
 C~cross~/C~total~ of 28% and an impedance of 48 ohms.
 
+~framed {color:red}
+SS: I would vote to get rid of Cross/Ctotal. Instead specify it as Xtalk target less than XX dB as in Figure 6.
+What is R-series?
+~
+
 Channels shorter than 2 mm (e.g., on interposer) will have different requirements, 
 not yet specified.
+
+~framed {color:red}
+SS: Not sure what this means. The requirements noted above should also work for short channels. 
+~
 
 ~Framed {color: blue}
 Interposers have only 4 layers, very thin dielectrics, 
@@ -737,6 +757,11 @@ we cant build a reasonable controlled impedance line.
 
 Is this enough data to spec a BoW Basic on interposer?  
 Does anyone have more data?
+~
+~framed {color:red}
+SS: This is great information. However from a spec standpoint it should be translated to
+something like, no source termination required, no controlled impedance, and target distance
+of xx mm 
 ~
 
 <XXXX Comment
@@ -779,6 +804,12 @@ Proposed text that needs numbers:
 
 An example geometry which meets this limit is microstrip (surface) lines with 
 X um line and Y um space, on Z um dielectric over a ground plane.
+~
+
+~framed {color:red}
+SS: My vote is to stay away from such specifics bcos my concern is it could introduce liabilities
+ when someone blindly follows a recommendation like this or it has to couched in language such
+ as do your own due diligence to make sure it works in your system/applications 
 ~
    
 ~Framed {color: blue}
@@ -840,6 +871,10 @@ pattern than slices A and C.
 But bump patterns are not specified by BoW; only the signal *ordering* at 
 the chip edge is specified for interoperability. 
 
+~framed {color:red}
+SS: Rows B and D are not present in the picture. 
+~
+
 Alternate bump arrangements may include:
 90-degree rotation of the hexagonal packing direction to decrease the wire pitch 14%;
 square bump arrays instead of hexagonal for regularity of layout; 
@@ -875,14 +910,25 @@ In any technology, the position-A slice on chiplet A must be connected to the po
 slice on chiplet B (one must be configured for Tx and one for Rx). 
 The position-B slices are connected together, and so on.
 
+~framed {color:red}
+SS: This is not clear. How would we know if the other chiplet has a Tx or an Rx slice in front of the
+stack to enforce this as a mandatory requirement? This implicitly enforces some ordering of slices in the stack
+on either chiplet.
+~
+
 There is no specified limit to the number of slices in a stack. 
 In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supports 4 slices. 
 Layers on the bottom side of the package typically cannot be used for BoW signals 
 due to low via density passing through the thick central core layer.
 
+~framed {color:red}
+SS: 7-2-7 instead of 8-2-8 bcos the core layer top can be used as GND reference 
+~
+
 ## Signal Ordering
 
 A BoW interface must conform to these wire and slice order rules at the edge of the chip:
+
 
 * The signals for a Tx slice are in the following order at the chip edge, 
 going clockwise around the chiplet: 
@@ -896,12 +942,22 @@ then stack to stack counterclockwise.
 
 These rules allow BoW chiplets to be connected without signal reordering regardless of chiplet rotations.
 
+~framed {color:red}
+SS: My suggestion is to include a bunch of figures to make this clear. You may already have these
+or I am happy to provide several pictures (already shared with the group in a ppt) to address each 
+of these including arrangements on each side of the chiplet. 
+~
+
 In organic packages, each slice position should be associated with one signal layer and there is no mixing 
 of signals from multiple slices.
 In interposer or other dense routing technologies, signals from multiple slices in a stack 
 may be interleaved in a signal layer, but chiplet A's slice A is still 
 connected to chiplet B's slice A 
 and similarly for position B, C, etc.
+
+~framed {color:red}
+SS: As noted before Chiplet A slice A, to Chiplet B slice A needs some clarification. 
+~
 
 ## Checkerboard Slice Pattern
 
@@ -921,13 +977,19 @@ An alternate approach may be used: provision every slice to operate as either Rx
 This allows complete flexibility in interoperability and also provides an opportunity for
 wafer-test loopback testing.
 
+~framed {color:red}
+SS: Do you mean Bidi I/O? 
+~
+
 In BoW Base at 5 Gb/s, link in Figure [#fig-checkerboard] provides a total of 1.25 Tb/s.
 In an organic substrate using the hexagonal bump pattern of Figure [#fig-min_link], 
 if the bump pitch is 130 um, 
 the total edge width is 4.16 mm without AUX and FEC, or 5.2 mm with; the depth from the edge is 1.35 mm.
 In an interposer, if the bump pitch is 40 um, the edge width is 1.28 or 1.60 mm and the depth is 0.42 mm.
 
-
+~framed {color:red}
+SS: What is the X pitch in Figure 10?  
+~
 
 #Testability
 

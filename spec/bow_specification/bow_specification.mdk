@@ -294,53 +294,68 @@ A high level view of the BoW Interface Data-rate ranges is shown below:
 
 [bowspec_figure2]: images/bowspec_figure2.jpg "bowspec_figure2" { width:auto; max-width:100% }
 
-Note that the BoW Unterminated mode can support datarates of >5Gbps only when trace length 
-is minimized (<1mm) due to reflections.
 
-#### BoW 
-A BoW implementation shall support a clock rate no greater than 2.5 Gigahertz (GHz) / 5 Gbps 
-DDR data rate for typical trace lengths and 4.0 GHz / 8 Gbps DDR data rate  for traces <1mm.  
-DDR is double datarate defined as one data bit per rising and falling edge of the clock. 
-Laminate trace lengths for BoW mode should be limited to 10mm to avoid reflections.
+#### BoW Basic Mode 
 
-#### Terminated mode
-Termination mode is expected to use lane termination to minimize signal reflection and 
-improve the data rate per line, improving the data rate per millimeter of chiplet edge. 
-Data is always expected to be transmitted at the Double Data Rate. A terminated 
-implementation shall support a minimum clock rate no greater than 8 GHz and Double 
-Data Rate operation. 
+In BoW Basic, 
+data rates can go up to 5 or 8 Gbps, depending on the package technology and wire length.
+Wires are source-terminated (in the transmit circuit), but not terminated at the receiver.
 
-~Center
-|--------------|-------------|-----------------|----------------|----------------|
-|Configuration | Clock Data  |Operating        | Operating      | Termination    |
-|              |relationship |Clock rate       | Data rate      |                |
-+:------------:+:-----------:+:----------------+:---------------+:---------------+
-| BoW          | DDR         | <= 2.5 GHz      | <= 5 Gbps      | No, up to 10mm |
-|              |             | <= 4Ghz         | <= 8 Gbps      | No *<1mm only  |
-+--------------+-------------+-----------------+----------------+----------------|
-| Termination  | DDR         | <= 8 GHz        | <= 16 Gbps     | Yes            |
-| Mode         |             |                 |                |                |
-|--------------|-------------|-----------------|----------------|----------------|
+#### BoW Fast Mode
+
+In BoW Fast, data rates can go up to 16 Gbps.
+Wires are both source-terminated and receiver-terminated to 
+minimize signal reflections to enable higher data rates and longer wires.
+
+#### Modes and Data Rates
+
+Bow links shall follow the specifications in the following table.
+
+~ TableFigure {#tab-rates1; caption: "BoW Modes and Data Rates"; width:100%;  }
+|--------------|------------|-----------|-----------|-------------|-------|
+|  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
++:------------:+:----------:+:----------+:----------+:------------+-------+
+| BoW Basic    | Interposer | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Fast     | Laminate   | 1-8 GHz   | 2-16 Gbps | Double      | 50 mm |
+|--------------|------------|-----------|-----------|-------------+-------|
 ~
+<Note this table appears in two places!!>
 
-### BoW Interface
-The BoW interface defines three signal types:
+All BoW links are DDR (double data rate). 
+DDR is defined as one data bit transmitted for each rising and each falling edge of the clock.
 
-* Data signals
-  * Inputs (RX): data input signals received by the interface
- * Outputs (TX): data output signals transmitted from the interface
-* Clocks
-  * Data clock out (ns_fwd_clk), sent to the receiving chiplet
-  * Data clock in (fs_fwd_clk): received from the receiving chiplet
-* FEC
-  * Optional FEC bits (1 bit recommended)
+"Laminate" is intended to include organic laminate packages (a.k.a. buildup) and similar 
+technologies with approximately 25 um line and space rules.
+"Interposer" is intended to include silicon interposer and similar technologies 
+with approximately 1 um line and space rules.
+
+
+### BoW Interface Signals
+
+The BoW interface defines several signal types. Each slice has these signals:
+
+* Data (D0-D15) : data bits
+* Clock (CLK+, CLK-) : differential clock
+* FEC : Forward Error Correction bit (optional)
+* AUX : Other uses (optional)
+
+Except for the clocks, the bits are single-ended and DDR clocked.
+FEC and AUX are optional.
+All the signals in a slice in BoW Basic and BoW Fast are unidirectional 
+and flow the same direction. There may be a full-duplex extension in the future.
+
 
 # Design Assumptions
-Short connections\
-Organic substrate spacing\
-Low loss implementations\
-Need low end2end latency\
-Low power\
+* Short connections, confined inside a package
+* Supports package technologies from organic laminate to interposer
+* Low signal loss
+* Low latency
+* Low energy per bit
 
 # Standard Compatibility
 The Bunch of Wires (BoW) is a simple Double Data Rate source synchronous interface 
@@ -362,81 +377,284 @@ chiplets using CMOS IO buffers.
 
 ## Block Diagram
 
-~center
-![bowspec_figure3]
+~ Figure { #fig-slice_signals; caption: "BoW Single Slice Signals" }
+![slice_signals]
+[slice_signals]: images/bowspec_figure_slice_signals.PNG { width:auto; max-width:70% }
 ~
-
-[bowspec_figure3]: images/bowspec_figure3.jpg "bowspec_figure3" { width:auto; max-width:90% }
 
 ## Signals
 
-~center
-|--------------|---------|--------------|-------------|
-| Function     | # Bumps | Bump Names   | Notes       |
-+:-------------+:-------:+:-------------+:------------+
-| TX Data      | 16      | TXDQ [15:0]  |             |
-+--------------|---------|--------------|-------------|
-| TX Data Clock| 2       | TXCLK+/TXCLK-| Differential|
-|--------------|---------|--------------|-------------|
-|TX Data FEC   |1-2      |TXFEC         |RS(34, 32)   |
-|(optional)    |         |              |or other     |
-+--------------+---------+--------------+-------------|
-|RX Data       |16       |RXDQ [15:0    |             |
-|--------------|---------|--------------|-------------|
-| RX Data Clock| 2       | RXCLK+/RXCLK-| Differential|
-|--------------|---------|--------------|-------------|
-|TX Data FEC   |1-2      |TXFEC         |RS(34, 32)   |
-|(optional)    |         |              |or other     |
-|--------------|---------|--------------|-------------|
+Each BoW slice consists of a differential clock pair, 16 single-ended data wires, 
+and optional FEC and AUX wires. Each BoW slice is unidirectional when in operation.
+A chiplet may be designed with with Rx-only and Tx-only slices, or
+each slice may have both Tx and Rx capability which is configured at runtime. 
+A bidirectional link is composed of some number of slices configured for Rx and some for Tx.
 
+FEC (Forward Error Correction) is an optional signal that allows using FEC to 
+improve the bit error rate (BER).  AUX is an optional signal that can be used for purposes
+such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
+the details on FEC and AUX usage.
+
+A BoW link is only specified for operation inside a package for reach and ESD reasons.
+
+~ TableFigure {#tab-signals; caption: "BoW Signals"; }
+|--------------|---------|------------|-------------|
+| Function     | # Signals| Signal Name| Notes      |
++:-------------+:-------:+:-----------+:------------+
+| Clock        | 2       | CLK+, CLK- | Differential|
+|--------------|---------|------------|-------------|
+| Data         | 16      | D0-15      |             |
+|--------------|---------|------------|-------------|
+|Forward Error | 1       |FEC         | Optional    |
+|Correction    |         |            |             |
++--------------+---------+------------+-------------|
+|Auxilliary    |1        |AUX         | Optional    |
+|--------------|---------|------------|-------------|
 ~
 
-## Calibration Mode Signals
-
-\<To be included in a future release of the specification>
 
 # Timing
 
-## Supported Datarates
-BOW supports the following datarates:
+## Supported Data Rates
 
-~center
+BOW supports the following data rates:
 
-|----------|-------------|-------|-----------|------------|------------------|
-|Clock Rate|Datarate     |SDR/DDR|Termination|Hybrid TX/RX|Mode              |
-+:--------:+:-----------:+:-----:+:---------:+:----------:+:-----------------+
-|1-2.5 GHz |2Gbps-5Gbps  |DDR    |No         |No          |BoW               |
-|1-4 GHz   |2Gbps-8 Gbps*|DDR    |Yes        |No          |*for traces < 1 mm|
-+--------- +------------ +-------+-----------+------------+------------------+
-|2-8 GHz   |4Gbps-16Gbps |DDR    |Yes        |No          |Terminated mode   |
-+--------- +------------ +-------+-----------+------------+------------------+
+~ TableFigure {#tab-rates2; caption: "BoW Modes and Data Rates"; width:100%;  }
+|--------------|------------|-----------|-----------|-------------|-------|
+|  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
++:------------:+:----------:+:----------+:----------+:------------+-------+
+| BoW Basic    | Interposer | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Fast     | Laminate   | 1-8 GHz   | 2-16 Gbps | Double      | 50 mm |
+|--------------|------------|-----------|-----------|-------------+-------|
+~
+<Note this table appears in two places!!>
+
+
+~ Framed {color: blue}
+Ken sez: I copied this table from the HotI 2020 paper, but what is our 
+supporting data for 8 Gbps and 50 mm cases?
 ~
 
-At a minimum all BoW implementations must support the minimum 1 Ghz clock rate, 
-2Gbps datarate using unterminated IO.  For ease of integration, increased 
-datarates should support 1 Gbps increments from the floor 2Gbps datarate.
+All BoW implementations must support the minimum 1 GHz clock rate, 
+2 Gbps data rate using source-terminated I/O.
+For ease of interoperation, data rate multiples of 
+N Gbps should be supported for integer N>=2 to the max rate for that implementation.
 
 ## Clocking
-Rising to rising and rising to falling edge specifications for the TX clock 
-rate (TXCLK pin) must achieve better than +/- 5% accuracy.
 
-Additional requirements will be documented in future releases of the specification.
+~ Figure { #fig-clocking; caption: "BoW Clock and Data Block Diagram - One Tx Slice, One Rx Slice" }
+![clocking]
+[clocking]: images/bowspec_figure_PHY_block.PNG { width:auto; max-width:100% }
+~
+
+Figure [#fig-clocking] shows the clock and data flow for a single Tx slice and a single Rx slice.
+On the Tx side, data bits (and optional FEC and AUX bits) come in a wide word from the link layer, 
+and are serialized to the line rate. 
+At the Rx side, they are sampled with a common slicer clock in BoW Basic. 
+BoW Fast may optionally implement per-bit delay adjust or per-bit slicer clock adjust.
+
+All BoW interfaces shall be DDR (Double Data Rate) at the chip-to-chip itnerface: the data bit rate is twice the clock frequency, 
+so data is clocked in on both edges of the clock in the Rx slice.
+
+The following table provides clock and data rates for an example with 4 Gbps wire data rate 
+and M=4 to support a 1 Gbps data rate at the Link-PHY interface.
+
+~ TableFigure {#tab-; caption: "Example Clock and Data Rates for Figure [#fig-clocking] with 4 Gbps, M=4"; width:100%;  }
+|---------------------------------|--------|-----------|
+| Signal                          |Rate    |SDR/DDR    |
++:-------------------------------:+:------:+:----------+
+| TxClk                           | 2 GHz  |           |
++---------------------------------+--------+-----------+
+| CLK+,CLK-                       | 2 GHz  |           |
+| D[15:0],AUX,FEC                 | 4 Gbps | DDR       |
+|                                 |        |           |
++---------------------------------+--------+-----------+
+| PhyClk                          | 1 GHz  |           |
+| P_D[63:0],P_AUX[3:0],P_FEC[3:0] | 1 Gbps | SDR       |
+|---------------------------------|--------|-----------|
+~
+
+The ratio M should be limited to integers, preferrably powers of two, and other ratios 
+implemented in a gearbox in the Link layer. 
+
+The DDR clock TxClk is provided to the Tx PHY from elsewhere on Chiplet-A.
+This may come from an on-chip PLL (typically shared across multiple slices) or it 
+can be routed from the RxClk of an Rx slice on Chiplet-A. 
+In order to meet duty cycle requirements, a Duty Cycle Corrector (DCC) may be needed in the
+Tx slice. TxClk is used to drive the serializers and provide the output CLK+,CLK- to
+Chiplet-B.
+
+On the Rx side, the PHY must align the slicer clock to sample the data correctly.
+This may be done with a DLL or adjustable delays or other methods.
+The PHY shall include control logic to self-align the slicer clock for correct sampling of the data.
+Alignment is started by signal AlignDll? from the Rx Link Layer; 
+the PHY provides a signal DllAligned? to the Link Layer when it is complete.
+
+BoW Basic interfaces do not require per-wire alignment - the signals
+within a slice are aligned sufficiently well by matching their paths.
+BoW Fast interfaces may need per-wire delay adjustment or per-slicer clock adjustment.
+
+All BoW interfaces shall be source synchronous within a slice. 
+However clock skew between all the slices in a link depends on the implementation of the
+TxClk distribution on the Tx slices in a link; this skew must be no more than 3 ns.
+On both the Tx and Rx sides, the Link layer must include a Clock Domain Crossing (CDC) to 
+align the data between CoreClk and PhyClk. 
+These CDCs must also be able to absorb the slice-to-slice clock skew and 
+core clock distribution skew across the whole link.
+
+If DCCs are included in the PHY and they need an alignment cycle, they shall include 
+control logic to perform self-alignment on a signal from the Link layer and send a completion 
+signal back to the Link layer.
+
+## Clock and Data Specifications
+
+
+### Timing Requirements 
+
+Figure [#fig-eye] shows the definition of the eye diagram parameters.
+
+~ Figure { #fig-eye; caption: "Eye Diagram Definitions" }
+![eye]
+[eye]: images/bowspec_figure_eye.PNG { width:auto; max-width:80% }
+~
+
+The CLK and data signals at the receiving slice bumps must be able to meet these conditions:
+
+~ TableFigure {#tab-clocks; caption: "BoW Basic Timing Requirements"; width:100%; }
+<This table generated with https://www.tablesgenerator.com/markdown_tables# >
+
+| Symbol  | Spec                       | BoW Basic        | BoW Fast         |
+|---------|:---------------------------|------------------|------------------|
+| V~hi~   | High signal voltage        | 750 mV           | 562 mV           |
+| V~lo~   | Low signal voltage         | 0 mV             | 188 mV           |
+| V~tol~  | Tolerance of Vhi, Vlo (5%) | \+- 37 mV        | \+- 19 mV        |
+| t~eye~  | Data eye width             | 50% UI           | 50% UI           |
+| V~eye~  | Data eye height            | 40%(V~hi~-V~lo~) | 20%(V~hi~-V~lo~) |
+|         |                            | (300 mV)         | (75 mV)          |
+| V~ov~   | Data and CLK overshoot     | 25%(V~hi~-V~lo~) | 50%(V~hi~-V~lo~) |
+|         |                            | (188 mV)         | (188 mV)         |
+| t~skew~ | Slice to slice CLK skew    | 3 ns             | 3 ns             |
+|         |                            |                  |                  |
+
+
+~
+
+V~hi~ of 0.75 V must be supported by all BoW implementations, but other values
+may be supported.
+
+t~eye~ must be evaluated for each of the bits in a slice
+relative to the differential CLK+ - CLK- signal for that slice.
+t~eye~ must be evaluated for CLK edges up to 3 UI earlier than the eye center.
+This is because even though jitter on the data edges is correlated with the CLK jitter at
+the Tx side, the slicer in the Rx side is likely to use a different CLK edge due to
+delays in the Rx-side clock alignment circuit (usually a DLL).
+The evaluation of jitter must include all possible jitter contributors, 
+including reference clock, clock distribution networks, 
+any DCC, PLL and DLL jitter, power-supply noise and switching noise.
+
+The slice to slice clock skew t~skew~ across the width of a BoW link must be less than 3 ns.
+This is dominated by the TxClk distribution network.
+
+Since these signals do not leave the package, these values must be verified with simulation.
+
+If the slice implementation allows programmatic control of the DLL alignment values, 
+varying those values after locking the DLL may provide timing margin information.
+If the slice implementation allows programmatic control of the receiver voltage 
+thresholds, varying those values may provide vertical margin information.
+
+~framed {color:blue}
+Should we require programmatic DLL control to enable margin testing?  
+Should we require threshold voltage control to enable margin testing?
+~
+
+### Reference Slice Timing
+
+~framed {color:blue}
+Is this section worth keeping?
+~
+
+
+<XX  COMMENT
+~ Framed {color: blue}
+
+This is a list of possible specs within a slice
+
+* Clock to data alignment   NA before align, 50 ps after align = 0.20 UI
+* data to data alignment    18 ps
+  * mismatch: 0.6 ps rms at Rx input, 1.1 ps rums at Rx output
+  * fanout skew: 1 mm = 6 ps as a tline
+  * clock distn within slice: 0.6 mm = 7 ps as an RC line
+* clock rise/fall time   80 ps = 0.30 UI
+* clock duty cycle   50+-5% 
+* CLK+ vs CLK- skew    10 ps = 0.04 UI
+* clock random jitter  10 ps rms = 0.04 UI rms
+* clock bounded jitter  20 ps pp = 0.08 UI pp
+* Eye: 400 mV, 50 ps ??    330 mV, 50 ps barely works in 65 nm sim at 8 Gbps
+* clock slip   0 ppm
+
+Slice to slice:
+
+* slice to slice clock skew across width of a link   < 3 ns 
+   * 2.5 ns to go 30 mm, across 22 slices
+~
+XX END COMMENT>
+
+The following table shows clock and data timing for a 4 Gbps BoW Basic 
+reference design in 65 nm CMOS on 
+laminate packaging. These values are for CLK and data bits at the bumps of the BoW receiver. 
+
+~ TableFigure {#tab-clocks; caption: "BoW Clock Reference Values"; font-size:small; width:100%; }
+<This table generated with https://www.tablesgenerator.com/markdown_tables# >
+<any plus signs need a backslash added manually >
+<column justification needs a ":" in the first "---" line added manually>
+
+| Spec                          | Value  | Normalized Value | Condition                                 |
+|:------------------------------|--------|------------------|:------------------------------------------|
+| Bit to bit skew: fanout       | 0 ps   | 0.00 UI          | fanout for mismatched bump pitches        |
+| Bit to bit skew: mismatch     | 3.6 ps | 0.014 UI         | 0.6 ps rms device mismatch (6 sigma)      |
+| Bit to bit skew: clock distn  | 3.9 ps | 0.016 UI         | 0.65 mm from CLK to bits D0, D15          |
+| CLK to mean data skew         | 12 ps  | 0.05 UI          | error of DLL alignment                    |
+| CLK duty cycle                | 50%    | 0.50 UI          | target                                    |
+| CLK duty cycle error          | 2%     | 0.02 UI          | after DCC settled                         |
+| CLK+ vs. CLK- skew            | 3.6 ps | 0.014 UI         |                                           |
+| CLK cyc-to-cyc random jitter  | TBD    |                  | thermal jitter of the whole Tx clock path |
+| CLK cyc-to-cyc bounded jitter | TBD    |                  | bounded jitter of the whole Tx clock path |
+| CLK rise/fall time            | 43 ps  | 0.17 UI          |                                           |
+| Data rise/fall time           | 43 ps  | 0.17 UI          |                                           |
+| Data Eye width                | 125 ps | 0.50 UI          | not including jitter                      |
+| Data Eye height               | 450 mV | 60% Vswing       | Vswing = nominal signal voltage swing     |
+| Data overshoot/undershoot     | 75 mV  | 10% Vswing       |                                           |
+~
+
+The jitter in a link should meet:
+
+~center
+DataEyeWidth - BitToBitSkewFanout - BitToBitSkewMismatch    
+- BitToBitClockDistn - CLKtoMeanDataSkew - CLKdutyCycleError  
+- CLKrandomJitter - DataToDataSkew < 0.10 UI
+~
+
 
 # Electrical Specifications
 
 ## Voltages
 To support a wide range of technologies BoW does not enforce a common 
-VDD power rail Voltage. In order to ensure that there is at least one common 
+VDD power rail voltage. In order to ensure that there is at least one common 
 interoperable mode BoW implementations must support electrical specifications targeting 
 rail to rail signaling based on a 0.75 V +/- 5% power supply (see electrical 
 specifications). BoW interfaces can support higher or lower signaling 
-voltages without limit but must support 0.75 V based signaling at 2Gbps 
+voltages without limit but must support 0.75 V based signaling at 2 Gbps 
 Double Data Rate (DDR) to ensure interoperability.
 
 ## ESD Requirements
 BOW IO should be designed to support 50 V CDM (Charged Device Model) and 
 250 V HBM (Human Body Model).  This requirement is similar to other die to die 
-interface standards.
+interface standards. It is generally insufficient for signals that go to package pins.
 
 ## Termination Requirements
 BoW datarates (Typically 5Gbps, up to 8Gbps for <1mm trace length) do not 

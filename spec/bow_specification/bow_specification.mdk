@@ -481,23 +481,30 @@ C~cross~/C~total~ of 28% and an impedance of 48 ohms.
 Channels shorter than 2 mm (e.g., on interposer) will have different requirements, 
 not yet specified.
 
-<XXXXX Comment XXXXX
+~Framed {color: blue}
 Interposers have only 4 layers, very thin dielectrics, 
 cannot reach 50 ohm impedances without huge series R.  So they need to be designed differently.
-Kens quick study found wire lengths from 570 to 1380 um (for 55 um bump pitch, 4-slice stack).
+
+Kens quick study found wire lengths from 570 to 1380 um 
+(for 55 um bump pitch, 4-slice stack, 0.1 mm chip to chip spacing).
 The best config looked like 3 um line and space, alternating signal and ground layers.
 This gives a wire pitch of 1/9 the bump pitch, so we could even support 4 slices in just one
 signal layer.
 The line C for 1400 um is 0.76 pF, the R is 14 ohms, the RC is 11 ps, which is okay for 
 8 Gb/s.
-Source termination is probably not wanted in this case since there is so much Rline and
+Source termination is probably not wanted in this case since there is so much Rline, 
+the lines are short and
 we cant build a reasonable controlled impedance line.
-XXXXX>
 
+Is this enough data to spec a BoW Basic on interposer?  
+Does anyone have more data?
+~
 
+<XXXX Comment
 ~Framed {color: blue}
 Ken todo: add wire twist diagram for clock?
 ~
+XXXX>
 
 ## BoW Fast Channel Specifications
 
@@ -528,22 +535,19 @@ The limit is
 XtalkLimit = -37*e^-f/8GHz^-10 dB
 ~
 
-A victim trace in between two aggressor traces on the same package substrate layer with air 
-gap spacing of 50 um (or more) with at least a reference plane under or above will meet the 
-proposed power-sum crosstalk limit.
-
 ~Framed {color: blue}
-What is the origin of the Xtalk Limit equation?  Is there a paper reference?
-
-"Air gap" does not seem appropriate - I assume this means "line spacing"?
-This statement is not complete without spec'ing the dielectric thickness 
-to the ground plane and the trace width and whether this is microstrip or stripline.
-
-Proposed text:
+Proposed text that needs numbers:
 
 An example geometry which meets this limit is microstrip (surface) lines with 
 X um line and Y um space, on Z um dielectric over a ground plane.
 ~
+   
+~Framed {color: blue}
+What is the origin of the Xtalk Limit equation?  Is there a paper reference?
+
+~
+
+
 
 #  Logic Interface
 

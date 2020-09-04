@@ -1019,24 +1019,532 @@ SS: What is the X pitch in Figure 10?
 |          |                                                                 |
 |----------|-----------------------------------------------------------------|
 
+# Bow Interface
+
+The BoW interface comprises either a transmit or receive slice with three signal types:
+
+* Data signals
+  * Inputs (RX): data input signals to the interface
+  * Outputs (TX): data output signals from the interface
+* Optional signals 
+  * AUX/Data bus inversion out (tx_AUX_DBI), sent from the interface
+  * Forward Error Correction out (tx_FEC), sent from the interface
+  * AUX/Data bus inversion in (rx_AUX_DBI), input to the interface
+  * Forward Error Correction in (rx_FEC), input to the interface
+* Clocks
+  * Data clock out (tx_fwd_clk), sent from the interface
+  * Data clock in (rx_fwd_clk), input to the interface
+
+~framed {color:Blue}
+Insert Figure About Here
+~
+
+~ Figure { #fig-components; caption: "BoW Signal Types" }
+![components]
+~
+[components]: images/xx.PNG { width:auto; max-width:70% }
+
+~ TableFigure {#tab-clocks; caption: "BoW Interface Signals"; width:100%;  }
++---------------------------+------------------------------------------------------------+
+|          Signal           |                         Description                        |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+|           TX              |            Synchronous data transmitted from the           |
+|                           |               interface. (Section   2.1.1)                 |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+|           RX              |             Synchronous data received from the             |
+|                           |                interface. (Section 2.1.2)                  |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+| tx_fwd_clk/tx_fwd_clkb    |           Transmit transfer clock, forwarded from          |
+|                           |           the transmitter to its link partner for          |
+|                           |        capturing received data. (Section 2.1.6.3)          |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+| rx_fwd_clk/rx_fwd_clkb    |          Receive transfer clock, forwarded to the          |
+|                           |        receiver from its link partner for capturing        |
+|                           |             received data. (Section 2.1.6.3)               |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+| tx_rcv_clk/tx_rcv_clkb    |           Receive-domain clock forwarded from the          |
+|                           |       near side to the link partner for transmitting       |
+|                           |      data from the link partner. (Section 2.1.6.4)         |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+| rx_rcv_clk/rx_rcv_clkb    |           Receive-domain clock forwarded from the          |
+|                           |             link partner to the near side for              |
+|                           | transmitting data from the near side. (Section 2.1.6.4)    |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+|       tx_AUX_DBI          |         Optional signal from the transmitter to its        |
+|                           |           link partner to indicate bus inversion           |
+|                           |     status. If not used as DBI, this signal can also be    |
+|                           |            used as Mode bit (Section 2.2.2.2)              |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+|       rx_AUX_DBI          |            Optional input signal to receive bus            |
+|                           |    inversion status. If not used as DBI, this signal can   |
+|                           |        also be used as Mode bit (Section 2.2.2.2)          |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+|         tx_FEC            |                Optional signal to carry FEC                |
+|                           |          information from transmitter to its link          |
+|                           |                partner. (Section 2.2.2.5)                  |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+|         rx_FEC            |            Optional input signal to receive FEC            |
+|                           |             information.   (Section 2.2.2.5)               |
++---------------------------+------------------------------------------------------------+
+~
+
+# BoW-to-MAC Interface
+
+The following signals shall constitute the interface to the MAC
+
+~ TableFigure {#tab-clocks; caption: "MAC Interface"; width:100%;  }
++-------------------------+--------------+--------------------------------------------------------+
+| Signals                 | In(from MAC) | Description                                            |
+|                         | Out (to MAC) |                                                        |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| data_in                 | In           | For transmitting across the BoW link (Section 2.1.1)   |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| data_out                | Out          | Received through the BoW link (Section 2.1.2)          |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| tx_fwd_clk              | In           | For transmitting data from the                         |
+|                         |              | transmitter to the link partner (Section 2.1.6)        |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| rx_fwd_clk              | Out          | Received from the link partner                         |
+|                         |              | and converted from quasi-                              |
+|                         |              | differential to single-ended                           |
+|                         |              | (Section 2.1.6.3)                                      |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| tx_mac_rdy              | In           | For resetting Transmit data                            |
+|                         |              | transfers and communicating                            |
+|                         |              | MAC readiness for calibration to                       |
+|                         |              | the link partner (Section 3.1)                         |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| rx_mac_rdy              | Out          | Indicates that the Receive MAC is                      |
+|                         |              | ready to transmit data   (Section 3.1)                 |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| tx_adapter_rstn         | In           | Resets the BoW Adapter (section 3.1)                   |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| tx_dcc_dll_lock_req     | In           | Initiates calibration of transmit                      |
+|                         |              | slice and its link partner (receive                    |
+|                         |              | slice) for a BoW interface                             |
+|                         |              | (Section 3.2.3.3)                                      |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| rx_dcc_dll_lock_req     | In           | Initiates calibration of receive                       |
+|                         |              | slice and its link partner (transmit                   |
+|                         |              | slice) for a BoW interface                             |
+|                         |              | (Section 3.2.3.3)                                      |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| tx_transfer_en          | Out          | Indicate that calibration on the                       |
+|                         |              | Transmit is complete for transmit                      |
+|                         |              | and receive paths (Section 3.2.3.3)                    |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| rx   _transfer_en       | Out          | Indicate that calibration on the                       |
+|                         |              | Receive is complete for transmit                       |
+|                         |              | and receive paths (Section 3.2.3.3)                    |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| Signals indicating any  | Out          | Sent to MAC for possible                               |
+| conditions that may     |              | data- transfer ready de-assertion                      |
+| cause de-assertion of   |              | by MAC (Section 3.1)                                   |
+| data-transfer ready     |              |                                                        |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| Signals indicating any  | Out          | Sent to MAC for possible                               |
+| conditions that may     |              | adapter reset by MAC (Section 3.2.3)                   |
+| cause BoW Adapter       |              |                                                        |
+| reset and recalibration |              |                                                        |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| User-defined shift-     | In           | For transmitting application-                          |
+| register bits           |              | defined bits to the link   partner (Section 2.2.2.5.2) |
+|                         |              |                                                        |
+|                         |              |                                                        |
++-------------------------+--------------+--------------------------------------------------------+|                         |              |                                                        |
+~
+
+
+~framed {color:Blue}
+Insert Figure About Here
+~
+
+~ Figure { #fig-mac_interface; caption: "MAC Interface" }
+![mac_interface]
+~
+[mac_interface]: images/xx.PNG { width:auto; max-width:70% }
+
+
+# Control Signals
+
+An BoW interface shall provide control and status bits for calibration and communication of 
+control and status information between the transmitter(receiver) and receiver(transmitter) chiplets. 
+These status bits shall be implemented as documented in Section XX.xxx.xx.
+
+
+Transmit Slice Shift Register
+
+A Transmit slice shall include two shift registers: one for holding Transmit control and status 
+signals to its link partner (the Transmit shift register), and one for receiving control 
+and status signals from its interface partner (the Receive-copy shift register). 
+The Transmit shift register shall contain 81 bits. The Receive-copy shift register 
+shall contain 73 bits. All bits shall be implemented regardless of whether optional 
+signals are implemented. Any signals not implemented shall permanently maintain their 
+default values as defined in Table 50.
+
+
+Receive Slice Shift Register
+
+A Receive slice shall include two shift registers: one for holding Receive control and status
+ signals to its interface partner (the Receive register), and one for receiving  control 
+ and status signals from its link partner (the Transmit-copy shift register). 
+ The Receive shift register shall contain 73 bits. The Transmit-copy shift register 
+ shall contain 81 bits. All bits shall be implemented regardless of whether optional
+  signals are implemented. Any signals not implemented shall permanently maintain their
+   default values as defined in Table 51
+
+Control Signals
+ Control signals fall into one of the following categories:
+
+* Calibration handshake
+* Selective reset
+* User-defined
+* Reserved
+
+The bits for any unused signals shall be maintained with default values for correct shift- register length.
+The control signals are summarized in Table 11 and are detailed in Table 51.
+
+Calibration Status Signals
+
+Calibration status signals shall be generated by internal state machines as described in Section 3.2.3.
+
+User-Defined Signals 
+
+    User-defined signals are available for application use. 
+    Since both sides need to understand the function of user-defined signals, 
+    using these signals may limit chiplet interoperability. If implemented in an application, 
+    user-defined signals should be described in the chiplet data sheet.
+
+Shift-Register Signals
+
+Table 10 defines the control signals for Transmit and Receive slices. The table is organized by signal type; in-order signal tables with default values are provided in Section 7.2. tx_ prefixes refer to signals originating on the Transmit slice; rx_ prefixes refer to signals originating on the Receive slice.
 
 
 
+~ TableFigure {#tab-clocks; caption: "Control Signals"; width:100%; }
+
++---------------------+-----------------------------+--------------+---------------------+----------------------+         
+|                     |                             |              | Signal  Origin      |    Bit Number        |
+|                     |                             |              |                     |                      |
++---------------------+-----------------------------+              +                     +------------+---------+
+|                     |                             |              |                     |            |         |
+| Signal Name         | Signal Function             | Bits         | (Receive or MAC)    | Transmit   | Receive |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+| Calibration         |                             |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| tx_dcc_cal_done     | TX DCC calibration complete | 1            | LINK PARTNER        | 68         | 31      |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| rx_transfer_en      | RX calibration complete     | 1            | LINK PARTNER        | 75         | 70      |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| rx_dcc_dll_lock_req | Start RX calibration        | 1            | MAC                 | NA         | 69      |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| rx_dll_lock         | RX DLL locked               | 1            | LINK PARTNER        | 74         | 68      |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| tx_transfer_en      | TX calibration complete     | 1            | LINK PARTNER        | 78         | 64      |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| tx_dcc_dll_lock_req | Start TX calibration        | 1            | MAC                 | NA         | 63      |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| Device_ID           | Chiplet ID                  | 4            | Transmit            | 8-11       | 32-35   |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| Link_ID             | Chiplet Link ID             | 4            | Transmit            | 12-15      | 36-39   |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| Slice_ID            | Chiplet Slice ID            | 5            | Transmit            | 16-20      | 40-43   |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| Power_on_reset      | PoR complete                | 1            | Receive             | 21         | 44      |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| tx_mac_rdy          | For resetting               | 1            | MAC                 | 22         | 45      |
+|                     | Transmit data               |              |                     |            |         |
+|                     | transfers and               |              |                     |            |         |
+|                     | communicating MAC           |              |                     |            |         |
+|                     | readiness for               |              |                     |            |         |
+|                     | calibration to the link     |              |                     |            |         |
+|                     | partner                     |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| rx_mac_rdy          | For resetting               | 1            | MAC                 | 23         | 46      |
+|                     | Receive data                |              |                     |            |         |
+|                     | transfers and               |              |                     |            |         |
+|                     | communicating MAC           |              |                     |            |         |
+|                     | readiness for               |              |                     |            |         |
+|                     | calibration to the link     |              |                     |            |         |
+|                     | partner                     |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| tx_adapter_rstn     | Reset BoW adapter           | 1            | MAC                 | 24         | 47      |
+|                     | signal from Transmit        |              |                     |            |         |
+|                     | slice to Link Partner       |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| rx_adapter_rstn     | Reset BoW adapter           | 1            | Receive             | 25         | 48      |
+|                     | signal from Transmit        |              |                     |            |         |
+|                     | slice to Link Partner       |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| AUX_DBI             | Select DBI mode (1)         | 1            | MAC                 | 26         | 49      |
+|                     | or AUX mode (0)             |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+| User-defined        |                             |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| external_cntl[]     | Defined by protocol         | fo: 30       | MAC or LINK PARTNER | 0-4        | 49-57   |
+|                     | and/or application          |              |                     |            |         |
+|                     |                             | le: 63       |                     | 26-65      | 28-30   |
+|                     |                             |              |                     |            |         |
+|                     |                             |              |                     |            | 0-26    |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+| Other               |                             |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| Reserved            |                             |              | NA                  | 79         | 71      |
+|                     |                             |              |                     |            |         |
+|                     |                             |              |                     | 76-77      | 65-67   |
+|                     |                             |              |                     |            |         |
+|                     |                             |              |                     | 69-73      | 58-62   |
+|                     |                             |              |                     |            |         |
+|                     |                             |              |                     | 66-67      | 27      |
+|                     |                             |              |                     |            |         |
+|                     |                             |              |                     | 5-7        |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+~
+
+# TX_AUX_DBI
+
+Data Bus Inversion (DBI) is intended to mitigate simultaneous switching
+ output (SSO) noise of a BoW PHY by limiting the number of BoW data bits
+  that can switch between immediate data transfer cycles. 
+
+DBI functionality is optional, but if implemented, DBI Mode shall 
+be enabled by setting bit the AUX_DBI bit HI
+
+With DBI on, DBI bits replace certain data bits on the data bus. 
+The example below shows a 16 bit TX slice. RX wires have DBI at the same bit locations. 
+
+## TX DBI with DBI Enabled 
+Within a group of 16 data signals, the TX DBI logic calculates the DBI bit 
+based on the number of data signals changing from their previous state on the BoW slice data bus. 
+The DBI logic below uses “+” to indicate arithmetic addition, “^” to indicate 
+exclusive OR, and “?” as a ternary IF. “Current” refers to the new data word 
+being prepared for sending on TX. “Prev” refers to the data immediately preceding 
+the current data, that is the data issued onto the AIB bus before the current data. 
+
+DBIcurrent = ((data[15]current ^ data[15]prev) 
++ (data[14]current ^ data[14]prev) 
+... 
++ (data[1]current ^ data[1]prev) 
++ (data[0]current ^ data[0]prev)) > 8 ? 1 : 0); 
+
+Within a group of 16 data signals, if the DBI bit=1 then the
+ TX DBI logic inverts the data signals. Each calculated DBI bit 
+ replaces one data bit in TX as described previously. 
+
+## RX DBI with DBI Enabled 
+Within a group of 16 RX signals, the RX DBI logic extracts the DBI bit.
+ If DBI = 1 then the RX DBI logic inverts the other RX bits. 
+
+# Reset and Initialization
+
+##Control Options
 
 
+In a system with one or more BoW interfaces, each interface pair
+ (defined as one Tx slice on a first chiplet and one Rx slice ona second chiplet)
+ in the system shall achieve interface ready status in each of its component slices. 
+ Once done, the interface shall signal readiness to the rest of the system. 
+ If any BoW link or slice is down (either at the MAC or the PHY level), 
+ it shall communicate this information to the appropriate interface partner as well as to the rest of the system.
+
+Calibration and training will require the two endpoints of an interface to exchange status and control information.
+ There is no dedicated sideband control interface defined. Instead, this exchange shall be facilitated 
+ using an independent I2C interface, assumed to exist outside of the BoW interface, on each chiplet.
+  I2C was chosen as the preferred interface for the following reasons:
+
+* It is a two wire interface 
+*	It is multi-point
+* It supports multi-leader and multi-follower topology
+*	The protocol for data reads and writes is standardized
+*	It is widely used as a configuration/status monitoring interface 
+*	It does not require additional control signals such as chip select (SPI, one per follower) or BSDL files (JTAG) to access register information
+
+However, the system designer is free to choose any suitable method for their application
 
 
+An example BoW system configuration is shown in Figure 3. 
+Any of the chiplets shown can act as an I2C leader or follower. 
+Alternatively, a central system controller (shown in dotted lines in the figure) 
+shall behave as the leader and the BoW chiplets shall be followers.
+
+To facilitate device identification and target communications at the proper device, 
+link, and slice, each BoW Interface shall have a unique Device_ID, Link_ID, and Slice_ID. 
+A BoW interface mapping table [connection topology] should also be     
+provided by the system designer to facilitate proper assignment of link and 
+slice states on each of the interface partners during initialization, calibration, or 
+other sideband activity. The specifics of how this is topology information is propagated to 
+each chiplet is left to the system designer.
+
+~framed {color:Blue}
+Insert Figure About Here
+~
+
+~ Figure { #fig-BoW_system; caption: "Example BoW System Configuration" }
+![bow_system]
+~
+[bow_system]: images/xx.PNG { width:auto; max-width:70% }
 
 
+##	Data-Transfer Ready
+A data-transfer ready signal shall be made available for control by the MAC layer. 
+The data-transfer ready signal may be de-asserted due to application-driven changes, including but not limited to:
 
+* An intentional change in clock frequency
+* Receipt of bad data
 
+De-asserting the data-transfer ready signal may also be necessary due to conditions within the BoW interface, which may include but are not limited to:
 
+* Completion of configuration during power-up
+* Initiation of reset by the link partner
+* Loss of DLL lock
 
+Internal BoW conditions indicating the need for de-assertion of the data-transfer ready signal 
+shall be sent to the MAC so that the MAC can de-assert the data-transfer ready signal.
+Once data-transfer ready has been re-asserted after having been de-asserted, the 
+BoW Adapter shall be re-calibrated (Section 3.2.3). The reverse is not true: 
+calibration may be initiated without de-asserting data-transfer ready first.
 
+##Standby Mode
 
+A signal shall be placed into standby mode by one of the following means:
 
+* Driving the signal LO
+* Putting the signal into tristate and enabling the weak pull-down. During initialization, 
+data outputs shall be placed into standby mode.
 
+##	Data-Transfer Ready Signals
 
+Each slice shall have a tx_mac_rdy signal that is controlled by the Transmit MAC. 
+When the tx_mac_rdy signal is asserted HI by the MAC, it shall indicate that the 
+transmit slice is ready for calibration and data transfer. De-assertion of 
+tx_mac_rdy shall affect only its own slice; other slices may continue transmitting data.
 
+    The tx_mac_rdy signal shall be forwarded to the link partner, and appropriate status 
+    and control register shall be updated, in order to inform the Receive MAC 
+    that the Transmit MAC is or is not ready for calibration.
 
+##	The Effects of De-asserting Data-Transfer Ready
 
+While the tx_mac_rdy signal is de-asserted:
+
+~framed {color:Blue}
+[Note: because this is not a hardwired signal, there
+ is a latency in response depending on the polling frequency of the I2C sideband interface. 
+ Need to investigate whether there is a mechanism where each chiplet can become a 
+ Leader dynamically and broadcast changes in status to its link partner]
+~
+
+* Data transmission shall halt
+* Data outputs shall be placed into standby mode (Section 3.1.1)
+* The clock output tx_fwd_clk shall go into standby mode.
+* The reset signal tx_mac_rdy shall be sent to the interface partner in order to communicate that data transmission has halted and to allow for the interface partner to be reset.
+
+The contents of retiming registers (Section 2.2.1) shall be undefined following 
+de- assertion of data-transfer ready.
+De-assertion of the data-transfer ready signal shall not affect the
+ free-running clock signals or the -control signals.
+ 
+##	Initialization
+
+Initialization will consist of three steps in sequence:
+
+* Power-on reset synchronization
+* Configuration
+* Calibration 
+
+~framed {color:Blue}
+Insert Figure About Here
+~
+
+~ Figure { #fig-BoW_Initialization; caption: "BoW Initialization" }
+![bow_init]
+~
+[bow_init]: images/xx.PNG { width:auto; max-width:70% }
+
+If there are multiple BoW interfaces on a single chiplet, 
+they shall all come out of configuration at the same time, 
+but they may complete adapter reset and calibration at different times depending on implementation.
+
+## Power-on Reset Synchronization
+Power-on reset, being the first step in initialization, shall not require 
+any features enabled by configuration, since configuration will not occur until after power-on reset.
+
+##	Power-on Reset Signals
+One signal (register bit) shall participate in power-on reset: power_on_reset.
+
+##	Power-on Reset Sequence
+During power-on reset, all input and output signals shall be placed 
+into standby mode (Section 3.1.1). The power-on reset sequence shall proceed as follows:
+
+1.	If no paired device_ID signal is detected by the Receive, then the Receive may act both to ensure that it and its chiplet are in a safe state and to alert the MAC.
+2.	If no paired device_ID signal is detected by the Transmit, then the Transmit may act both to ensure that it and its chiplet are in a safe state and to alert the MAC
+3.	Each chiplet shall implement its own power-on reset routine. At the beginning of the routine, Receive interfaces shall assert their power_on_reset signals HI.
+4.	When a chiplet completes its power-on reset sequence:
+  a.	Transmit interfaces shall begin the configuration stage.
+  b.	Receive interfaces shall de-assert their power_on_reset signals LO and begin the configuration stage.
+
+~framed {color:Blue}
+Insert Figure About Here
+~
+
+~ Figure { #fig-PoR; caption: "BoW Power On Reset Synchronization" }
+![bow_PoR]
+~
+[bow_PoR]: images/xx.PNG { width:auto; max-width:70% }
+
+##	Unused Interfaces
+In order to ensure correct operation for chiplets with unused Transmit interfaces, the
+power_on_reset  register bits for those unused interfaces shall be set HI.
+In order to ensure correct operation for chiplets with unused Receive interfaces, the
+Device_ID register bits for those unused interfaces shall be set  to 0x0000.
+
+##	Test Provision
+
+~framed {color:Green}
+In order to test the power-on reset sequence at the wafer level, 
+two signals shall be provided for use by automated test equipment to 
+override the power_on_reset and device_detect signals when there 
+is no Transmit/Receive pair available. por_ovrd overrides the power_on_reset signal, 
+and device_detect_ovrd overrides the device_detect signal.
+~

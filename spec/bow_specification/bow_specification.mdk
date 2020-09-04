@@ -403,7 +403,7 @@ A BoW link is only specified for operation inside a package for reach and ESD re
 +:-------------+:-------:+:-----------+:------------+
 | Clock        | 2       | CLK+, CLK- | Differential|
 |--------------|---------|------------|-------------|
-| Data         | 16      | D0-15      |             |
+| Data         | 16      | D[15:0]    |             |
 |--------------|---------|------------|-------------|
 |Forward Error | 1       |FEC         | Optional    |
 |Correction    |         |            |             |
@@ -437,7 +437,7 @@ BOW supports the following data rates:
 
 ~ Framed {color: blue}
 Ken sez: I copied this table from the HotI 2020 paper, but what is our 
-supporting data for 8 Gbps and 50 mm cases?
+supporting data for 8 Gbps cases?
 ~
 
 All BoW implementations must support the minimum 1 GHz clock rate, 
@@ -458,7 +458,8 @@ and are serialized to the line rate.
 At the Rx side, they are sampled with a common slicer clock in BoW Basic. 
 BoW Fast may optionally implement per-bit delay adjust or per-bit slicer clock adjust.
 
-All BoW interfaces shall be DDR (Double Data Rate) at the chip-to-chip itnerface: the data bit rate is twice the clock frequency, 
+All BoW interfaces shall be DDR (Double Data Rate) at the chip-to-chip interface: 
+the data bit rate is twice the clock frequency, 
 so data is clocked in on both edges of the clock in the Rx slice.
 
 The following table provides clock and data rates for an example with 4 Gbps wire data rate 
@@ -492,24 +493,42 @@ Chiplet-B.
 On the Rx side, the PHY must align the slicer clock to sample the data correctly.
 This may be done with a DLL or adjustable delays or other methods.
 The PHY shall include control logic to self-align the slicer clock for correct sampling of the data.
-Alignment is started by signal AlignDll? from the Rx Link Layer; 
-the PHY provides a signal DllAligned? to the Link Layer when it is complete.
+Alignment is started by signal AlignDll from the Rx Link Layer; 
+the PHY provides a signal DllAligned to the Link Layer when it is complete.
 
+All BoW interfaces shall be source synchronous within a slice. 
 BoW Basic interfaces do not require per-wire alignment - the signals
 within a slice are aligned sufficiently well by matching their paths.
 BoW Fast interfaces may need per-wire delay adjustment or per-slicer clock adjustment.
 
-All BoW interfaces shall be source synchronous within a slice. 
-However clock skew between all the slices in a link depends on the implementation of the
-TxClk distribution on the Tx slices in a link; this skew must be no more than 3 ns.
+Clock skew between the slices in each direction of a link depends on the implementation of the
+TxClk distribution to all the Tx slices. 
+That is, for the data flow from Chiplet A to Chiplet B, 
+the TxClk distribution on Chiplet A sets the 
+the clock skew of the Tx slices on Chiplet A and the clock skew of the Rx slices on Chiplet B,
+and vice versa for flow from B to A. This skew must be no more than 3 ns.
+There is no specification of the skew between TxClk on Chiplet A vs TxClk on Chiplet B.
+
+~ Framed {color: blue}
+Ed: 3 ns is sufficient to cover Tx clock distribution skew across a 30 mm chip edge.
+Specifying a skew limit seems useful to clarify the requirements that will be imposed on 
+the bonding FIFO in the Rx Link layer.
+Do we want to weaken this to a Should?
+~
+
 On both the Tx and Rx sides, the Link layer must include a Clock Domain Crossing (CDC) to 
 align the data between CoreClk and PhyClk. 
 These CDCs must also be able to absorb the slice-to-slice clock skew and 
 core clock distribution skew across the whole link.
 
 If DCCs are included in the PHY and they need an alignment cycle, they shall include 
-control logic to perform self-alignment on a signal from the Link layer and send a completion 
-signal back to the Link layer.
+control logic to perform self-alignment on a signal AlignDcc from the Link layer to the PHY
+and send a completion signal DccAligned back to the Link layer.
+
+~ Framed {color: blue}
+Ed: Need to use the same names for AlignDll, DllAligned, AlignDcc and DccAligned as in Logic Interface section.
+~
+
 
 ## Clock and Data Specifications
 

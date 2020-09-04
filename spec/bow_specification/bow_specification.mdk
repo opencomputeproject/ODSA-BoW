@@ -1135,7 +1135,7 @@ Insert Figure About Here
 ~ Figure { #fig-mac_interface; caption: "MAC Interface" }
 ![mac_interface]
 ~
-[mac_interface]: images/xx.PNG { width:auto; max-width:70% }
+[mac_interface]: images/mac_interface.png { width:auto; max-width:70% }
 
 
 # Control Signals
@@ -1372,7 +1372,7 @@ Insert Figure About Here
 ~ Figure { #fig-bow_system; caption: "Example BoW System Configuration" }
 ![bow_system]
 ~
-[bow_system]: images/xx.PNG { width:auto; max-width:70% }
+[bow_system]: images/bow_system.png { width:auto; max-width:70% }
 
 
 ##	Data-Transfer Ready
@@ -1697,7 +1697,7 @@ Insert Figure About Here
 ~ Figure { #fig-data_path_state_machine; caption: "Datapath Calibration State Machine" }
 ![data_path_state_machine]
 ~
-[data_path_state_machine]: images/xx.PNG { width:auto; max-width:70% }
+[data_path_state_machine]: images/data_path_state_machine.png { width:auto; max-width:100% }
 
 Signals used in the datapath calibration sequence are listed in Table [#tab-calib_signals].
 
@@ -1761,8 +1761,8 @@ Should we include this?
 | [79]       | Reserved           | 1     | 1       | Reserved                         |
 +------------+--------------------+-------+---------+----------------------------------+
 |            |                    |       |         |                                  |
-| [78]       | tx_transfer_en     | 1     | 1       | TX output to RX to               |
-|            |                    |       |         | indicate that TX OSC             |
+| [78]       | tx_transfer_en     | 1     | 1       | Transmit output to Receive to    |
+|            |                    |       |         | indicate that Transmit           |
 |            |                    |       |         | transfer has been                |
 |            |                    |       |         | enabled.                         |
 +------------+--------------------+-------+---------+----------------------------------+
@@ -1773,13 +1773,13 @@ Should we include this?
 | [76]       | Reserved           | 1     | 1       | Reserved                         |
 +------------+--------------------+-------+---------+----------------------------------+
 |            |                    |       |         |                                  |
-| [75]       | rx_transfer_en     | 1     | 1       | RX output to TX to indicate      |
-|            |                    |       |         | that RX is ready                 |
-|            |                    |       |         | for data transfer.               |
+| [75]       | rx_transfer_en     | 1     | 1       | Receive output to Transmit       |
+|            |                    |       |         | to indicate that Receive         |
+|            |                    |       |         | is ready for data transfer.      |
 +------------+--------------------+-------+---------+----------------------------------+
 |            |                    |       |         |                                  |
-| [74]       | rx_dll_lock        | 1     | 1       | RX output to TX to indicate      |
-|            |                    |       |         | that RX DLL                      |
+| [74]       | rx_dll_lock        | 1     | 1       | Receive output to Transmit       |
+|            |                    |       |         | to indicate that RX DLL          |
 |            |                    |       |         | achieves lock.                   |
 +------------+--------------------+-------+---------+----------------------------------+
 |            |                    |       |         |                                  |
@@ -1788,9 +1788,9 @@ Should we include this?
 |            |                    |       |         |                                  |
 | [70:69]    | Reserved           | 1     | 1       | Reserved                         |
 +------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [68]       | tx_dcc_cal_done    | 1     | 1       | TX output to RX to indicate      |
-|            |                    |       |         | that DCC calibration is done     |
+|            |                    |       |         | Transmit output to Receive       |
+| [68]       | tx_dcc_cal_done    | 1     | 1       | to indicate that                 |
+|            |                    |       |         | DCC calibration is done          |
 +------------+--------------------+-------+---------+----------------------------------+
 |            |                    |       |         |                                  |
 | [67]       | Reserved           | 1     | 0       | Reserved                         |
@@ -1805,42 +1805,42 @@ Should we include this?
 | [26]       | AUX_DBI            | 1     | 0       | AUX-0, DBI -1                    |
 +------------+--------------------+-------+---------+----------------------------------+
 |            |                    |       |         |                                  |
-| [25]       | rx_adapter_rstn    | 1     | 0       | Asynchronous adapter             |
-|            |                    |       |         | reset signal from the            |
-|            |                    |       |         | near side to the link partner    |
+| [25]       | rx_adapter_rstn    | 1     | 0       | Adapter                          |
+|            |                    |       |         | reset signal from                |
+|            |                    |       |         | Transmit to Receive              |
 +------------+--------------------+-------+---------+----------------------------------+
 |            |                    |       |         |                                  |
-| [24]       | tx_adapter_rstn    | 1     | 0       | Asynchronous adapter             |
-|            |                    |       |         | reset signal from the            |
-|            |                    |       |         | link partner to the near side    |
+| [24]       | tx_adapter_rstn    | 1     | 0       | Adapter                          |
+|            |                    |       |         | reset signal from                |
+|            |                    |       |         | Receive to Transmit              |
 +------------+--------------------+-------+---------+----------------------------------+
 |            |                    |       |         |                                  |
 | [23]       | rx_mac_rdy         | 1     | 0       | Data transfer ready signal       |
-|            |                    |       |         | from the link partner to         |
-|            |                    |       |         |  the near side                   |
+|            |                    |       |         | from the Receive to              |
+|            |                    |       |         |  the Transmit                   |
 +------------+--------------------+-------+---------+----------------------------------+
 |            |                    |       |         |                                  |
 | [22]       | tx_mac_rdy         | 1     | 0       | Data Transfer                    |
 |            |                    |       |         | ready signal from                |
-|            |                    |       |         | the near side to the             |
-|            |                    |       |         | link partner                     |
+|            |                    |       |         | Transmit to                      |
+|            |                    |       |         | Receive                          |
 +------------+--------------------+-------+---------+----------------------------------+
 |            |                    |       |         |                                  |
-| [21]       | Power_on_reset     | 1     | 0       | FO output to LE to               |
+| [21]       | Power_on_reset     | 1     | 0       | Receive output to Transmit to    |
 |            |                    |       |         | indicate power on                |
 |            |                    |       |         | reset completion                 |
 +------------+--------------------+-------+---------+----------------------------------+
 |            |                    |       |         |                                  |
-| [16-20]    | Slice_ID           | 5     | x00     | NS Output to                     |
-|            |                    |       |         | LINK PARTNER                     |
+| [16-20]    | Slice_ID           | 5     | x00     | Transmit Output to               |
+|            |                    |       |         | Receive                          |
 +------------+--------------------+-------+---------+----------------------------------+
 |            |                    |       |         |                                  |
-| [12-15]    | Link_ID            | 4     | x0      | NS Output to                     |
-|            |                    |       |         | LINK PARTNER                     |
+| [12-15]    | Link_ID            | 4     | x0      | Transmit Output to               |
+|            |                    |       |         | Receive                          |
 +------------+--------------------+-------+---------+----------------------------------+
 |            |                    |       |         |                                  |
-| [8-11]     | Device_ID          | 4     | x0      | NS Output to                     |
-|            |                    |       |         | LINK PARTNER                     |
+| [8-11]     | Device_ID          | 4     | x0      | Transmit Output to               |
+|            |                    |       |         | Receive                          |
 +------------+--------------------+-------+---------+----------------------------------+
 |            |                    |       |         |                                  |
 | [7]        | Reserved           | 1     | 1       | Reserved                         |
@@ -1870,9 +1870,9 @@ Should we include this?
 | [71]       | Reserved               | 1     | 0       | Reserved                           |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
-| [70]       | rx_transfer_en         | 1     | 1       | RX   output to LE to indicate      |
-|            |                        |       |         |                                    |
-|            |                        |       |         | FO RX is ready to receive data     |
+| [70]       | rx_transfer_en         | 1     | 1       | Receive output to Transmit         |
+|            |                        |       |         | to indicate Receive Rx             |
+|            |                        |       |         | is ready to receive data           |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
 | [69]       | rx_dcc_dll_lock_req    | 1     | 1       | DLL/DCC calibration request from   |
@@ -1880,17 +1880,17 @@ Should we include this?
 |            |                        |       |         | start full DLL/DCC calibration.    |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
-| [68]       | rx_dll_lock            | 1     | 1       | RX output to LE (adapter           |
-|            |                        |       |         | and PHY) to indicate FO            |
-|            |                        |       |         | DLL achieves lock.                 |
+| [68]       | rx_dll_lock            | 1     | 1       | Receive output to Transmit         |
+|            |                        |       |         | (adapterand PHY) to indicate       |
+|            |                        |       |         | Receive DLL has achieved lock.     |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
 | [67:65]    | Reserved               | 1     | 0       | Reserved                           |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
-| [64]       | tx_transfer_en         | 1     | 1       | TX sends to RX (adapter            |
+| [64]       | tx_transfer_en         | 1     | 1       | Transmit sends to Receive (adapter |
 |            |                        |       |         | and PHY) that it is ready          |
-|            |                        |       |         | for TX data transfer.              |
+|            |                        |       |         | for Trasnmit data transfer.              |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
 | [63]       | tx_dcc_dll_lock_req    | 1     | 1       | PHY DLL/DCC calibration            |
@@ -1920,43 +1920,43 @@ Should we include this?
 | [49]       | AUX_DBI                | 1     | 0       | AUX-0, DBI -1                      |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
-| [48]       | rx_adapter_rstn        | 1     | 0       | Asynchronous adapter reset         |
-|            |                        |       |         | signal from the near side          |
-|            |                        |       |         | to the link partner                |
+| [48]       | rx_adapter_rstn        | 1     | 0       | Adapter reset                      |
+|            |                        |       |         | signal from the Transmit           |
+|            |                        |       |         | to Receive                         |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
 | [47]       | tx_adapter_rstn        | 1     | 0       | Asynchronous adapter reset         |
-|            |                        |       |         | signal from the link partner       |
-|            |                        |       |         | to the near side                   |
+|            |                        |       |         | signal from the Receive            |
+|            |                        |       |         | to Transmit                        |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
 | [46]       | rx_mac_rdy             | 1     | 0       | Data transfer ready signal         |
-|            |                        |       |         | from the link partner to the       |
-|            |                        |       |         | near side                          |
+|            |                        |       |         | from the Receive to Transmit       |
+|            |                        |       |         |                                    |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
 | [45]       | tx_mac_rdy             | 1     | 0       | Data Transfer ready signal         |
-|            |                        |       |         | from the near side to              |
-|            |                        |       |         | the link partner                   |
+|            |                        |       |         | from the Transmit to               |
+|            |                        |       |         | the Receive                        |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
-| [44]       | Power_on_reset         | 1     | 0       | FO output to LE to indicate        |
-|            |                        |       |         | power on reset completion          |
+| [44]       | Power_on_reset         | 1     | 0       | Receive output to Transmit         |
+|            |                        |       |         | to indicate PoR completion         |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
-| [40-43]    | Slice_ID               | 5     | x00     | LINK PARTNER Output                |
-|            |                        |       |         | to NS                              |
+| [40-43]    | Slice_ID               | 5     | x00     | Receive Output                     |
+|            |                        |       |         | to Transmit                        |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
-| [36-39]    | Link_ID                | 4     | x0      | LINK PARTNER Output                |
-|            |                        |       |         | to NS                              |
+| [36-39]    | Link_ID                | 4     | x0      | Receive Output                     |
+|            |                        |       |         | to Transmit                        |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
-| [32-35]    | Device_ID              | 4     | x0      | LINK PARTNER Output                |
-|            |                        |       |         | to NS                              |
+| [32-35]    | Device_ID              | 4     | x0      | Receive Output                     |
+|            |                        |       |         | to Transmit                        |
 +------------+------------------------+-------+---------+------------------------------------+
 |            |                        |       |         |                                    |
-| [31]       | rx_tx_dcc_cal_done     | 6     | 1       | TX BoW to notify LE                |
+| [31]       | rx_dcc_cal_done        | 6     | 1       | Receive to notify Transmit         |
 |            |                        |       |         | that DCC calibration is            |
 |            |                        |       |         | complete.                          |
 +------------+------------------------+-------+---------+------------------------------------+

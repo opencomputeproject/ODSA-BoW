@@ -1039,12 +1039,12 @@ The BoW interface comprises either a transmit or receive slice with three signal
 Insert Figure About Here
 ~
 
-~ Figure { #fig-components; caption: "BoW Signal Types" }
-![components]
+~ Figure { #fig-bow_signals; caption: "BoW Signal Types" }
+![bow_signals]
 ~
-[components]: images/xx.PNG { width:auto; max-width:70% }
+[bow_signals]: images/xx.PNG { width:auto; max-width:70% }
 
-~ TableFigure {#tab-clocks; caption: "BoW Interface Signals"; width:100%;  }
+~ TableFigure {#tab-bow_interface; caption: "BoW Interface Signals"; width:100%;  }
 +---------------------------+------------------------------------------------------------+
 |          Signal           |                         Description                        |
 +---------------------------+------------------------------------------------------------+
@@ -1102,7 +1102,7 @@ Insert Figure About Here
 
 The following signals shall constitute the interface to the MAC
 
-~ TableFigure {#tab-clocks; caption: "MAC Interface"; width:100%;  }
+~ TableFigure {#tab-mac_interface; caption: "MAC Interface"; width:100%;  }
 +-------------------------+--------------+--------------------------------------------------------+
 | Signals                 | In(from MAC) | Description                                            |
 |                         | Out (to MAC) |                                                        |
@@ -1245,7 +1245,7 @@ Table 10 defines the control signals for Transmit and Receive slices. The table 
 
 
 
-~ TableFigure {#tab-clocks; caption: "Control Signals"; width:100%; }
+~ TableFigure {#tab-control_signals; caption: "Control Signals"; width:100%; }
 
 +---------------------+-----------------------------+--------------+---------------------+----------------------+         
 |                     |                             |              | Signal  Origin      |    Bit Number        |
@@ -1420,7 +1420,7 @@ each chiplet is left to the system designer.
 Insert Figure About Here
 ~
 
-~ Figure { #fig-BoW_system; caption: "Example BoW System Configuration" }
+~ Figure { #fig-bow_system; caption: "Example BoW System Configuration" }
 ![bow_system]
 ~
 [bow_system]: images/xx.PNG { width:auto; max-width:70% }
@@ -1497,7 +1497,7 @@ Initialization will consist of three steps in sequence:
 Insert Figure About Here
 ~
 
-~ Figure { #fig-BoW_Initialization; caption: "BoW Initialization" }
+~ Figure { #fig-bow_init; caption: "BoW Initialization" }
 ![bow_init]
 ~
 [bow_init]: images/xx.PNG { width:auto; max-width:70% }
@@ -1528,7 +1528,7 @@ into standby mode (Section 3.1.1). The power-on reset sequence shall proceed as 
 Insert Figure About Here
 ~
 
-~ Figure { #fig-PoR; caption: "BoW Power On Reset Synchronization" }
+~ Figure { #fig-bow_PoR; caption: "BoW Power On Reset Synchronization" }
 ![bow_PoR]
 ~
 [bow_PoR]: images/xx.PNG { width:auto; max-width:70% }
@@ -1547,4 +1547,493 @@ two signals shall be provided for use by automated test equipment to
 override the power_on_reset and device_detect signals when there 
 is no Transmit/Receive pair available. por_ovrd overrides the power_on_reset signal, 
 and device_detect_ovrd overrides the device_detect signal.
+~
+
+#Configuration
+
+Configuration may include:
+
+* Host chiplet configuration (in the case of an FPGA or similar chiplet)
+* BoW interface configuration
+* BoW redundancy activation
+
+The tx_mac_rdy signal shall be de-asserted LO during configuration and shall be asserted HI when configuration completes and the chiplet is ready for calibration and data transfer. The clock input from the MAC shall be stable prior to assertion of tx_mac_rdy.
+
+##	Output State During Configuration
+
+All outputs, including data outputs, shall be in standby mode (Section 3.1.1) during configuration. 
+
+##	Chiplet Configuration
+
+Configuration of any non-BoW aspects of the chiplet is outside the scope of this specification.
+
+##	BoW Interface Configuration
+
+All intended BoW features shall be configured at power-up.
+
+## JTAG Configuration
+
+The chiplet data sheet should document the configuration requirements that allow for successfully implementation of JTAG EXTEST and INTEST operations.
+
+Control Shift Register Readiness
+
+The control shift register shall be operational once configuration is complete.
+
+##	Configuration Completion Signals
+
+~framed {color:Green}
+[Instead of conf_done, can we use this mechanism as a global interrupt to allow the side-band to 
+respond with more immediacy or retain its conf_done status prior to calibration. 
+Post link initialization, reuse it as a global interrupt signal. I think this can be 
+done cleanly based on the status of a number of other signals participating in the initialization process]
+~
+Each chiplet shall have a conf_done signal. conf_done shall be an open-drain output. 
+It shall be asserted LO when configuring, and it shall be released when configuration of 
+all interfaces on the chiplet is complete, the analog circuits are stable, and the free-running 
+clock is stable. conf_done shall indicate only that BoW configuration is complete. 
+No other configuration completion (MAC, FPGA, etc.) shall be included in the generation of
+the conf_done signal.
+
+All conf_done signals from all chiplets of a module should be connected in a wired-AND 
+configuration to generate a module-level CONF_DONE signal that shall be HI
+ when all chiplets on the module have completed BoW configuration. The pull-up resistor 
+ used to implement the wired-AND function may reside on the module containing the chiplets 
+ with BoW interfaces, or it may reside off the module. The CONF_DONE signal should be 
+ provided as an output of the module regardless of the resistor placement.
+
+~framed {color:Blue}
+Insert Figure About Here
+~
+
+~ Figure { #fig-bow_config_complete; caption: "Configuration Complete Signals" }
+![bow_config_complete]
+~
+[bow_config_complete]: images/xx.PNG { width:auto; max-width:70% }
+
+Data outputs shall remain in standby mode (Section 3.1.1) until CONF_DONE is asserted,
+including in the case where CONF_DONE is pulled low some time after being asserted high.
+
+The resistance and VDD values should comply with
+
+~ TableFigure {#tab-pull-up; caption: "Wired-AND Pull-up Specifications"; width:100%; }
+
++--------------------+-------+
+| Parameter          | Value |
++--------------------+-------+
+| Pull-up resistance | 1kOhm |
++--------------------+-------+
+| Pull-up Vdd        | 0.9V  |
++--------------------+-------+
+~
+
+#	Calibration 
+
+The calibration sequence shall proceed as follows:
+
+* Adapter reset
+* Data path calibration
+
+A BoW interface shall have an tx_adapter_rstn signal that is asserted by the MAC. 
+It shall be forwarded to the link partner of the interface through the register interface.
+
+~framed {color:Blue}
+Insert Figure About Here
+~
+
+~ Figure { #fig-bow_adapter_reset; caption: "Adapter reset" }
+![bow_adapter_reset]
+~
+[bow_adapter_reset]: images/xx.PNG { width:auto; max-width:70% }
+
+When either the Transmit (tx_adapter_rstn) or Receive (rx_adapter_rstn) adapter 
+reset signal is asserted LO, the adapter shall reset the calibration state machines. 
+If adapter reset follows de-assertion of data- transfer ready, tx(rx)_mac_rdy 
+must be asserted HI before tx(rx)_adapter_rstn is asserted HI.
+
+##	Data-Path Calibration
+
+Data-path calibration shall be implemented via state machines on the Transmit
+ and Receive sides of the interface that intercommunicate via the  control signals.
+
+~framed {color:Blue}
+Insert Figure About Here
+~
+
+~ Figure { #fig-data_path_calibration; caption: "Data-Path Calibration Architecture" }
+![data_path_calibration]
+~
+[data_path_calibration]: images/xx.PNG { width:auto; max-width:70% }
+
+Following the de-assertion of the adapter-reset signal(s), a calibration request
+ shall be made by asserting a calibration request signal. Separate calibration sequences 
+ shall be used for a Transmit transmitting to a Receive (Section 3.2.3.3.6) and a 
+ Receive transmitting to a Transmit (Section 3.2.3.3.7). The two sequences may occur 
+ in any order or concurrently.
+
+## Adapter Reset
+
+Data-path calibration shall be initiated when the MAC layer asserts the 
+tx_adapter_rstn signal LO. If the data-transfer ready signal was de-asserted prior 
+to the start of calibration, then the tx_mac_rdy signal must be asserted HI prior 
+to asserting the adapter-reset signals HI
+The MAC must de-assert the adapter-reset signal prior to requesting calibration start.
+
+## Calibration Request
+
+Calibration can be requested by either the Transmit or the Receive slice 
+using the tx_dcc_dll_lock_req signal or the rx_dcc_dll_lock_req signal, respectively.
+
+~ TableFigure {#tab-calib_init; caption: "Calibration Initiation Signals"; width:100%; }
+
++-----------------------+---------------------+---------------------+
+| Calibration Initiator | Dataflow direction  | Initiation signal   |
++-----------------------+---------------------+---------------------+
+|                       |                     |                     |
+| Transmit              | Transmit to Receive | tx_dcc_dll_lock_req |
++-----------------------+---------------------+---------------------+
+|                       |                     |                     |
+| Receive               | Receive to Transmit | rx_dcc_dll_lock_req |
++-----------------------+---------------------+---------------------+
+~
+
+
+Calibration for a dataflow direction shall commence when either Transmit 
+and Receive side has asserted its calibration request signal for 
+that dataflow direction. Calibration request signals shall remain asserted 
+until a new calibration is requested.
+
+## DCC Calibration
+
+Upon receipt of an xx_dcc_dll_lock_req signal, the DCC shall be calibrated. 
+The means of calibration is not specified and is left to the designer. 
+If the optional DCC is not present, then the state machines in Section 3.2.3.3
+ shall remain the same, with the DCC calibration state serving only to provide a 
+ signal indicating DCC calibration completion.
+
+## DLL Calibration
+Following DCC calibration, the receiving DLL shall be calibrated. 
+The means of calibrating the DLL is not specified and is left to the designer.
+If the optional DLL is not present, then the state machine in Section 3.2.3.3
+ shall remain the same, with the DLL lock state serving only to provide a signal indicating DLL lock completion.
+
+## Calibration Completion
+
+Calibration completion shall be indicated by the following signals.
+ Full completion shall be indicated when all four signals are asserted HI. 
+ All four signals, once asserted, shall remain asserted until a new calibration sequence is requested.
+
+~ TableFigure {#tab-calib_complete; caption: "Calibration Completion Signals"; width:100%; }
++------------------------+-------------------------------+
+| Calibration Completion | Meaning                       |
+| Signal                 |                               |
++------------------------+-------------------------------+
+|                        |                               |
+| tx_transfer_en         | Transmit transmit block       |
+|                        | has completed calibration.    |
++------------------------+-------------------------------+
+|                        |                               |
+| rx_transfer_en         | Receive receive block         |
+|                        | has completed calibration     |
++------------------------+-------------------------------+
+~
+
+Calibration of Datapath
+
+Datapath calibration shall comply with Figure [#fig-data_path_state_machine]. The numbers in black indicate the sequence of steps
+
+~framed {color:Blue}
+Insert Figure About Here
+~
+
+~ Figure { #fig-data_path_state_machine; caption: "Datapath Calibration State Machine" }
+![data_path_state_machine]
+~
+[data_path_state_machine]: images/xx.PNG { width:auto; max-width:70% }
+
+Signals used in the datapath calibration sequence are listed in Table [#tab-calib_signals].
+
+~ TableFigure {#tab-calib_signals; caption: "Datapath Calibration Signals"; width:100%; }
+
++------------------------+----------------------------------------------------------+
+|         Signals        |                        Description                       |
++------------------------+----------------------------------------------------------+
+|                        |                                                          |
+| rx_dcc_dll_lock_req    |        Request from Receive to start calibration.        |
+|                        |       Once asserted,shall remain asserted until a        |
+|                        |             new calibration is requested.                |
++------------------------+----------------------------------------------------------+
+|                        |                                                          |
+| tx_dcc_dll_lock_req    |        Request from Transmit to start calibration.       |
+|                        |       Once asserted, shall remain asserted until a       |
+|                        |             new calibration is requested.                |
++------------------------+----------------------------------------------------------+
+|                        |                                                          |
+|   tx_dcc_cal_done      |      Indicates that Transmit has completed its DCC       |
+|                        |     calibration. Once asserted, shall remain asserted    |
+|                        |         until a new calibration is requested.            |
++------------------------+----------------------------------------------------------+
+|                        |                                                          |
+|     rx_dll_lock        |       Indicates that Receive has completed its DLL       |
+|                        |   lock procedure. Once asserted, shall remain asserted   |
+|                        |         until a new calibration is requested.            |
++------------------------+----------------------------------------------------------+
+|                        |                                                          |
+|    rx_transfer_en      |     Indicates that Receive has completed its RX path     |
+|                        | calibration and is ready to receive data. Once asserted, |
+|                        |  shall remain asserted until calibration is complete.    |
++------------------------+----------------------------------------------------------+
+|                        |                                                          |
+|    tx_transfer_en      |     Indicates that Transmit has completed its TX path    |
+|                        |       calibration and is ready to receive data.          |
++------------------------+----------------------------------------------------------+
+~
+
+##	BoW Link Ready
+
+When both tx_transfer_en and rx_transfer_en are true, then the link shall be ready to transmit data.
+
+~framed {color:Green}
+Should we include this?
+
+##Link Training
+~
+
+# Control-Signal Shift Register Mapping
+
+## Transmit Control Register Definition
+
+~ TableFigure {#tab-transmit_control; caption: "Transmit Control Signals"; width:100%; }
++------------+--------------------+-------+---------+----------------------------------+
+| Bit        | Control Signals    | Bit   | Default | Description                      |
+| Order      | from Transmit to   | Width | Value   |                                  |
+|            | Receive            |       |         |                                  |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [79]       | Reserved           | 1     | 1       | Reserved                         |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [78]       | tx_transfer_en     | 1     | 1       | TX output to RX to               |
+|            |                    |       |         | indicate that TX OSC             |
+|            |                    |       |         | transfer has been                |
+|            |                    |       |         | enabled.                         |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [77]       | Reserved           | 1     | 1       | Reserved                         |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [76]       | Reserved           | 1     | 1       | Reserved                         |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [75]       | rx_transfer_en     | 1     | 1       | RX output to TX to indicate      |
+|            |                    |       |         | that RX is ready                 |
+|            |                    |       |         | for data transfer.               |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [74]       | rx_dll_lock        | 1     | 1       | RX output to TX to indicate      |
+|            |                    |       |         | that RX DLL                      |
+|            |                    |       |         | achieves lock.                   |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [73:71]    | Reserved           | 1     | 1       | Reserved                         |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [70:69]    | Reserved           | 1     | 1       | Reserved                         |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [68]       | tx_dcc_cal_done    | 1     | 1       | TX output to RX to indicate      |
+|            |                    |       |         | that DCC calibration is done     |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [67]       | Reserved           | 1     | 0       | Reserved                         |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [66]       | Reserved           | 1     | 1       | Reserved                         |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [65:27]    | User defined       | 1     | 0       | For application use              |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [26]       | AUX_DBI            | 1     | 0       | AUX-0, DBI -1                    |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [25]       | rx_adapter_rstn    | 1     | 0       | Asynchronous adapter             |
+|            |                    |       |         | reset signal from the            |
+|            |                    |       |         | near side to the link partner    |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [24]       | tx_adapter_rstn    | 1     | 0       | Asynchronous adapter             |
+|            |                    |       |         | reset signal from the            |
+|            |                    |       |         | link partner to the near side    |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [23]       | rx_mac_rdy         | 1     | 0       | Data transfer ready signal       |
+|            |                    |       |         | from the link partner to         |
+|            |                    |       |         |  the near side                   |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [22]       | tx_mac_rdy         | 1     | 0       | Data Transfer                    |
+|            |                    |       |         | ready signal from                |
+|            |                    |       |         | the near side to the             |
+|            |                    |       |         | link partner                     |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [21]       | Power_on_reset     | 1     | 0       | FO output to LE to               |
+|            |                    |       |         | indicate power on                |
+|            |                    |       |         | reset completion                 |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [16-20]    | Slice_ID           | 5     | x00     | NS Output to                     |
+|            |                    |       |         | LINK PARTNER                     |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [12-15]    | Link_ID            | 4     | x0      | NS Output to                     |
+|            |                    |       |         | LINK PARTNER                     |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [8-11]     | Device_ID          | 4     | x0      | NS Output to                     |
+|            |                    |       |         | LINK PARTNER                     |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [7]        | Reserved           | 1     | 1       | Reserved                         |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [6]        | Reserved           | 1     | 0       | Reserved                         |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [5]        | Reserved           | 1     | 1       | Reserved                         |
++------------+--------------------+-------+---------+----------------------------------+
+|            |                    |       |         |                                  |
+| [4:0]      | User defined       | 1     | 0       | For application use              |
++------------+--------------------+-------+---------+----------------------------------+
+
+~
+
+## Receive Control Register Definition
+
+~ TableFigure {#tab-receive_control; caption: "Receive Control Signals"; width:100%; }
+
++------------+------------------------+-------+---------+------------------------------------+
+| Bit        | Control Signals        | Bit   | Default | Descripition                       |
+| Order      | from Receive to        | Width | Value   |                                    |
+|            | Transmit               |       |         |                                    |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [71]       | Reserved               | 1     | 0       | Reserved                           |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [70]       | rx_transfer_en         | 1     | 1       | RX   output to LE to indicate      |
+|            |                        |       |         |                                    |
+|            |                        |       |         | FO RX is ready to receive data     |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [69]       | rx_dcc_dll_lock_req    | 1     | 1       | DLL/DCC calibration request from   |
+|            |                        |       |         | Receive RX to Transmit TX BoW to   |
+|            |                        |       |         | start full DLL/DCC calibration.    |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [68]       | rx_dll_lock            | 1     | 1       | RX output to LE (adapter           |
+|            |                        |       |         | and PHY) to indicate FO            |
+|            |                        |       |         | DLL achieves lock.                 |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [67:65]    | Reserved               | 1     | 0       | Reserved                           |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [64]       | tx_transfer_en         | 1     | 1       | TX sends to RX (adapter            |
+|            |                        |       |         | and PHY) that it is ready          |
+|            |                        |       |         | for TX data transfer.              |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [63]       | tx_dcc_dll_lock_req    | 1     | 1       | PHY DLL/DCC calibration            |
+|            |                        |       |         | request from Receive TX to         |
+|            |                        |       |         | Transmit RX BoW to start full      |
+|            |                        |       |         | DLL/DCC calibration.               |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [62]       | Reserved               | 1     | 0       | Reserved                           |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [61]       | Reserved               | 1     | 0       | Reserved                           |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [60]       | Reserved               | 1     | 1       | Reserved                           |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [59]       | Reserved               | 1     | 0       | Reserved                           |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [58]       | Reserved               | 1     | 1       | Reserved                           |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [57:50]    | User defined           | 1     | 0       | For application use                |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [49]       | AUX_DBI                | 1     | 0       | AUX-0, DBI -1                      |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [48]       | rx_adapter_rstn        | 1     | 0       | Asynchronous adapter reset         |
+|            |                        |       |         | signal from the near side          |
+|            |                        |       |         | to the link partner                |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [47]       | tx_adapter_rstn        | 1     | 0       | Asynchronous adapter reset         |
+|            |                        |       |         | signal from the link partner       |
+|            |                        |       |         | to the near side                   |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [46]       | rx_mac_rdy             | 1     | 0       | Data transfer ready signal         |
+|            |                        |       |         | from the link partner to the       |
+|            |                        |       |         | near side                          |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [45]       | tx_mac_rdy             | 1     | 0       | Data Transfer ready signal         |
+|            |                        |       |         | from the near side to              |
+|            |                        |       |         | the link partner                   |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [44]       | Power_on_reset         | 1     | 0       | FO output to LE to indicate        |
+|            |                        |       |         | power on reset completion          |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [40-43]    | Slice_ID               | 5     | x00     | LINK PARTNER Output                |
+|            |                        |       |         | to NS                              |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [36-39]    | Link_ID                | 4     | x0      | LINK PARTNER Output                |
+|            |                        |       |         | to NS                              |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [32-35]    | Device_ID              | 4     | x0      | LINK PARTNER Output                |
+|            |                        |       |         | to NS                              |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [31]       | rx_tx_dcc_cal_done     | 6     | 1       | TX BoW to notify LE                |
+|            |                        |       |         | that DCC calibration is            |
+|            |                        |       |         | complete.                          |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [30:28]    | User defined           | 1     | 0       | For application use                |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [27]       | Reserved               | 1     | 0       | Reserved                           |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [26:17]    | User defined           | 1     | 0       | For application use                |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [16]       | User defined           | 1     | 0       | For application use                |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [15]       | User defined           | 1     | 0       | For application use                |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [14]       | User defined           | 1     | 0       | For application use                |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [13]       | User defined           | 1     | 0       | For application use                |
++------------+------------------------+-------+---------+------------------------------------+
+|            |                        |       |         |                                    |
+| [12:0]     | User defined           | 1     | 0       | For application use                |
++------------+------------------------+-------+---------+------------------------------------+
+
 ~

@@ -385,15 +385,15 @@ chiplets using CMOS IO buffers.
 ## Signals
 
 Each BoW slice consists of a differential clock pair, 16 single-ended data wires, 
-and optional FEC and AUX wires. Each BoW slice is unidirectional when in operation.
+and optional wires FEC and AUX. Each BoW slice is unidirectional when in operation.
 A chiplet may be designed with with Rx-only and Tx-only slices, or
-each slice may have both Tx and Rx capability which is configured at runtime. 
+each slice may have both Tx and Rx capability, one of which is selected at runtime. 
 A bidirectional link is composed of some number of slices configured for Rx and some for Tx.
 
 FEC (Forward Error Correction) is an optional signal that allows using FEC to 
 improve the bit error rate (BER).  AUX is an optional signal that can be used for purposes
 such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
-the details on FEC and AUX usage.
+the details on FEC and AUX usage, which is defined in the Link layer.
 
 A BoW link is only specified for operation inside a package for reach and ESD reasons.
 
@@ -403,7 +403,7 @@ A BoW link is only specified for operation inside a package for reach and ESD re
 +:-------------+:-------:+:-----------+:------------+
 | Clock        | 2       | CLK+, CLK- | Differential|
 |--------------|---------|------------|-------------|
-| Data         | 16      | D0-15      |             |
+| Data         | 16      | D[15:0]    |             |
 |--------------|---------|------------|-------------|
 |Forward Error | 1       |FEC         | Optional    |
 |Correction    |         |            |             |

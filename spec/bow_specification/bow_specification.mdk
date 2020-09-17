@@ -245,15 +245,58 @@ This section will also include a discussion on interoperability.
 <to be completed in subsequent draft>
 
 ## BoW Architecture
-The BoW interfaces implement a physical-layer or PHY interconnect protocol, implementing 
-Layer 1 of the 5-layer TCP/IP reference model.
+The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
+Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
+integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
+interface. The logical component of the ODSA interface aims to 
+support protocols used commonly for the two most common chiplet use cases, package 
+aggregation and die disaggregation across a wide range of open and proprietary D2D PHYs
+such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. The ODSA stack abstracts
+the PHY layer from the logical interface by using well-defined abstraction interfaces.
+Specifically, the ODSA will use two abstraction interfaces, the PIPE and LPIF
+interfaces. Any logic transaction controller, say a PCIe controller for example, that
+supports a PIPE (LPIF) interface can use any D2D PHY that also supports a PIPE (LPIF)
+interface as a physical layer to transport protocol bits between die.
 
-
-~ Center
+~ Figure {#fig-odsa-stack; caption: "The BoW PHY in the ODSA Stack"}
 ![bowspec_figure1]
 ~
 
-[bowspec_figure1]: images/bowspec_figure1.JPG "bowspec_figure1" { width:auto; max-width:40% }
+[bowspec_figure1]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
+
+### BoW Implementation Components
+The BoW PHY connects core logic to wires between the die in a multi-die design. Tyically,
+the BoW is expected to be driven by a media-access controller (MAC) driven by the core 
+logic clock 
+
+In this document, the BoW is specified as a combination of a control path and datapath as
+shown in Figure below.
+
+* The BoW datapath transports bits from the MAC to wires on the packaging substrate.
+It is a mixture of analog and digital circuitry. On one side, the on-die BoW datapath 
+terminates in bumps, at the edge of the die connected to wires on the substrate. Internally 
+the datapath is connected to a MAC. The datapath also expected to include serializer 
+(deserializer) logic on transmit (receive) that is not specified in this document.
+
+* The BoW control path stores information to initialize and operate the datapath in status
+registers. The control path is expected to receive input from the an external digital
+control and management bus such I2C. The control path outputs information to manage the
+datapath. The interface between the control and datapath is specific to an
+implementation. The BoW PHY may be implemented with the control and datapath physically 
+commingled. Implementing them separately allows the control logic to be
+implemented in a separate block for multi-PHY macros.
+
+* Any BoW implementation is expected to receive a clock input from a PLL, which may be
+shared across multiple slices. A BoW Rx slice is  expected to forward the clock received 
+from the far side to the core logic. A BoW Tx slice is expected to forward its PLL clock
+to the die's core logic. This will place all clock transitions in the core logic.
+
+* As shown in Figure [#fig-odsa-stack], the BoW interface may need to receive data
+through either the PIPE or LPIF interfaces to support common transaction protocols. For this
+use case, in addition to the components in Figure, the BoW interface will have to be
+augmented with an interface-specific adapter to support a protocol controller. The 
+serializer/de-serializer functionality may also be integrated with the adapter. The 
+specifications for each adapter are outside the scope of this document.
 
 ### BoW Configurations
 

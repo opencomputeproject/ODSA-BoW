@@ -267,7 +267,14 @@ interface as a physical layer to transport protocol bits between die.
 ### BoW Implementation Components
 The BoW PHY connects core logic to wires between the die in a multi-die design. Tyically,
 the BoW is expected to be driven by a media-access controller (MAC) driven by the core 
-logic clock 
+logic clock as shown in Figure.
+
+~ Figure {#fig-bow-components; caption: "BoW components and interfaces"}
+![bowspec_figcomponents]
+~
+
+[bowspec_figcomponents]: images/fig-bow_components.jpg {width:auto; max-width: 60%}
+
 
 In this document, the BoW is specified as a combination of a control path and datapath as
 shown in Figure below.
@@ -293,10 +300,18 @@ to the die's core logic. This will place all clock transitions in the core logic
 
 * As shown in Figure [#fig-odsa-stack], the BoW interface may need to receive data
 through either the PIPE or LPIF interfaces to support common transaction protocols. For this
-use case, in addition to the components in Figure, the BoW interface will have to be
+use case, in addition to the components in Figure [#fig-bow-components], the BoW interface will have to be
 augmented with an interface-specific adapter to support a protocol controller. The 
 serializer/de-serializer functionality may also be integrated with the adapter. The 
-specifications for each adapter are outside the scope of this document.
+specifications for each adapter are outside the scope of this document. Figure [#fig-bow-pcie] shows the
+BoW with an adapter to transport PCIe transactions as an underlay.
+
+~ Figure {#fig-bow-pcie; caption: "BoW with a PIPE adapter for PCIe transactions"}
+![bowspec_figcomponents]
+~
+
+[bowspec_figcomponents]: images/fig-bow_pcie.jpg {width:auto; max-width: 60%}
+
 
 ### BoW Configurations
 

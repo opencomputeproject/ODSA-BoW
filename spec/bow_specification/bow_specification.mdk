@@ -984,14 +984,11 @@ The BoW interface comprises either a transmit or receive slice with three signal
   * Data clock out (tx_fwd_clk), sent from the interface
   * Data clock in (rx_fwd_clk), input to the interface
 
-~framed {color:Blue}
-Insert Figure About Here
-~
 
 ~ Figure { #fig-bow_signals; caption: "BoW Signal Types" }
 ![bow_signals]
 ~
-[bow_signals]: images/xx.PNG { width:auto; max-width:70% }
+[bow_signals]: images/bow_signals_types.png { width:auto; max-width:70% }
 
 ~ TableFigure {#tab-bow_interface; caption: "BoW Interface Signals"; width:100%;  }
 +---------------------------+------------------------------------------------------------+
@@ -1128,9 +1125,6 @@ The following signals shall constitute the interface to the MAC
 ~
 
 
-~framed {color:Blue}
-Insert Figure About Here
-~
 
 ~ Figure { #fig-mac_interface; caption: "MAC Interface" }
 ![mac_interface]
@@ -1365,9 +1359,6 @@ slice states on each of the interface partners during initialization, calibratio
 other sideband activity. The specifics of how this is topology information is propagated to 
 each chiplet is left to the system designer.
 
-~framed {color:Blue}
-Insert Figure About Here
-~
 
 ~ Figure { #fig-bow_system; caption: "Example BoW System Configuration" }
 ![bow_system]
@@ -1442,14 +1433,11 @@ Initialization will consist of three steps in sequence:
 * Configuration
 * Calibration 
 
-~framed {color:Blue}
-Insert Figure About Here
-~
 
-~ Figure { #fig-bow_init; caption: "BoW Initialization" }
+~ Figure { #fig-bow_init; caption: "BoW Initialization " }
 ![bow_init]
 ~
-[bow_init]: images/xx.PNG { width:auto; max-width:70% }
+[bow_init]: images/bow_init.png { width:auto; max-width:90% }
 
 If there are multiple BoW interfaces on a single chiplet, 
 they shall all come out of configuration at the same time, 
@@ -1472,15 +1460,6 @@ into standby mode (Section 3.1.1). The power-on reset sequence shall proceed as 
 4.	When a chiplet completes its power-on reset sequence:
   a.	Transmit interfaces shall begin the configuration stage.
   b.	Receive interfaces shall de-assert their power_on_reset signals LO and begin the configuration stage.
-
-~framed {color:Blue}
-Insert Figure About Here
-~
-
-~ Figure { #fig-bow_PoR; caption: "BoW Power On Reset Synchronization" }
-![bow_PoR]
-~
-[bow_PoR]: images/xx.PNG { width:auto; max-width:70% }
 
 ##	Unused Interfaces
 In order to ensure correct operation for chiplets with unused Transmit interfaces, the
@@ -1550,14 +1529,11 @@ configuration to generate a module-level CONF_DONE signal that shall be HI
  with BoW interfaces, or it may reside off the module. The CONF_DONE signal should be 
  provided as an output of the module regardless of the resistor placement.
 
-~framed {color:Blue}
-Insert Figure About Here
-~
 
 ~ Figure { #fig-bow_config_complete; caption: "Configuration Complete Signals" }
 ![bow_config_complete]
 ~
-[bow_config_complete]: images/xx.PNG { width:auto; max-width:70% }
+[bow_config_complete]: images/bow_config_done.png { width:auto; max-width:70% }
 
 Data outputs shall remain in standby mode (Section 3.1.1) until CONF_DONE is asserted,
 including in the case where CONF_DONE is pulled low some time after being asserted high.
@@ -1585,14 +1561,6 @@ The calibration sequence shall proceed as follows:
 A BoW interface shall have an tx_adapter_rstn signal that is asserted by the MAC. 
 It shall be forwarded to the link partner of the interface through the register interface.
 
-~framed {color:Blue}
-Insert Figure About Here
-~
-
-~ Figure { #fig-bow_adapter_reset; caption: "Adapter reset" }
-![bow_adapter_reset]
-~
-[bow_adapter_reset]: images/xx.PNG { width:auto; max-width:70% }
 
 When either the Transmit (tx_adapter_rstn) or Receive (rx_adapter_rstn) adapter 
 reset signal is asserted LO, the adapter shall reset the calibration state machines. 
@@ -1604,14 +1572,11 @@ must be asserted HI before tx(rx)_adapter_rstn is asserted HI.
 Data-path calibration shall be implemented via state machines on the Transmit
  and Receive sides of the interface that intercommunicate via the  control signals.
 
-~framed {color:Blue}
-Insert Figure About Here
-~
 
 ~ Figure { #fig-data_path_calibration; caption: "Data-Path Calibration Architecture" }
 ![data_path_calibration]
 ~
-[data_path_calibration]: images/xx.PNG { width:auto; max-width:70% }
+[data_path_calibration]: images/data_path_calibration.png { width:auto; max-width:90% }
 
 Following the de-assertion of the adapter-reset signal(s), a calibration request
  shall be made by asserting a calibration request signal. Separate calibration sequences 
@@ -1690,9 +1655,7 @@ Calibration of Datapath
 
 Datapath calibration shall comply with Figure [#fig-data_path_state_machine]. The numbers in black indicate the sequence of steps
 
-~framed {color:Blue}
-Insert Figure About Here
-~
+
 
 ~ Figure { #fig-data_path_state_machine; caption: "Datapath Calibration State Machine" }
 ![data_path_state_machine]

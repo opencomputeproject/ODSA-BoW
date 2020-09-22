@@ -955,7 +955,7 @@ Suggest test patterns are:
 Furthermore, to cover the DC wandering and single  bit response, the following suggest pattern should be added to the beginning of the preferred 
 PRBS pattern.
 
-['0']X10 + '1' + ['0']X10 + ['1']X10 + '0' + ['1']X10 + ['0']X10
+['0'] X 10 + '1' + ['0'] X 10 + ['1'] X 10 + '0' + ['1'] X 10 + ['0'] X 10
 
 
 
@@ -963,7 +963,7 @@ PRBS pattern.
 
 ![Pattern]
 
-[Pattern]: images/LB_Spec/wavedrom_v2.png { width:auto; max-width:100% }
+[Pattern]: images/LB_Spec/wave_prbs.png { width:auto; max-width:100% }
 
 ~
 

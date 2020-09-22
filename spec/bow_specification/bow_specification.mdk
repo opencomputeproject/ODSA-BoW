@@ -273,7 +273,7 @@ logic clock as shown in Figure.
 ![bowspec_figcomponents]
 ~
 
-[bowspec_figcomponents]: images/fig-bow_components.jpg {width:auto; max-width: 60%}
+[bowspec_figcomponents]: images/fig-bow_components.jpg {width:auto; max-width: 100%}
 
 
 In this document, the BoW is specified as a combination of a control path and datapath as
@@ -310,7 +310,7 @@ BoW with an adapter to transport PCIe transactions as an underlay.
 ![bowspec_figcomponents]
 ~
 
-[bowspec_figcomponents]: images/fig-bow_pcie.jpg {width:auto; max-width: 60%}
+[bowspec_figcomponents]: images/fig-bow_pcie.jpg {width:auto; max-width: 100%}
 
 
 ### BoW Configurations

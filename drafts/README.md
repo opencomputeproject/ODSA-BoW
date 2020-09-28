@@ -1,1 +1,1 @@
-Working drafts of the BoW specification.
+PDFs of working drafts of the BoW specification.

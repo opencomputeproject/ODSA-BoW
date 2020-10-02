@@ -1,5 +1,6 @@
 Title         : Bunch of Wires Specification
-Author        : Mark Kuemerle, Ramin Farjad, Bapi Vinnakota, Ken Poulton, Suresh Subramaniam (the Open Domain Specific Architecture BoW Workstream) 
+Subtitle      : The Open Domain-Specific Architecture BoW Workstream
+Author        : Mark Kuemerle, Ramin Farjad,  Ken Poulton, Suresh Subramaniam, Bapi Vinnakota 
 Logo          : True
 
 Heading depth: 5
@@ -7,7 +8,7 @@ Document Class: [11pt]article
 Package: [top=1in, bottom=1.25in, left=1in, right=1in]geometry
 Package: fancyhdr
 
-title,titlenote,titlefooter,authors,h1,h2,h3,h4,h5 {
+title,titlenote,titlefooter,h1,h2,h3,h4,h5 {
   font-weight: bold;
 }
 
@@ -192,14 +193,15 @@ The scope of this document and of any contributions to this document are limited
 1. The specification of the BoW interface that specifies the following functionality:
   a. Operating modes
   b. Physical design
-  c. Test and testability
+  c. Test, testability and test enablement
   d. Operation
   e. Management controls
   f. Methods to verify and validate compliance with this specification
   g. Recommended bump patterns and signal ordering
   h. Performance estimates
-  i. Other functions or design practices that may be deemed necessary to meet the 
-  design objectives listed above
+  i. Functions or design practices that may be necessary to meet the design objectives 
+  l. Initialization
+  
 
 2. The following activities are outside the scope of this document and contributions 
 to this document:
@@ -211,10 +213,7 @@ to this document:
 
 3. The following activities are intended to be addressed in subsequent versions 
 of this specification:
-  a. Test enablement
-  b. Compliance points
-  c. Initialization
-  d. Security
+  a. Security
 
 ### Language
 * "Shall" or "must" indicates a requirement.
@@ -244,7 +243,11 @@ This section will also include a discussion on interoperability.
 
 <to be completed in subsequent draft>
 
-## BoW Architecture
+## BoW Overview
+
+* Short connections, confined inside a package
+* Low signal loss
+
 The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
 Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
 integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
@@ -265,9 +268,9 @@ interface as a physical layer to transport protocol bits between die.
 [bowspec_figure1]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
 
 ### BoW Implementation Components
-The BoW PHY connects core logic to wires between the die in a multi-die design. Tyically,
-the BoW is expected to be driven by a media-access controller (MAC) driven by the core 
-logic clock as shown in Figure.
+The BoW is expected to be driven by a media-access controller (MAC) driven by the core 
+logic clock as shown in Figure [#fig-bow-components] and may be implemented as a 
+combination of a control path and datapath.
 
 ~ Figure {#fig-bow-components; caption: "BoW components and interfaces"}
 ![bowspec_figcomponents]
@@ -276,16 +279,13 @@ logic clock as shown in Figure.
 [bowspec_figcomponents]: images/fig-bow_components.jpg {width:auto; max-width: 100%}
 
 
-In this document, the BoW is specified as a combination of a control path and datapath as
-shown in Figure below.
-
-* The BoW datapath transports bits from the MAC to wires on the packaging substrate.
+The BoW datapath transports bits from the MAC to wires on the packaging substrate.
 It is a mixture of analog and digital circuitry. On one side, the on-die BoW datapath 
 terminates in bumps, at the edge of the die connected to wires on the substrate. Internally 
 the datapath is connected to a MAC. The datapath also expected to include serializer 
 (deserializer) logic on transmit (receive) that is not specified in this document.
 
-* The BoW control path stores information to initialize and operate the datapath in status
+The BoW control path stores information to initialize and operate the datapath in status
 registers. The control path is expected to receive input from the an external digital
 control and management bus such I2C. The control path outputs information to manage the
 datapath. The interface between the control and datapath is specific to an
@@ -293,12 +293,12 @@ implementation. The BoW PHY may be implemented with the control and datapath phy
 commingled. Implementing them separately allows the control logic to be
 implemented in a separate block for multi-PHY macros.
 
-* Any BoW implementation is expected to receive a clock input from a PLL, which may be
+Any BoW implementation is expected to receive a clock input from a PLL, which may be
 shared across multiple slices. A BoW Rx slice is  expected to forward the clock received 
 from the far side to the core logic. A BoW Tx slice is expected to forward its PLL clock
 to the die's core logic. This will place all clock transitions in the core logic.
 
-* As shown in Figure [#fig-odsa-stack], the BoW interface may need to receive data
+As shown in Figure [#fig-odsa-stack], the BoW interface may need to receive data
 through either the PIPE or LPIF interfaces to support common transaction protocols. For this
 use case, in addition to the components in Figure [#fig-bow-components], the BoW interface will have to be
 augmented with an interface-specific adapter to support a protocol controller. The 
@@ -307,30 +307,38 @@ specifications for each adapter are outside the scope of this document. Figure [
 BoW with an adapter to transport PCIe transactions as an underlay.
 
 ~ Figure {#fig-bow-pcie; caption: "BoW with a PIPE adapter for PCIe transactions"}
-![bowspec_figcomponents]
+![bowspec_figcomponentspcie]
 ~
 
-[bowspec_figcomponents]: images/fig-bow_pcie.jpg {width:auto; max-width: 100%}
+[bowspec_figcomponentspcie]: images/fig-bow_pcie.jpg {width:auto; max-width: 100%}
 
 
-### BoW Configurations
+## BoW Configurations
 
-There are multiple possible BoW configurations. All versions of the implementation must be 
-interoperable with the minimum definition. All implementations are source synchronous 
-parallel interfaces using a differential clock.  Beyond the basic implementation, 
+There are multiple BoW configurations. All configurations must be 
+interoperable with the minimum definition. All configurations are source synchronous 
+parallel interfaces using a differential clock.  Beyond the basic configuration, 
 adding termination provides higher performance per mm of beachfront bandwidth but is more 
 complex to design. 
 
 * All BoW configurations are intended to be used in multi-chiplet designs
-* The full range of operating frequencies is expected to be documented in a data sheet. 
-* All BoW implementations uses source synchronous clocking with data transmission aligned 
+* The range of operating frequencies for a configuration must be documented in a data sheet. 
+* All BoW implementations must use source synchronous clocking with data transmission aligned 
 to clock edges.
 
-The separate implementation of the interface are specified such that they can be connected 
-to one another. ** When two interfaces are connected, data rate for the operating mode must be 
-configured such that both ends support the data rate.**
+The BoW interface defines several signal types. A single BoW slice has these signals:
 
-All BoW implementations must support the minimum configuration of BoW (2Gbps datarate, 
+* Data (D0-D15) : data bits
+* Clock (CLK+, CLK-) : differential clock
+* Two optional additional bits that may be used for data, Forward Error Correction (FEC), 
+Data Bus Inversion (DBI) or other uses
+
+Except for the clocks, the bits are single-ended and DDR clocked.
+All the signals in a slice are unidirectional 
+and flow the same direction. There may be a full-duplex extension in the future.
+The separate implementations of the interface are specified such that they can be connected 
+to one another. ** When two interfaces are connected, data rate for the operating mode must be 
+configured such that both ends support the data rate.** All BoW implementations must support the minimum configuration of BoW (2Gbps datarate, 
 1 Ghz clock rate, un-terminated IO)
 
 * The throughput per wire on a BoW interface implementation will be affected by:
@@ -353,19 +361,19 @@ A high level view of the BoW Interface Data-rate ranges is shown below:
 [bowspec_figure2]: images/bowspec_figure2.jpg "bowspec_figure2" { width:auto; max-width:100% }
 
 
-#### BoW Basic Mode 
+### BoW Basic Mode 
 
 In BoW Basic, 
 data rates can go up to 5 or 8 Gbps, depending on the package technology and wire length.
 Wires are source-terminated (in the transmit circuit), but not terminated at the receiver.
 
-#### BoW Fast Mode
+### BoW Fast Mode
 
 In BoW Fast, data rates can go up to 16 Gbps.
 Wires are both source-terminated and receiver-terminated to 
 minimize signal reflections to enable higher data rates and longer wires.
 
-#### Modes and Data Rates
+### Modes and Data Rates
 
 Bow links shall follow the specifications in the following table.
 
@@ -391,45 +399,6 @@ DDR is defined as one data bit transmitted for each rising and each falling edge
 technologies with approximately 25 um line and space rules.
 "Interposer" is intended to include silicon interposer and similar technologies 
 with approximately 1 um line and space rules.
-
-
-### BoW Interface Signals
-
-The BoW interface defines several signal types. Each slice has these signals:
-
-* Data (D0-D15) : data bits
-* Clock (CLK+, CLK-) : differential clock
-* FEC : Forward Error Correction bit (optional)
-* AUX : Other uses (optional)
-
-Except for the clocks, the bits are single-ended and DDR clocked.
-FEC and AUX are optional.
-All the signals in a slice in BoW Basic and BoW Fast are unidirectional 
-and flow the same direction. There may be a full-duplex extension in the future.
-
-
-# Design Assumptions
-* Short connections, confined inside a package
-* Supports package technologies from organic laminate to interposer
-* Low signal loss
-* Low latency
-* Low energy per bit
-
-# Standard Compatibility
-The Bunch of Wires (BoW) is a simple Double Data Rate source synchronous interface 
-that has much in common with other parallel interfaces including Intel AIB, High 
-Bandwidth Memory and other simple source synchronous interfaces.
-
-* A defined dataword width of 16 data bits per differential clock
-* Support only for Double Data Rate (DDR) mode to simplify clocking
-* Multiple supported datarates and modes
-    * BoW Unterminated is most similar to AIB using un-terminated CMOS IO 
-    to reduce power at low datarates
-    * BoW Terminated uses terminated IO to improve SI and datarates
-
-Due to reduced ESD requirements, the BoW specification is not expected to be 
-compliant to off-package IO standards, though it may interoperate with other 
-chiplets using CMOS IO buffers.
 
 # Interface Specifications
 
@@ -850,11 +819,6 @@ What is the origin of the Xtalk Limit equation?  Is there a paper reference?
 ~
 
 
-
-#  Logic Interface
-
-\<To be completed in subsequent version of specification>
-
 # Physical
 
 ## BoW Components
@@ -998,125 +962,6 @@ the total edge width is 4.16 mm without AUX and FEC, or 5.2 mm with; the depth f
 In an interposer, if the bump pitch is 40 um, the edge width is 1.28 or 1.60 mm and the depth is 0.42 mm.
 
 
-
-#Testability
-
-
-
-## Test Pattern
-Suggest test patterns are:
-
-* PRBS-9 Pattern, defined  by polynomial of X^9^+ X^5^ +1
-
-* PRBS-31 Pattern, defined by polynomial of X^31^ + X^28^ +1
-
-Furthermore, to cover the DC wandering and single  bit response, the following suggest pattern should be added to the beginning of the preferred 
-PRBS pattern.
-
-['0'] X 10 + '1' + ['0'] X 10 + ['1'] X 10 + '0' + ['1'] X 10 + ['0'] X 10
-
-
-
-~ Figure { #fig-Pattern; caption: "Stress Test Pattern" }
-
-![Pattern]
-
-[Pattern]: images/LB_Spec/wave_prbs.png { width:auto; max-width:100% }
-
-~
-
-
-
-## Loopback Test
-
-A BoW interface will be used for loopback testing in two use cases: 
-at wafer-sort time for chiplet test for full-system bring-up and debug validation. 
-  
-  
-  Wafer sort tests are currently only practical for the BoW interface with regular bump pitches (~130um), where ATE (automatic testing equipment) probe boards with matching pin pitches are available. Microbump probes will require additional effort.
-
-Unidirectional links will need open-loop testing. 
-In Tx-Open-Loop testing, shown in Figure [#fig_test_tx], Chiplet-A transmits a known test pattern (PRBS9 or PRBS31) to a golden reference receiver through the ATE load board. 
-The received pattern is verified in the ATE load board.
-
-Rx-Open-Loop testing, shown in Figure [#fig_test_rx], is used for a link where the DUT is only a receiver. 
-A golden reference Tx transmits a known pattern (PRBS9 or PRBS31) through the channel to the chiplet. The received pattern will be analyzed for quality and functional tests. 
-
-
-
-~ Figure { #fig_test_tx; caption: "Open loop Tx chiplet testing" }
-![fig_test_tx]
-[fig_test_tx]: images/LB_Spec/Slide2a.png { width:auto; max-width:100% }
-~
-
-~ Figure { #fig_test_rx; caption: "Open loop Rx chiplet testing" }
-![fig_test_rx]
-[fig_test_rx]: images/LB_Spec/Slide3a.png { width:auto; max-width:100% }
-~
-
-In bidirectional links, loopback tests can be implemented in two modes:
-
- * short loopback mode: Data is looped back within the chip (shown in Figure [#fig_test_sl]). 
- The short loopback can be triggered by the ATE. 
- * long loopback mode , 
- the PRBS pattern is generated by chiplet-A, sent over the replica channel on the ATE load board which loops it back 
- (shown in Figure [#fig_test_ll]). 
- The received pattern will be passed to a bit error rate tester (BERT) to analyze the performance of the link with off-chip data and clock wires.
-
-
-
-~ Figure { #fig_test_sl; caption: "Short loopback testing" }
-![fig_test_sl]
-[fig_test_sl]: images/LB_Spec/Slide4.png { width:auto; max-width:100% }
-~
-
-~ Figure { #fig_test_ll; caption: "Long loopback testing" }
-![fig_test_ll]
-[fig_test_ll]: images/LB_Spec/Slide1a.png { width:auto; max-width:100% }
-~
-
-
- 
-
-
-
-Both loopback modes can potentially be used for in-field validation bring-up and test. 
-Cooperation across chiplets will be required to execute these tests in the field. 
-Open-loop testing requires the use of a fixed test pattern recognized by both ends and is the only option for unidirectional links. 
-Long loopback mode can be implemented on interposer or organic laminate for validation/verification purposes. 
-
-Figure [#fig_test_cll] shows how a long loopback mode is executed across two chiplets for in-field validation and test 
-where Tx and Rx are in different chiplets. Furthermore, this configuration can be expanded to loop back the data from the transmitter of chiplet-A to the receiver of chiplet-A. 
-
-
-~ Figure { #fig_test_cll; caption: "Chiplet-to-chiplet long loopback" }
-![fig_test_cll]
-[fig_test_cll]: images/LB_Spec/Fig5.png { width:auto; max-width:100% }
-~
-
-
-
-
-
-# Document History
-|----------|-------|---------------------------|
-|Date      |Version|Notes                      |
-+----------+-------+---------------------------+
-|09/20/2019|0.7    |Initial version for release|
-|----------|-------|---------------------------|
-|          |       |                           |
-|----------|-------|---------------------------|
-
-# Known Feature Request
-|----------|-----------------------------------------------------------------|
-|Date      |Notes                                                            |
-+----------+-----------------------------------------------------------------+
-|09-06-2019|Microbump compatibility - addressed with non-specified bump pitch|
-|----------|-----------------------------------------------------------------|
-|09-06-2019|Ultra short high speed unterminated  - addressed                 |
-|----------|-----------------------------------------------------------------|
-|          |                                                                 |
-|----------|-----------------------------------------------------------------|
 
 # Bow Interface
 
@@ -2099,3 +1944,103 @@ Should we include this?
 +------------+------------------------+-------+---------+------------------------------------+
 
 ~
+
+#Testability
+
+
+
+## Test Pattern
+Suggest test patterns are:
+
+* PRBS-9 Pattern, defined  by polynomial of X^9^+ X^5^ +1
+
+* PRBS-31 Pattern, defined by polynomial of X^31^ + X^28^ +1
+
+Furthermore, to cover the DC wandering and single  bit response, the following suggest pattern should be added to the beginning of the preferred 
+PRBS pattern.
+
+['0'] X 10 + '1' + ['0'] X 10 + ['1'] X 10 + '0' + ['1'] X 10 + ['0'] X 10
+
+
+
+~ Figure { #fig-Pattern; caption: "Stress Test Pattern" }
+
+![Pattern]
+
+[Pattern]: images/LB_Spec/wave_prbs.png { width:auto; max-width:100% }
+
+~
+
+
+
+## Loopback Test
+
+A BoW interface will be used for loopback testing in two use cases: 
+at wafer-sort time for chiplet test for full-system bring-up and debug validation. 
+  
+  
+  Wafer sort tests are currently only practical for the BoW interface with regular bump pitches (~130um), where ATE (automatic testing equipment) probe boards with matching pin pitches are available. Microbump probes will require additional effort.
+
+Unidirectional links will need open-loop testing. 
+In Tx-Open-Loop testing, shown in Figure [#fig_test_tx], Chiplet-A transmits a known test pattern (PRBS9 or PRBS31) to a golden reference receiver through the ATE load board. 
+The received pattern is verified in the ATE load board.
+
+Rx-Open-Loop testing, shown in Figure [#fig_test_rx], is used for a link where the DUT is only a receiver. 
+A golden reference Tx transmits a known pattern (PRBS9 or PRBS31) through the channel to the chiplet. The received pattern will be analyzed for quality and functional tests. 
+
+
+
+~ Figure { #fig_test_tx; caption: "Open loop Tx chiplet testing" }
+![fig_test_tx]
+[fig_test_tx]: images/LB_Spec/Slide2a.png { width:auto; max-width:100% }
+~
+
+~ Figure { #fig_test_rx; caption: "Open loop Rx chiplet testing" }
+![fig_test_rx]
+[fig_test_rx]: images/LB_Spec/Slide3a.png { width:auto; max-width:100% }
+~
+
+In bidirectional links, loopback tests can be implemented in two modes:
+
+ * short loopback mode: Data is looped back within the chip (shown in Figure [#fig_test_sl]). 
+ The short loopback can be triggered by the ATE. 
+ * long loopback mode , 
+ the PRBS pattern is generated by chiplet-A, sent over the replica channel on the ATE load board which loops it back 
+ (shown in Figure [#fig_test_ll]). 
+ The received pattern will be passed to a bit error rate tester (BERT) to analyze the performance of the link with off-chip data and clock wires.
+
+
+
+~ Figure { #fig_test_sl; caption: "Short loopback testing" }
+![fig_test_sl]
+[fig_test_sl]: images/LB_Spec/Slide4.png { width:auto; max-width:100% }
+~
+
+~ Figure { #fig_test_ll; caption: "Long loopback testing" }
+![fig_test_ll]
+[fig_test_ll]: images/LB_Spec/Slide1a.png { width:auto; max-width:100% }
+~
+
+
+ 
+
+
+
+Both loopback modes can potentially be used for in-field validation bring-up and test. 
+Cooperation across chiplets will be required to execute these tests in the field. 
+Open-loop testing requires the use of a fixed test pattern recognized by both ends and is the only option for unidirectional links. 
+Long loopback mode can be implemented on interposer or organic laminate for validation/verification purposes. 
+
+Figure [#fig_test_cll] shows how a long loopback mode is executed across two chiplets for in-field validation and test 
+where Tx and Rx are in different chiplets. Furthermore, this configuration can be expanded to loop back the data from the transmitter of chiplet-A to the receiver of chiplet-A. 
+
+
+~ Figure { #fig_test_cll; caption: "Chiplet-to-chiplet long loopback" }
+![fig_test_cll]
+[fig_test_cll]: images/LB_Spec/Fig5.png { width:auto; max-width:100% }
+~
+
+
+
+
+

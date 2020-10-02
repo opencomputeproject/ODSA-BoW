@@ -134,11 +134,14 @@ covered in this draft.
 ### Objectives
 
 The BoW interface is a set of backward compatible die-to-die parallel 
-interfaces that provides the flexibility to trade off Throughput/wire, 
+interfaces that provides the flexibility to trade off throughput/wire, 
 design complexity, cost, packaging technology. Backward as defined by 
 every new mode being compatible with the "Basic mode" defined in this 
 specification. Each future version of this specification is expected 
 to be compatible with at least two previous significant versions.
+The use of the BoW is expected to be confined to connect die
+placed closed to one another within the same package. Signal loss
+in transmission is expected to be lower than for off-package protocols. 
 The BoW interface aims to meet the following design objectives:
 
 * Inexpensive to implement 
@@ -243,11 +246,7 @@ This section will also include a discussion on interoperability.
 
 <to be completed in subsequent draft>
 
-## BoW Overview
-
-* Short connections, confined inside a package
-* Low signal loss
-
+# BoW Overview
 The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
 Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
 integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
@@ -267,7 +266,125 @@ interface as a physical layer to transport protocol bits between die.
 
 [bowspec_figure1]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
 
-### BoW Implementation Components
+
+## Block Diagram
+
+~ Figure { #fig-slice_signals; caption: "BoW Single Slice Signals" }
+![slice_signals]
+[slice_signals]: images/bowspec_figure_slice_signals.PNG { width:auto; max-width:70% }
+~
+
+## Signals
+
+Each BoW slice consists of a differential clock pair, 16 single-ended data wires, 
+and optional FEC and AUX wires. Each BoW slice is unidirectional when in operation.
+A chiplet may be designed with with Rx-only and Tx-only slices, or
+each slice may have both Tx and Rx capability which is configured at runtime. 
+A bidirectional link is composed of some number of slices configured for Rx and some for Tx.
+
+FEC (Forward Error Correction) is an optional signal that allows using FEC to 
+improve the bit error rate (BER).  AUX is an optional signal that can be used for purposes
+such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
+the details on FEC and AUX usage.
+
+A BoW link is only specified for operation inside a package for reach and ESD reasons.
+
+~ TableFigure {#tab-signals; caption: "BoW Signals"; }
+|--------------|---------|------------|-------------|
+| Function     | # Signals| Signal Name| Notes      |
++:-------------+:-------:+:-----------+:------------+
+| Clock        | 2       | CLK+, CLK- | Differential|
+|--------------|---------|------------|-------------|
+| Data         | 16      | D0-15      |             |
+|--------------|---------|------------|-------------|
+|Forward Error | 1       |FEC         | Optional    |
+|Correction    |         |            |             |
++--------------+---------+------------+-------------|
+|Auxilliary    |1        |AUX         | Optional    |
+|--------------|---------|------------|-------------|
+~
+
+
+
+
+## Bow Interface
+
+The BoW interface comprises either a transmit or receive slice with three signal types:
+
+* Data signals
+  * Inputs (RX): data input signals to the interface
+  * Outputs (TX): data output signals from the interface
+* Optional signals 
+  * AUX/Data bus inversion out (tx_AUX_DBI), sent from the interface
+  * Forward Error Correction out (tx_FEC), sent from the interface
+  * AUX/Data bus inversion in (rx_AUX_DBI), input to the interface
+  * Forward Error Correction in (rx_FEC), input to the interface
+* Clocks
+  * Data clock out (tx_fwd_clk), sent from the interface
+  * Data clock in (rx_fwd_clk), input to the interface
+
+
+~ Figure { #fig-bow_signals; caption: "BoW Signal Types" }
+![bow_signals]
+~
+[bow_signals]: images/bow_signals_types.png { width:auto; max-width:70% }
+
+~ TableFigure {#tab-bow_interface; caption: "BoW Interface Signals"; width:100%;  }
++---------------------------+------------------------------------------------------------+
+|          Signal           |                         Description                        |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+|           TX              |            Synchronous data transmitted from the           |
+|                           |               interface. (Section   2.1.1)                 |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+|           RX              |             Synchronous data received from the             |
+|                           |                interface. (Section 2.1.2)                  |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+| tx_fwd_clk/tx_fwd_clkb    |           Transmit transfer clock, forwarded from          |
+|                           |           the transmitter to its link partner for          |
+|                           |        capturing received data. (Section 2.1.6.3)          |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+| rx_fwd_clk/rx_fwd_clkb    |          Receive transfer clock, forwarded to the          |
+|                           |        receiver from its link partner for capturing        |
+|                           |             received data. (Section 2.1.6.3)               |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+| tx_rcv_clk/tx_rcv_clkb    |           Receive-domain clock forwarded from the          |
+|                           |       near side to the link partner for transmitting       |
+|                           |      data from the link partner. (Section 2.1.6.4)         |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+| rx_rcv_clk/rx_rcv_clkb    |           Receive-domain clock forwarded from the          |
+|                           |             link partner to the near side for              |
+|                           | transmitting data from the near side. (Section 2.1.6.4)    |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+|       tx_AUX_DBI          |         Optional signal from the transmitter to its        |
+|                           |           link partner to indicate bus inversion           |
+|                           |     status. If not used as DBI, this signal can also be    |
+|                           |            used as Mode bit (Section 2.2.2.2)              |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+|       rx_AUX_DBI          |            Optional input signal to receive bus            |
+|                           |    inversion status. If not used as DBI, this signal can   |
+|                           |        also be used as Mode bit (Section 2.2.2.2)          |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+|         tx_FEC            |                Optional signal to carry FEC                |
+|                           |          information from transmitter to its link          |
+|                           |                partner. (Section 2.2.2.5)                  |
++---------------------------+------------------------------------------------------------+
+|                           |                                                            |
+|         rx_FEC            |            Optional input signal to receive FEC            |
+|                           |             information.   (Section 2.2.2.5)               |
++---------------------------+------------------------------------------------------------+
+~
+
+
+## BoW Core Logic Interface
 The BoW is expected to be driven by a media-access controller (MAC) driven by the core 
 logic clock as shown in Figure [#fig-bow-components] and may be implemented as a 
 combination of a control path and datapath.
@@ -313,46 +430,35 @@ BoW with an adapter to transport PCIe transactions as an underlay.
 [bowspec_figcomponentspcie]: images/fig-bow_pcie.jpg {width:auto; max-width: 100%}
 
 
-## BoW Configurations
+## BoW Modes
 
-There are multiple BoW configurations. All configurations must be 
-interoperable with the minimum definition. All configurations are source synchronous 
-parallel interfaces using a differential clock.  Beyond the basic configuration, 
-adding termination provides higher performance per mm of beachfront bandwidth but is more 
-complex to design. 
+There are multiple BoW modes. All modes must be 
+interoperable with the minimum definition. All modes are source synchronous 
+parallel interfaces using a differential clock that may operate at multiple.
+The range of operating frequencies for a mode must be documented in a data sheet. 
+frequencies. Beyond the basic mode, adding termination provides higher performance 
+per mm of beachfront bandwidth but is more complex to design. It is also possible
+to get high performance by using 
 
-* All BoW configurations are intended to be used in multi-chiplet designs
-* The range of operating frequencies for a configuration must be documented in a data sheet. 
-* All BoW implementations must use source synchronous clocking with data transmission aligned 
-to clock edges.
-
-The BoW interface defines several signal types. A single BoW slice has these signals:
-
-* Data (D0-D15) : data bits
-* Clock (CLK+, CLK-) : differential clock
-* Two optional additional bits that may be used for data, Forward Error Correction (FEC), 
-Data Bus Inversion (DBI) or other uses
-
-Except for the clocks, the bits are single-ended and DDR clocked.
-All the signals in a slice are unidirectional 
-and flow the same direction. There may be a full-duplex extension in the future.
-The separate implementations of the interface are specified such that they can be connected 
+The various BoW modes are specified such that they can be directly connected 
 to one another. ** When two interfaces are connected, data rate for the operating mode must be 
-configured such that both ends support the data rate.** All BoW implementations must support the minimum configuration of BoW (2Gbps datarate, 
-1 Ghz clock rate, un-terminated IO)
+configured such that both ends support the same configuration at the same data rate.** All 
+BoW implementations must support the minimum configuration of BoW (2Gbps datarate, 
+1 Ghz clock rate, un-terminated IO). 
 
-* The throughput per wire on a BoW interface implementation will be affected by:
+In each mode, a BoW interface can operate at multiple frequencies.
+The operating frequency and throughput per wire on a BoW interface mode will be affected by:
+
 * The choice of packaging technology
 * The physical distance between the chiplets being connected: Faster data rates may be easier 
-with chiplets that are physically closer 
+to realize with chiplets that are physically closer 
 * Bump spacing: Coarse bumps may allow for circuitry to enable faster data rates.
 
-The BoW specification provides for optional technology to increase the data rate per wire. 
-But it is also possible for basic BoW implementation implemented with advanced packaging or 
+The BoW specification provides for optional technology to increase the data rate per wire, 
+to enable a graceful cost-performance tradeoff. 
+It is also possible for basic BoW configuration implemented with advanced packaging or 
 between physically close chiplets to offer a higher data rate per wire than a terminated 
-BoW interface in some configurations.
-
-A high level view of the BoW Interface Data-rate ranges is shown below:
+BoW interface in some configurations. A high level view of the BoW Interface Data-rate ranges is shown below:
 
 ~ Center
 ![bowspec_figure2]
@@ -400,44 +506,148 @@ technologies with approximately 25 um line and space rules.
 "Interposer" is intended to include silicon interposer and similar technologies 
 with approximately 1 um line and space rules.
 
-# Interface Specifications
+# Physicals
 
-## Block Diagram
+## BoW Components
 
-~ Figure { #fig-slice_signals; caption: "BoW Single Slice Signals" }
-![slice_signals]
-[slice_signals]: images/bowspec_figure_slice_signals.PNG { width:auto; max-width:70% }
+~ Figure { #fig-components; caption: "BoW Link Components" }
+![components]
+~
+[components]: images/bowspec_figure_components.PNG { width:auto; max-width:70% }
+
+
+A BoW link between two chiplets is made up of
+wires, slices, and stacks. 
+
+* The basic unit is a slice with 18 or 20 signal bumps. 
+It must have 2 signals for the differential
+clock and 16 single-ended data. 
+It may also have the optional single-ended signals AUX and FEC. 
+In the reference bump map, the long edge of a slice is parallel to the chip edge.
+* Multiple slices may be placed in a stack. The slice positions are
+designated A, B, C, etc, starting with the slice closest to the edge of the chip.
+* A link from one chiplet to another must be composed of one or more
+stacks placed along the chip edge. A link may be
+configured with equal numbers of Rx and Tx slices,
+or it may be asymmetric or one-way.
+
+## Example Link
+
+The minimal bidirectional reference link is shown in Figure [#fig-min_link].
+
+~ Figure { #fig-min_link; caption: "BoW Minimal Bidirectional Reference Link" }
+![min_link]
+[min_link]: images/bowspec_figure_min_link.PNG { width:auto; max-width:70% }
 ~
 
-## Signals
+In this example, each chiplet has one Tx slice and one Rx slice, 
+arranged in a single stack on each chiplet.
+The position-A slices (at the chips' edges) are connected together on the topmost routing 
+layer used for signals and the position-B slices are connected together on the next 
+layer used for signals.
 
-Each BoW slice consists of a differential clock pair, 16 single-ended data wires, 
-and optional FEC and AUX wires. Each BoW slice is unidirectional when in operation.
-A chiplet may be designed with with Rx-only and Tx-only slices, or
-each slice may have both Tx and Rx capability which is configured at runtime. 
-A bidirectional link is composed of some number of slices configured for Rx and some for Tx.
+This reference example uses hexagonal closest packing for the bumps: two rows for signal bumps and
+one row for power and ground bumps. 
+In this pattern, the wire pitch is half the bump pitch.
+In order to maintain the closest bump packing, slices in rows B and D must have a different bump
+pattern than slices A and C.
+But bump patterns are not specified by BoW; only the signal *ordering* at 
+the chip edge is specified for interoperability. 
 
-FEC (Forward Error Correction) is an optional signal that allows using FEC to 
-improve the bit error rate (BER).  AUX is an optional signal that can be used for purposes
-such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
-the details on FEC and AUX usage.
 
-A BoW link is only specified for operation inside a package for reach and ESD reasons.
+Alternate bump arrangements may include:
+90-degree rotation of the hexagonal packing direction to decrease the wire pitch 14%;
+square bump arrays instead of hexagonal for regularity of layout; 
+more than two rows of signal bumps to decrease the wire pitch;
+different ordering of power and ground bumps;
+multiple power and ground rows.
 
-~ TableFigure {#tab-signals; caption: "BoW Signals"; }
-|--------------|---------|------------|-------------|
-| Function     | # Signals| Signal Name| Notes      |
-+:-------------+:-------:+:-----------+:------------+
-| Clock        | 2       | CLK+, CLK- | Differential|
-|--------------|---------|------------|-------------|
-| Data         | 16      | D0-15      |             |
-|--------------|---------|------------|-------------|
-|Forward Error | 1       |FEC         | Optional    |
-|Correction    |         |            |             |
-+--------------+---------+------------+-------------|
-|Auxilliary    |1        |AUX         | Optional    |
-|--------------|---------|------------|-------------|
+An alternate slice arrangement may be to place the Tx and Rx slices side by side at the 
+chip edges. This would take up more chip edge, but allow all the signals to run on the same 
+package layer.
+
+Somewhat different wire and bump pitches between two chiplets can be accomodated with 
+fan-out in the chip-to-chip wires. This is limited in BoW Basic by the 10 mm max wire length 
+and the practical advantages of routing from chiplet to chiplet in just one package layer.
+(Note that even straight wires in slice position D are likely 5-6 mm long using 130-um bump pitch with 
+the reference bump map in an organic package.)
+
+## Cross Section
+
+A cross section for an organic laminate (a.k.a. "buildup") package is shown in 
+Figure [#fig-pkg_cross_section].
+
+~ Figure { #fig-pkg_cross_section; caption: "Cross section of a BoW Link in an Organic Laminate Package" }
+![pkg_cross_section]
+[pkg_cross_section]: images/bowspec_figure_pkg_cross_section.PNG { width:auto; max-width:70% }
 ~
+
+In an organic laminate package, signal layers should be alternated with ground layers 
+in order to maintain a controlled impedance of 50 ohms. 
+In interposer or other high-density packaging, the use of layers may be different.
+
+In any technology, the position-A slice on chiplet A must be connected to the position-A 
+slice on chiplet B (one must be configured for Tx and one for Rx). 
+The position-B slices are connected together, and so on.
+
+
+There is no specified limit to the number of slices in a stack. 
+In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supports 4 slices. 
+Layers on the bottom side of the package typically cannot be used for BoW signals 
+due to low via density passing through the thick central core layer.
+
+
+## Signal Ordering
+
+A BoW interface must conform to these wire and slice order rules at the edge of the chip:
+
+
+* The signals for a Tx slice are in the following order at the chip edge, 
+going clockwise around the chiplet: 
+AUX, D0, D1, D2, D3, D4, D5, D6, D7, CLK+, CLK-, D8, D9, D10, D11, D12, D13, D14, D15, FEC
+* The signals for an Rx slice are in the reversed order (ascending goes counter-clockwise)
+* The Tx slices in a link are numbered from 0 at the upper left edge of the link 
+(facing from the chip center to the edge) and ascending through the Tx slices in a stack, 
+then from stack to stack clockwise.
+* The Rx slices in a link are numbered from 0 at the upper right, through the Rx slices in a stack,
+then stack to stack counterclockwise.
+
+These rules allow BoW chiplets to be connected without signal reordering regardless of chiplet rotations.
+
+
+In organic packages, each slice position should be associated with one signal layer and there is no mixing 
+of signals from multiple slices.
+In interposer or other dense routing technologies, signals from multiple slices in a stack 
+may be interleaved in a signal layer, but chiplet A's slice A is still 
+connected to chiplet B's slice A 
+and similarly for position B, C, etc.
+
+
+## Checkerboard Slice Pattern
+
+For bidirectional links with more than one stack on each side, a checkerboard pattern of 
+Tx and Rx slices should be used (Figure [#fig-checkerboard]).
+This allows connection of chiplets with differing stack depths and 
+numbers of stacks to be as efficient as possible. 
+Figure [#fig-checkerboard] shows a bidirectional link with 4 stacks or 4 slices each, 
+for 8 Tx and 8 Rx slices on each chiplet.
+
+~ Figure { #fig-checkerboard; caption: "Checkerboard Pattern of Tx and Rx Slices in a 1.25 Tb/s Link" }
+![checkerboard]
+[checkerboard]: images/bowspec_figure_checkerboard.PNG { width:auto; max-width:70% }
+~
+
+An alternate approach may be used: provision every slice to operate as either Rx or Tx. 
+This allows complete flexibility in interoperability and also provides an opportunity for
+wafer-test loopback testing.
+
+
+In BoW Base at 5 Gb/s, link in Figure [#fig-checkerboard] provides a total of 1.25 Tb/s.
+In an organic substrate using the hexagonal bump pattern of Figure [#fig-min_link], 
+if the bump pitch is 130 um, 
+the total edge width is 4.16 mm without AUX and FEC, or 5.2 mm with; the depth from the edge is 1.35 mm.
+In an interposer, if the bump pitch is 40 um, the edge width is 1.28 or 1.60 mm and the depth is 0.42 mm.
+
 
 
 # Timing
@@ -819,225 +1029,9 @@ What is the origin of the Xtalk Limit equation?  Is there a paper reference?
 ~
 
 
-# Physical
-
-## BoW Components
-
-~ Figure { #fig-components; caption: "BoW Link Components" }
-![components]
-~
-[components]: images/bowspec_figure_components.PNG { width:auto; max-width:70% }
-
-
-A BoW link between two chiplets is made up of
-wires, slices, and stacks. 
-
-* The basic unit is a slice with 18 or 20 signal bumps. 
-It must have 2 signals for the differential
-clock and 16 single-ended data. 
-It may also have the optional single-ended signals AUX and FEC. 
-In the reference bump map, the long edge of a slice is parallel to the chip edge.
-* Multiple slices may be placed in a stack. The slice positions are
-designated A, B, C, etc, starting with the slice closest to the edge of the chip.
-* A link from one chiplet to another must be composed of one or more
-stacks placed along the chip edge. A link may be
-configured with equal numbers of Rx and Tx slices,
-or it may be asymmetric or one-way.
-
-## Example Link
-
-The minimal bidirectional reference link is shown in Figure [#fig-min_link].
-
-~ Figure { #fig-min_link; caption: "BoW Minimal Bidirectional Reference Link" }
-![min_link]
-[min_link]: images/bowspec_figure_min_link.PNG { width:auto; max-width:70% }
-~
-
-In this example, each chiplet has one Tx slice and one Rx slice, 
-arranged in a single stack on each chiplet.
-The position-A slices (at the chips' edges) are connected together on the topmost routing 
-layer used for signals and the position-B slices are connected together on the next 
-layer used for signals.
-
-This reference example uses hexagonal closest packing for the bumps: two rows for signal bumps and
-one row for power and ground bumps. 
-In this pattern, the wire pitch is half the bump pitch.
-In order to maintain the closest bump packing, slices in rows B and D must have a different bump
-pattern than slices A and C.
-But bump patterns are not specified by BoW; only the signal *ordering* at 
-the chip edge is specified for interoperability. 
-
-
-Alternate bump arrangements may include:
-90-degree rotation of the hexagonal packing direction to decrease the wire pitch 14%;
-square bump arrays instead of hexagonal for regularity of layout; 
-more than two rows of signal bumps to decrease the wire pitch;
-different ordering of power and ground bumps;
-multiple power and ground rows.
-
-An alternate slice arrangement may be to place the Tx and Rx slices side by side at the 
-chip edges. This would take up more chip edge, but allow all the signals to run on the same 
-package layer.
-
-Somewhat different wire and bump pitches between two chiplets can be accomodated with 
-fan-out in the chip-to-chip wires. This is limited in BoW Basic by the 10 mm max wire length 
-and the practical advantages of routing from chiplet to chiplet in just one package layer.
-(Note that even straight wires in slice position D are likely 5-6 mm long using 130-um bump pitch with 
-the reference bump map in an organic package.)
-
-## Cross Section
-
-A cross section for an organic laminate (a.k.a. "buildup") package is shown in 
-Figure [#fig-pkg_cross_section].
-
-~ Figure { #fig-pkg_cross_section; caption: "Cross section of a BoW Link in an Organic Laminate Package" }
-![pkg_cross_section]
-[pkg_cross_section]: images/bowspec_figure_pkg_cross_section.PNG { width:auto; max-width:70% }
-~
-
-In an organic laminate package, signal layers should be alternated with ground layers 
-in order to maintain a controlled impedance of 50 ohms. 
-In interposer or other high-density packaging, the use of layers may be different.
-
-In any technology, the position-A slice on chiplet A must be connected to the position-A 
-slice on chiplet B (one must be configured for Tx and one for Rx). 
-The position-B slices are connected together, and so on.
-
-
-There is no specified limit to the number of slices in a stack. 
-In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supports 4 slices. 
-Layers on the bottom side of the package typically cannot be used for BoW signals 
-due to low via density passing through the thick central core layer.
-
-
-## Signal Ordering
-
-A BoW interface must conform to these wire and slice order rules at the edge of the chip:
-
-
-* The signals for a Tx slice are in the following order at the chip edge, 
-going clockwise around the chiplet: 
-AUX, D0, D1, D2, D3, D4, D5, D6, D7, CLK+, CLK-, D8, D9, D10, D11, D12, D13, D14, D15, FEC
-* The signals for an Rx slice are in the reversed order (ascending goes counter-clockwise)
-* The Tx slices in a link are numbered from 0 at the upper left edge of the link 
-(facing from the chip center to the edge) and ascending through the Tx slices in a stack, 
-then from stack to stack clockwise.
-* The Rx slices in a link are numbered from 0 at the upper right, through the Rx slices in a stack,
-then stack to stack counterclockwise.
-
-These rules allow BoW chiplets to be connected without signal reordering regardless of chiplet rotations.
-
-
-In organic packages, each slice position should be associated with one signal layer and there is no mixing 
-of signals from multiple slices.
-In interposer or other dense routing technologies, signals from multiple slices in a stack 
-may be interleaved in a signal layer, but chiplet A's slice A is still 
-connected to chiplet B's slice A 
-and similarly for position B, C, etc.
-
-
-## Checkerboard Slice Pattern
-
-For bidirectional links with more than one stack on each side, a checkerboard pattern of 
-Tx and Rx slices should be used (Figure [#fig-checkerboard]).
-This allows connection of chiplets with differing stack depths and 
-numbers of stacks to be as efficient as possible. 
-Figure [#fig-checkerboard] shows a bidirectional link with 4 stacks or 4 slices each, 
-for 8 Tx and 8 Rx slices on each chiplet.
-
-~ Figure { #fig-checkerboard; caption: "Checkerboard Pattern of Tx and Rx Slices in a 1.25 Tb/s Link" }
-![checkerboard]
-[checkerboard]: images/bowspec_figure_checkerboard.PNG { width:auto; max-width:70% }
-~
-
-An alternate approach may be used: provision every slice to operate as either Rx or Tx. 
-This allows complete flexibility in interoperability and also provides an opportunity for
-wafer-test loopback testing.
-
-
-In BoW Base at 5 Gb/s, link in Figure [#fig-checkerboard] provides a total of 1.25 Tb/s.
-In an organic substrate using the hexagonal bump pattern of Figure [#fig-min_link], 
-if the bump pitch is 130 um, 
-the total edge width is 4.16 mm without AUX and FEC, or 5.2 mm with; the depth from the edge is 1.35 mm.
-In an interposer, if the bump pitch is 40 um, the edge width is 1.28 or 1.60 mm and the depth is 0.42 mm.
 
 
 
-# Bow Interface
-
-The BoW interface comprises either a transmit or receive slice with three signal types:
-
-* Data signals
-  * Inputs (RX): data input signals to the interface
-  * Outputs (TX): data output signals from the interface
-* Optional signals 
-  * AUX/Data bus inversion out (tx_AUX_DBI), sent from the interface
-  * Forward Error Correction out (tx_FEC), sent from the interface
-  * AUX/Data bus inversion in (rx_AUX_DBI), input to the interface
-  * Forward Error Correction in (rx_FEC), input to the interface
-* Clocks
-  * Data clock out (tx_fwd_clk), sent from the interface
-  * Data clock in (rx_fwd_clk), input to the interface
-
-
-~ Figure { #fig-bow_signals; caption: "BoW Signal Types" }
-![bow_signals]
-~
-[bow_signals]: images/bow_signals_types.png { width:auto; max-width:70% }
-
-~ TableFigure {#tab-bow_interface; caption: "BoW Interface Signals"; width:100%;  }
-+---------------------------+------------------------------------------------------------+
-|          Signal           |                         Description                        |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-|           TX              |            Synchronous data transmitted from the           |
-|                           |               interface. (Section   2.1.1)                 |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-|           RX              |             Synchronous data received from the             |
-|                           |                interface. (Section 2.1.2)                  |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-| tx_fwd_clk/tx_fwd_clkb    |           Transmit transfer clock, forwarded from          |
-|                           |           the transmitter to its link partner for          |
-|                           |        capturing received data. (Section 2.1.6.3)          |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-| rx_fwd_clk/rx_fwd_clkb    |          Receive transfer clock, forwarded to the          |
-|                           |        receiver from its link partner for capturing        |
-|                           |             received data. (Section 2.1.6.3)               |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-| tx_rcv_clk/tx_rcv_clkb    |           Receive-domain clock forwarded from the          |
-|                           |       near side to the link partner for transmitting       |
-|                           |      data from the link partner. (Section 2.1.6.4)         |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-| rx_rcv_clk/rx_rcv_clkb    |           Receive-domain clock forwarded from the          |
-|                           |             link partner to the near side for              |
-|                           | transmitting data from the near side. (Section 2.1.6.4)    |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-|       tx_AUX_DBI          |         Optional signal from the transmitter to its        |
-|                           |           link partner to indicate bus inversion           |
-|                           |     status. If not used as DBI, this signal can also be    |
-|                           |            used as Mode bit (Section 2.2.2.2)              |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-|       rx_AUX_DBI          |            Optional input signal to receive bus            |
-|                           |    inversion status. If not used as DBI, this signal can   |
-|                           |        also be used as Mode bit (Section 2.2.2.2)          |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-|         tx_FEC            |                Optional signal to carry FEC                |
-|                           |          information from transmitter to its link          |
-|                           |                partner. (Section 2.2.2.5)                  |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-|         rx_FEC            |            Optional input signal to receive FEC            |
-|                           |             information.   (Section 2.2.2.5)               |
-+---------------------------+------------------------------------------------------------+
-~
 
 # BoW-to-MAC Interface
 

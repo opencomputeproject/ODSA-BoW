@@ -312,8 +312,7 @@ BoW with an adapter to transport PCIe transactions as an underlay.
 [bowspec_figcomponentspcie]: images/fig-bow_pcie.jpg {width:auto; max-width: 100%}
 
 
-
-## Block Diagram
+## BoW Physical Interface Block Diagram
 
 ~ Figure { #fig-slice_signals; caption: "BoW Single Slice Signals" }
 ![slice_signals]
@@ -353,7 +352,7 @@ A BoW link is only specified for operation inside a package for reach and ESD re
 
 
 
-## Bow Interface
+## Bow Physical Interface
 
 The BoW interface comprises either a transmit or receive slice with three signal types:
 
@@ -429,6 +428,93 @@ The BoW interface comprises either a transmit or receive slice with three signal
 +---------------------------+------------------------------------------------------------+
 ~
 
+
+## BoW-to-MAC Interface
+
+The following signals shall constitute the interface to the MAC
+
+~ TableFigure {#tab-mac_interface; caption: "MAC Interface"; width:100%;  }
++-------------------------+--------------+--------------------------------------------------------+
+| Signals                 | In(from MAC) | Description                                            |
+|                         | Out (to MAC) |                                                        |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| data_in                 | In           | For transmitting across the BoW link (Section 2.1.1)   |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| data_out                | Out          | Received through the BoW link (Section 2.1.2)          |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| tx_fwd_clk              | In           | For transmitting data from the                         |
+|                         |              | transmitter to the link partner (Section 2.1.6)        |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| rx_fwd_clk              | Out          | Received from the link partner                         |
+|                         |              | and converted from quasi-                              |
+|                         |              | differential to single-ended                           |
+|                         |              | (Section 2.1.6.3)                                      |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| tx_mac_rdy              | In           | For resetting Transmit data                            |
+|                         |              | transfers and communicating                            |
+|                         |              | MAC readiness for calibration to                       |
+|                         |              | the link partner (Section 3.1)                         |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| rx_mac_rdy              | Out          | Indicates that the Receive MAC is                      |
+|                         |              | ready to transmit data   (Section 3.1)                 |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| tx_adapter_rstn         | In           | Resets the BoW Adapter (section 3.1)                   |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| tx_dcc_dll_lock_req     | In           | Initiates calibration of transmit                      |
+|                         |              | slice and its link partner (receive                    |
+|                         |              | slice) for a BoW interface                             |
+|                         |              | (Section 3.2.3.3)                                      |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| rx_dcc_dll_lock_req     | In           | Initiates calibration of receive                       |
+|                         |              | slice and its link partner (transmit                   |
+|                         |              | slice) for a BoW interface                             |
+|                         |              | (Section 3.2.3.3)                                      |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| tx_transfer_en          | Out          | Indicate that calibration on the                       |
+|                         |              | Transmit is complete for transmit                      |
+|                         |              | and receive paths (Section 3.2.3.3)                    |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| rx   _transfer_en       | Out          | Indicate that calibration on the                       |
+|                         |              | Receive is complete for transmit                       |
+|                         |              | and receive paths (Section 3.2.3.3)                    |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| Signals indicating any  | Out          | Sent to MAC for possible                               |
+| conditions that may     |              | data- transfer ready de-assertion                      |
+| cause de-assertion of   |              | by MAC (Section 3.1)                                   |
+| data-transfer ready     |              |                                                        |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| Signals indicating any  | Out          | Sent to MAC for possible                               |
+| conditions that may     |              | adapter reset by MAC (Section 3.2.3)                   |
+| cause BoW Adapter       |              |                                                        |
+| reset and recalibration |              |                                                        |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| User-defined shift-     | In           | For transmitting application-                          |
+| register bits           |              | defined bits to the link   partner (Section 2.2.2.5.2) |
+|                         |              |                                                        |
+|                         |              |                                                        |
++-------------------------+--------------+--------------------------------------------------------+|                         |              |                                                        |
+~
+
+
+
+~ Figure { #fig-mac_interface; caption: "MAC Interface" }
+![mac_interface]
+~
+[mac_interface]: images/mac_interface.png { width:auto; max-width:70% }
 
 
 ## BoW Modes
@@ -1035,93 +1121,6 @@ What is the origin of the Xtalk Limit equation?  Is there a paper reference?
 
 
 
-
-# BoW-to-MAC Interface
-
-The following signals shall constitute the interface to the MAC
-
-~ TableFigure {#tab-mac_interface; caption: "MAC Interface"; width:100%;  }
-+-------------------------+--------------+--------------------------------------------------------+
-| Signals                 | In(from MAC) | Description                                            |
-|                         | Out (to MAC) |                                                        |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| data_in                 | In           | For transmitting across the BoW link (Section 2.1.1)   |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| data_out                | Out          | Received through the BoW link (Section 2.1.2)          |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| tx_fwd_clk              | In           | For transmitting data from the                         |
-|                         |              | transmitter to the link partner (Section 2.1.6)        |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| rx_fwd_clk              | Out          | Received from the link partner                         |
-|                         |              | and converted from quasi-                              |
-|                         |              | differential to single-ended                           |
-|                         |              | (Section 2.1.6.3)                                      |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| tx_mac_rdy              | In           | For resetting Transmit data                            |
-|                         |              | transfers and communicating                            |
-|                         |              | MAC readiness for calibration to                       |
-|                         |              | the link partner (Section 3.1)                         |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| rx_mac_rdy              | Out          | Indicates that the Receive MAC is                      |
-|                         |              | ready to transmit data   (Section 3.1)                 |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| tx_adapter_rstn         | In           | Resets the BoW Adapter (section 3.1)                   |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| tx_dcc_dll_lock_req     | In           | Initiates calibration of transmit                      |
-|                         |              | slice and its link partner (receive                    |
-|                         |              | slice) for a BoW interface                             |
-|                         |              | (Section 3.2.3.3)                                      |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| rx_dcc_dll_lock_req     | In           | Initiates calibration of receive                       |
-|                         |              | slice and its link partner (transmit                   |
-|                         |              | slice) for a BoW interface                             |
-|                         |              | (Section 3.2.3.3)                                      |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| tx_transfer_en          | Out          | Indicate that calibration on the                       |
-|                         |              | Transmit is complete for transmit                      |
-|                         |              | and receive paths (Section 3.2.3.3)                    |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| rx   _transfer_en       | Out          | Indicate that calibration on the                       |
-|                         |              | Receive is complete for transmit                       |
-|                         |              | and receive paths (Section 3.2.3.3)                    |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| Signals indicating any  | Out          | Sent to MAC for possible                               |
-| conditions that may     |              | data- transfer ready de-assertion                      |
-| cause de-assertion of   |              | by MAC (Section 3.1)                                   |
-| data-transfer ready     |              |                                                        |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| Signals indicating any  | Out          | Sent to MAC for possible                               |
-| conditions that may     |              | adapter reset by MAC (Section 3.2.3)                   |
-| cause BoW Adapter       |              |                                                        |
-| reset and recalibration |              |                                                        |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| User-defined shift-     | In           | For transmitting application-                          |
-| register bits           |              | defined bits to the link   partner (Section 2.2.2.5.2) |
-|                         |              |                                                        |
-|                         |              |                                                        |
-+-------------------------+--------------+--------------------------------------------------------+|                         |              |                                                        |
-~
-
-
-
-~ Figure { #fig-mac_interface; caption: "MAC Interface" }
-![mac_interface]
-~
-[mac_interface]: images/mac_interface.png { width:auto; max-width:70% }
 
 
 # Control Signals

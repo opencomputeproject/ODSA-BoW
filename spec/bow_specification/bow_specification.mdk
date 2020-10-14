@@ -521,7 +521,7 @@ The following signals shall constitute the interface to the MAC
 
 There are multiple BoW modes. All modes must be 
 interoperable with the minimum definition. All modes are source synchronous 
-parallel interfaces using a differential clock that may operate at multiple.
+parallel interfaces using a differential clock that may operate at multiple frequencies.
 The range of operating frequencies for a mode must be documented in a data sheet. 
 frequencies. Beyond the basic mode, adding termination provides higher performance 
 per mm of beachfront bandwidth but is more complex to design. It is also possible
@@ -574,9 +574,6 @@ Bow links shall follow the specifications in the following table.
 |--------------|------------|-----------|-----------|-------------|-------|
 |  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
 +:------------:+:----------:+:----------+:----------+:------------+-------+
-| BoW Basic    | Interposer | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
-|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
-+--------------+------------+-----------+-----------+-------------+-------+
 | BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
 |              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |
 +--------------+------------+-----------+-----------+-------------+-------+
@@ -585,13 +582,26 @@ Bow links shall follow the specifications in the following table.
 ~
 <Note this table appears in two places!!>
 
+The following datarates and reach targets are recommended for BoW implementation using
+advanced packaging:
+
+~ TableFigure {#tab-rates1; caption: "BoW Modes and Data Rates"; width:100%;  }
+|--------------|------------|-----------|-----------|-------------|-------|
+|  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
++:------------:+:----------:+:----------+:----------+:------------+-------+
+| BoW Basic    | Advanced   | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
+|--------------|------------|-----------|-----------|-------------+-------|
+~
+
 All BoW links are DDR (double data rate). 
 DDR is defined as one data bit transmitted for each rising and each falling edge of the clock.
 
 "Laminate" is intended to include organic laminate packages (a.k.a. buildup) and similar 
 technologies with approximately 25 um line and space rules.
-"Interposer" is intended to include silicon interposer and similar technologies 
-with approximately 1 um line and space rules.
+"Advanced" is intended to include silicon interposer and similar technologies which are often
+more resistive than organic laminate packages.  Source termination may not be necessary for
+implementations targeting Advanced packaging.
 
 ### Supported Data Rates
 
@@ -600,9 +610,6 @@ BOW supports the following data rates:
 ~ TableFigure {#tab-rates2; caption: "BoW Modes and Data Rates"; width:100%;  }
 |--------------|------------|-----------|-----------|-------------|-------|
 |  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
-+:------------:+:----------:+:----------+:----------+:------------+-------+
-| BoW Basic    | Interposer | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
-|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
 +--------------+------------+-----------+-----------+-------------+-------+
 | BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
 |              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |

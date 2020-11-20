@@ -671,6 +671,18 @@ The position-A slices (at the chips' edges) are connected together on the topmos
 layer used for signals and the position-B slices are connected together on the next 
 layer used for signals.
 
+
+Each BoW slice consists of a differential clock pair, 16 single-ended data wires, 
+and optional wires FEC and AUX. Each BoW slice is unidirectional when in operation.
+A chiplet may be designed with with Rx-only and Tx-only slices, or
+each slice may have both Tx and Rx capability, one of which is selected at runtime. 
+A bidirectional link is composed of some number of slices configured for Rx and some for Tx.
+
+FEC (Forward Error Correction) is an optional signal that allows using FEC to 
+improve the bit error rate (BER).  AUX is an optional signal that can be used for purposes
+such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
+the details on FEC and AUX usage, which is defined in the Link layer.
+
 This reference example uses hexagonal closest packing for the bumps: two rows for signal bumps and
 one row for power and ground bumps. 
 In this pattern, the wire pitch is half the bump pitch.
@@ -678,7 +690,6 @@ In order to maintain the closest bump packing, slices in rows B and D must have 
 pattern than slices A and C.
 But bump patterns are not specified by BoW; only the signal *ordering* at 
 the chip edge is specified for interoperability. 
-
 
 Alternate bump arrangements may include:
 90-degree rotation of the hexagonal packing direction to decrease the wire pitch 14%;

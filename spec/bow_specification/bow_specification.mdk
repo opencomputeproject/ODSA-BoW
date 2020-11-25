@@ -625,7 +625,19 @@ The following signals shall constitute the interface to the MAC
 [mac_interface]: images/mac_interface.png { width:auto; max-width:70% }
 
 
+
+## BoW Modes
+
+There are multiple BoW modes. All modes must be 
+interoperable with the minimum definition. All modes are source synchronous 
+parallel interfaces using a differential clock that may operate at multiple frequencies.
+The range of operating frequencies for a mode must be documented in a data sheet. 
+frequencies. Beyond the basic mode, adding termination provides higher performance 
+per mm of beachfront bandwidth but is more complex to design. It is also possible
+to get high performance by using 
+
 ## Control Signals
+
 
 An BoW interface shall provide control and status bits for calibration and communication of 
 control and status information between the transmitter(receiver) and receiver(transmitter) chiplets. 
@@ -676,9 +688,52 @@ User-Defined Signals
     user-defined signals should be described in the chiplet data sheet.
 
 Shift-Register Signals
+~ TableFigure {#tab-rates1; caption: "BoW Modes and Data Rates"; width:100%;  }
+|--------------|------------|-----------|-----------|-------------|-------|
+|  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
++:------------:+:----------:+:----------+:----------+:------------+-------+
+| BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Fast     | Laminate   | 1-8 GHz   | 2-16 Gbps | Double      | 50 mm |
+|--------------|------------|-----------|-----------|-------------+-------|
+~
+<Note this table appears in two places!!>
+
+The following datarates and reach targets are recommended for BoW implementation using
+advanced packaging:
+
+~ TableFigure {#tab-rates1; caption: "BoW Modes and Data Rates"; width:100%;  }
+|--------------|------------|-----------|-----------|-------------|-------|
+|  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
++:------------:+:----------:+:----------+:----------+:------------+-------+
+| BoW Basic    | Advanced   | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
+|--------------|------------|-----------|-----------|-------------+-------|
+~
+
+All BoW links are DDR (double data rate). 
+DDR is defined as one data bit transmitted for each rising and each falling edge of the clock.
+
+"Laminate" is intended to include organic laminate packages (a.k.a. buildup) and similar 
+technologies with approximately 25 um line and space rules.
+"Advanced" is intended to include silicon interposer and similar technologies which are often
+more resistive than organic laminate packages and must operate with reduced trace lengths.  Termination 
+(source or double) may not be necessary for implementations targeting Advanced packaging.
 
 Table 10 defines the control signals for Transmit and Receive slices. The table is organized by signal type; in-order signal tables with default values are provided in Section 7.2. tx_ prefixes refer to signals originating on the Transmit slice; rx_ prefixes refer to signals originating on the Receive slice.
 
+
+~ TableFigure {#tab-rates2; caption: "BoW Modes and Data Rates"; width:100%;  }
+|--------------|------------|-----------|-----------|-------------|-------|
+|  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Fast     | Laminate   | 1-8 GHz   | 2-16 Gbps | Double      | 50 mm |
+|--------------|------------|-----------|-----------|-------------+-------|
+~
 
 
 ~ TableFigure {#tab-control_signals; caption: "Control Signals"; width:100%; }
@@ -819,6 +874,18 @@ The position-A slices (at the chips' edges) are connected together on the topmos
 layer used for signals and the position-B slices are connected together on the next 
 layer used for signals.
 
+
+Each BoW slice consists of a differential clock pair, 16 single-ended data wires, 
+and optional wires FEC and AUX. Each BoW slice is unidirectional when in operation.
+A chiplet may be designed with with Rx-only and Tx-only slices, or
+each slice may have both Tx and Rx capability, one of which is selected at runtime. 
+A bidirectional link is composed of some number of slices configured for Rx and some for Tx.
+
+FEC (Forward Error Correction) is an optional signal that allows using FEC to 
+improve the bit error rate (BER).  AUX is an optional signal that can be used for purposes
+such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
+the details on FEC and AUX usage, which is defined in the Link layer.
+
 This reference example uses hexagonal closest packing for the bumps: two rows for signal bumps and
 one row for power and ground bumps. 
 In this pattern, the wire pitch is half the bump pitch.
@@ -827,13 +894,26 @@ pattern than slices A and C.
 But bump patterns are not specified by BoW; only the signal *ordering* at 
 the chip edge is specified for interoperability. 
 
-
 Alternate bump arrangements may include:
 90-degree rotation of the hexagonal packing direction to decrease the wire pitch 14%;
 square bump arrays instead of hexagonal for regularity of layout; 
 more than two rows of signal bumps to decrease the wire pitch;
 different ordering of power and ground bumps;
 multiple power and ground rows.
+
+~ TableFigure {#tab-signals; caption: "BoW Signals"; }
+|--------------|---------|------------|-------------|
+| Function     | # Signals| Signal Name| Notes      |
++:-------------+:-------:+:-----------+:------------+
+| Clock        | 2       | CLK+, CLK- | Differential|
+|--------------|---------|------------|-------------|
+| Data         | 16      | D[15:0]    |             |
+|--------------|---------|------------|-------------|
+|Forward Error | 1       |FEC         | Optional    |
+|Correction    |         |            |             |
++--------------+---------+------------+-------------|
+|Auxilliary    |1        |AUX         | Optional    |
+|--------------|---------|------------|-------------|
 
 An alternate slice arrangement may be to place the Tx and Rx slices side by side at the 
 chip edges. This would take up more chip edge, but allow all the signals to run on the same 
@@ -872,6 +952,10 @@ due to low via density passing through the thick central core layer.
 
 ## Signal Ordering 
 
+~ Framed {color: blue}
+Ken sez: I copied this table from the HotI 2020 paper, but what is our 
+supporting data for 8 Gbps cases?
+
 A BoW interface must conform to these wire and slice order rules at the edge of the chip:
 
 
@@ -908,6 +992,7 @@ for 8 Tx and 8 Rx slices on each chiplet.
 ~ Figure { #fig-checkerboard; caption: "Checkerboard Pattern of Tx and Rx Slices in a 1.25 Tb/s Link" }
 ![checkerboard]
 [checkerboard]: images/bowspec_figure_checkerboard.PNG { width:auto; max-width:70% }
+
 ~
 
 An alternate approach may be used: provision every slice to operate as either Rx or Tx. 
@@ -939,7 +1024,8 @@ and are serialized to the line rate.
 At the Rx side, they are sampled with a common slicer clock in BoW Basic. 
 BoW Fast may optionally implement per-bit delay adjust or per-bit slicer clock adjust.
 
-All BoW interfaces shall be DDR (Double Data Rate) at the chip-to-chip itnerface: the data bit rate is twice the clock frequency, 
+All BoW interfaces shall be DDR (Double Data Rate) at the chip-to-chip interface: 
+the data bit rate is twice the clock frequency, 
 so data is clocked in on both edges of the clock in the Rx slice.
 
 The following table provides clock and data rates for an example with 4 Gbps wire data rate 
@@ -973,24 +1059,42 @@ Chiplet-B.
 On the Rx side, the PHY must align the slicer clock to sample the data correctly.
 This may be done with a DLL or adjustable delays or other methods.
 The PHY shall include control logic to self-align the slicer clock for correct sampling of the data.
-Alignment is started by signal AlignDll? from the Rx Link Layer; 
-the PHY provides a signal DllAligned? to the Link Layer when it is complete.
+Alignment is started by signal AlignDll from the Rx Link Layer; 
+the PHY provides a signal DllAligned to the Link Layer when it is complete.
 
+All BoW interfaces shall be source synchronous within a slice. 
 BoW Basic interfaces do not require per-wire alignment - the signals
 within a slice are aligned sufficiently well by matching their paths.
 BoW Fast interfaces may need per-wire delay adjustment or per-slicer clock adjustment.
 
-All BoW interfaces shall be source synchronous within a slice. 
-However clock skew between all the slices in a link depends on the implementation of the
-TxClk distribution on the Tx slices in a link; this skew must be no more than 3 ns.
+Clock skew between the slices in each direction of a link depends on the implementation of the
+TxClk distribution to all the Tx slices. 
+That is, for the data flow from Chiplet A to Chiplet B, 
+the TxClk distribution on Chiplet A sets the 
+the clock skew of the Tx slices on Chiplet A and the clock skew of the Rx slices on Chiplet B,
+and vice versa for flow from B to A. This skew must be no more than 3 ns.
+There is no specification of the skew between TxClk on Chiplet A vs TxClk on Chiplet B.
+
+~ Framed {color: blue}
+Ed: 3 ns is sufficient to cover Tx clock distribution skew across a 30 mm chip edge.
+Specifying a skew limit seems useful to clarify the requirements that will be imposed on 
+the bonding FIFO in the Rx Link layer.
+Do we want to weaken this to a Should?
+~
+
 On both the Tx and Rx sides, the Link layer must include a Clock Domain Crossing (CDC) to 
 align the data between CoreClk and PhyClk. 
 These CDCs must also be able to absorb the slice-to-slice clock skew and 
 core clock distribution skew across the whole link.
 
 If DCCs are included in the PHY and they need an alignment cycle, they shall include 
-control logic to perform self-alignment on a signal from the Link layer and send a completion 
-signal back to the Link layer.
+control logic to perform self-alignment on a signal AlignDcc from the Link layer to the PHY
+and send a completion signal DccAligned back to the Link layer.
+
+~ Framed {color: blue}
+Ed: Need to use the same names for AlignDll, DllAligned, AlignDcc and DccAligned as in Logic Interface section.
+~
+
 
 ## Clock and Data Specifications
 

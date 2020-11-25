@@ -319,7 +319,115 @@ BoW with an adapter to transport PCIe transactions as an underlay.
 [slice_signals]: images/bowspec_figure_slice_signals.PNG { width:auto; max-width:70% }
 ~
 
-## Signals
+## BoW Modes
+
+There are multiple BoW modes. All modes must be 
+interoperable with the minimum definition. All modes are source synchronous 
+parallel interfaces using a differential clock that may operate at multiple.
+The range of operating frequencies for a mode must be documented in a data sheet. 
+frequencies. Beyond the basic mode, adding termination provides higher performance 
+per mm of beachfront bandwidth but is more complex to design. It is also possible
+to get high performance by using 
+
+The various BoW modes are specified such that they can be directly connected 
+to one another. ** When two interfaces are connected, data rate for the operating mode must be 
+configured such that both ends support the same configuration at the same data rate.** All 
+BoW implementations must support the minimum configuration of BoW (2Gbps datarate, 
+1 Ghz clock rate, un-terminated IO). 
+
+In each mode, a BoW interface can operate at multiple frequencies.
+The operating frequency and throughput per wire on a BoW interface mode will be affected by:
+
+* The choice of packaging technology
+* The physical distance between the chiplets being connected: Faster data rates may be easier 
+to realize with chiplets that are physically closer 
+* Bump spacing: Coarse bumps may allow for circuitry to enable faster data rates.
+
+The BoW specification provides for optional technology to increase the data rate per wire, 
+to enable a graceful cost-performance tradeoff. 
+It is also possible for basic BoW configuration implemented with advanced packaging or 
+between physically close chiplets to offer a higher data rate per wire than a terminated 
+BoW interface in some configurations. A high level view of the BoW Interface Data-rate ranges is shown below:
+
+~ Center
+![bowspec_figure2]
+~
+
+[bowspec_figure2]: images/bowspec_figure2.jpg "bowspec_figure2" { width:auto; max-width:100% }
+
+
+### BoW Basic Mode 
+
+In BoW Basic, 
+data rates can go up to 5 or 8 Gbps, depending on the package technology and wire length.
+Wires are source-terminated (in the transmit circuit), but not terminated at the receiver.
+
+### BoW Fast Mode
+
+In BoW Fast, data rates can go up to 16 Gbps.
+Wires are both source-terminated and receiver-terminated to 
+minimize signal reflections to enable higher data rates and longer wires.
+
+### Modes and Data Rates
+
+Bow links shall follow the specifications in the following table.
+
+~ TableFigure {#tab-rates1; caption: "BoW Modes and Data Rates"; width:100%;  }
+|--------------|------------|-----------|-----------|-------------|-------|
+|  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
++:------------:+:----------:+:----------+:----------+:------------+-------+
+| BoW Basic    | Interposer | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Fast     | Laminate   | 1-8 GHz   | 2-16 Gbps | Double      | 50 mm |
+|--------------|------------|-----------|-----------|-------------+-------|
+~
+<Note this table appears in two places!!>
+
+All BoW links are DDR (double data rate). 
+DDR is defined as one data bit transmitted for each rising and each falling edge of the clock.
+
+"Laminate" is intended to include organic laminate packages (a.k.a. buildup) and similar 
+technologies with approximately 25 um line and space rules.
+"Interposer" is intended to include silicon interposer and similar technologies 
+with approximately 1 um line and space rules.
+
+### Supported Data Rates
+
+BOW supports the following data rates:
+
+~ TableFigure {#tab-rates2; caption: "BoW Modes and Data Rates"; width:100%;  }
+|--------------|------------|-----------|-----------|-------------|-------|
+|  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
++:------------:+:----------:+:----------+:----------+:------------+-------+
+| BoW Basic    | Interposer | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |
++--------------+------------+-----------+-----------+-------------+-------+
+| BoW Fast     | Laminate   | 1-8 GHz   | 2-16 Gbps | Double      | 50 mm |
+|--------------|------------|-----------|-----------|-------------+-------|
+~
+<Note this table appears in two places!!>
+
+
+~ Framed {color: blue}
+Ken sez: I copied this table from the HotI 2020 paper, but what is our 
+supporting data for 8 Gbps and 50 mm cases?
+~
+
+All BoW implementations must support the minimum 1 GHz clock rate, 
+2 Gbps data rate using source-terminated I/O.
+For ease of interoperation, data rate multiples of 
+N Gbps should be supported for integer N>=2 to the max rate for that implementation.
+
+
+
+# Signal Definitions
 
 Each BoW slice consists of a differential clock pair, 16 single-ended data wires, 
 and optional FEC and AUX wires. Each BoW slice is unidirectional when in operation.
@@ -517,66 +625,73 @@ The following signals shall constitute the interface to the MAC
 [mac_interface]: images/mac_interface.png { width:auto; max-width:70% }
 
 
+
 ## BoW Modes
 
 There are multiple BoW modes. All modes must be 
 interoperable with the minimum definition. All modes are source synchronous 
-parallel interfaces using a differential clock that may operate at multiple.
+parallel interfaces using a differential clock that may operate at multiple frequencies.
 The range of operating frequencies for a mode must be documented in a data sheet. 
 frequencies. Beyond the basic mode, adding termination provides higher performance 
 per mm of beachfront bandwidth but is more complex to design. It is also possible
 to get high performance by using 
 
-The various BoW modes are specified such that they can be directly connected 
-to one another. ** When two interfaces are connected, data rate for the operating mode must be 
-configured such that both ends support the same configuration at the same data rate.** All 
-BoW implementations must support the minimum configuration of BoW (2Gbps datarate, 
-1 Ghz clock rate, un-terminated IO). 
-
-In each mode, a BoW interface can operate at multiple frequencies.
-The operating frequency and throughput per wire on a BoW interface mode will be affected by:
-
-* The choice of packaging technology
-* The physical distance between the chiplets being connected: Faster data rates may be easier 
-to realize with chiplets that are physically closer 
-* Bump spacing: Coarse bumps may allow for circuitry to enable faster data rates.
-
-The BoW specification provides for optional technology to increase the data rate per wire, 
-to enable a graceful cost-performance tradeoff. 
-It is also possible for basic BoW configuration implemented with advanced packaging or 
-between physically close chiplets to offer a higher data rate per wire than a terminated 
-BoW interface in some configurations. A high level view of the BoW Interface Data-rate ranges is shown below:
-
-~ Center
-![bowspec_figure2]
-~
-
-[bowspec_figure2]: images/bowspec_figure2.jpg "bowspec_figure2" { width:auto; max-width:100% }
+## Control Signals
 
 
-### BoW Basic Mode 
+An BoW interface shall provide control and status bits for calibration and communication of 
+control and status information between the transmitter(receiver) and receiver(transmitter) chiplets. 
+These status bits shall be implemented as documented in Section XX.xxx.xx.
 
-In BoW Basic, 
-data rates can go up to 5 or 8 Gbps, depending on the package technology and wire length.
-Wires are source-terminated (in the transmit circuit), but not terminated at the receiver.
 
-### BoW Fast Mode
+Transmit Slice Shift Register
 
-In BoW Fast, data rates can go up to 16 Gbps.
-Wires are both source-terminated and receiver-terminated to 
-minimize signal reflections to enable higher data rates and longer wires.
+A Transmit slice shall include two shift registers: one for holding Transmit control and status 
+signals to its link partner (the Transmit shift register), and one for receiving control 
+and status signals from its interface partner (the Receive-copy shift register). 
+The Transmit shift register shall contain 81 bits. The Receive-copy shift register 
+shall contain 73 bits. All bits shall be implemented regardless of whether optional 
+signals are implemented. Any signals not implemented shall permanently maintain their 
+default values as defined in Table 50.
 
-### Modes and Data Rates
 
-Bow links shall follow the specifications in the following table.
+Receive Slice Shift Register
 
+A Receive slice shall include two shift registers: one for holding Receive control and status
+ signals to its interface partner (the Receive register), and one for receiving  control 
+ and status signals from its link partner (the Transmit-copy shift register). 
+ The Receive shift register shall contain 73 bits. The Transmit-copy shift register 
+ shall contain 81 bits. All bits shall be implemented regardless of whether optional
+  signals are implemented. Any signals not implemented shall permanently maintain their
+   default values as defined in Table 51
+
+Control Signals
+ Control signals fall into one of the following categories:
+
+* Calibration handshake
+* Selective reset
+* User-defined
+* Reserved
+
+The bits for any unused signals shall be maintained with default values for correct shift- register length.
+The control signals are summarized in Table 11 and are detailed in Table 51.
+
+Calibration Status Signals
+
+Calibration status signals shall be generated by internal state machines as described in Section 3.2.3.
+
+User-Defined Signals 
+
+    User-defined signals are available for application use. 
+    Since both sides need to understand the function of user-defined signals, 
+    using these signals may limit chiplet interoperability. If implemented in an application, 
+    user-defined signals should be described in the chiplet data sheet.
+
+Shift-Register Signals
 ~ TableFigure {#tab-rates1; caption: "BoW Modes and Data Rates"; width:100%;  }
 |--------------|------------|-----------|-----------|-------------|-------|
 |  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
 +:------------:+:----------:+:----------+:----------+:------------+-------+
-| BoW Basic    | Interposer | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
-|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
-+--------------+------------+-----------+-----------+-------------+-------+
 | BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
 |              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |
 +--------------+------------+-----------+-----------+-------------+-------+
@@ -584,25 +699,34 @@ Bow links shall follow the specifications in the following table.
 |--------------|------------|-----------|-----------|-------------+-------|
 ~
 <Note this table appears in two places!!>
+
+The following datarates and reach targets are recommended for BoW implementation using
+advanced packaging:
+
+~ TableFigure {#tab-rates1; caption: "BoW Modes and Data Rates"; width:100%;  }
+|--------------|------------|-----------|-----------|-------------|-------|
+|  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
++:------------:+:----------:+:----------+:----------+:------------+-------+
+| BoW Basic    | Advanced   | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
+|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
+|--------------|------------|-----------|-----------|-------------+-------|
+~
 
 All BoW links are DDR (double data rate). 
 DDR is defined as one data bit transmitted for each rising and each falling edge of the clock.
 
 "Laminate" is intended to include organic laminate packages (a.k.a. buildup) and similar 
 technologies with approximately 25 um line and space rules.
-"Interposer" is intended to include silicon interposer and similar technologies 
-with approximately 1 um line and space rules.
+"Advanced" is intended to include silicon interposer and similar technologies which are often
+more resistive than organic laminate packages and must operate with reduced trace lengths.  Termination 
+(source or double) may not be necessary for implementations targeting Advanced packaging.
 
-### Supported Data Rates
+Table 10 defines the control signals for Transmit and Receive slices. The table is organized by signal type; in-order signal tables with default values are provided in Section 7.2. tx_ prefixes refer to signals originating on the Transmit slice; rx_ prefixes refer to signals originating on the Receive slice.
 
-BOW supports the following data rates:
 
 ~ TableFigure {#tab-rates2; caption: "BoW Modes and Data Rates"; width:100%;  }
 |--------------|------------|-----------|-----------|-------------|-------|
 |  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
-+:------------:+:----------:+:----------+:----------+:------------+-------+
-| BoW Basic    | Interposer | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
-|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
 +--------------+------------+-----------+-----------+-------------+-------+
 | BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
 |              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |
@@ -610,18 +734,104 @@ BOW supports the following data rates:
 | BoW Fast     | Laminate   | 1-8 GHz   | 2-16 Gbps | Double      | 50 mm |
 |--------------|------------|-----------|-----------|-------------+-------|
 ~
-<Note this table appears in two places!!>
 
 
-~ Framed {color: blue}
-Ken sez: I copied this table from the HotI 2020 paper, but what is our 
-supporting data for 8 Gbps and 50 mm cases?
+~ TableFigure {#tab-control_signals; caption: "Control Signals"; width:100%; }
+
++---------------------+-----------------------------+--------------+---------------------+----------------------+         
+|                     |                             |              | Signal  Origin      |    Bit Number        |
+|                     |                             |              |                     |                      |
++---------------------+-----------------------------+              +                     +------------+---------+
+|                     |                             |              |                     |            |         |
+| Signal Name         | Signal Function             | Bits         | (Receive or MAC)    | Transmit   | Receive |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+| Calibration         |                             |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| tx_dcc_cal_done     | TX DCC calibration complete | 1            | LINK PARTNER        | 68         | 31      |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| rx_transfer_en      | RX calibration complete     | 1            | LINK PARTNER        | 75         | 70      |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| rx_dcc_dll_lock_req | Start RX calibration        | 1            | MAC                 | NA         | 69      |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| rx_dll_lock         | RX DLL locked               | 1            | LINK PARTNER        | 74         | 68      |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| tx_transfer_en      | TX calibration complete     | 1            | LINK PARTNER        | 78         | 64      |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| tx_dcc_dll_lock_req | Start TX calibration        | 1            | MAC                 | NA         | 63      |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| Device_ID           | Chiplet ID                  | 4            | Transmit            | 8-11       | 32-35   |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| Link_ID             | Chiplet Link ID             | 4            | Transmit            | 12-15      | 36-39   |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| Slice_ID            | Chiplet Slice ID            | 5            | Transmit            | 16-20      | 40-43   |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| Power_on_reset      | PoR complete                | 1            | Receive             | 21         | 44      |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| tx_mac_rdy          | For resetting               | 1            | MAC                 | 22         | 45      |
+|                     | Transmit data               |              |                     |            |         |
+|                     | transfers and               |              |                     |            |         |
+|                     | communicating MAC           |              |                     |            |         |
+|                     | readiness for               |              |                     |            |         |
+|                     | calibration to the link     |              |                     |            |         |
+|                     | partner                     |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| rx_mac_rdy          | For resetting               | 1            | MAC                 | 23         | 46      |
+|                     | Receive data                |              |                     |            |         |
+|                     | transfers and               |              |                     |            |         |
+|                     | communicating MAC           |              |                     |            |         |
+|                     | readiness for               |              |                     |            |         |
+|                     | calibration to the link     |              |                     |            |         |
+|                     | partner                     |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| tx_adapter_rstn     | Reset BoW adapter           | 1            | MAC                 | 24         | 47      |
+|                     | signal from Transmit        |              |                     |            |         |
+|                     | slice to Link Partner       |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| rx_adapter_rstn     | Reset BoW adapter           | 1            | Receive             | 25         | 48      |
+|                     | signal from Transmit        |              |                     |            |         |
+|                     | slice to Link Partner       |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| AUX_DBI             | Select DBI mode (1)         | 1            | MAC                 | 26         | 49      |
+|                     | or AUX mode (0)             |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+| User-defined        |                             |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| external_cntl[]     | Defined by protocol         | fo: 30       | MAC or LINK PARTNER | 0-4        | 49-57   |
+|                     | and/or application          |              |                     |            |         |
+|                     |                             | le: 63       |                     | 26-65      | 28-30   |
+|                     |                             |              |                     |            |         |
+|                     |                             |              |                     |            | 0-26    |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+| Other               |                             |              |                     |            |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
+|                     |                             |              |                     |            |         |
+| Reserved            |                             |              | NA                  | 79         | 71      |
+|                     |                             |              |                     |            |         |
+|                     |                             |              |                     | 76-77      | 65-67   |
+|                     |                             |              |                     |            |         |
+|                     |                             |              |                     | 69-73      | 58-62   |
+|                     |                             |              |                     |            |         |
+|                     |                             |              |                     | 66-67      | 27      |
+|                     |                             |              |                     |            |         |
+|                     |                             |              |                     | 5-7        |         |
++---------------------+-----------------------------+--------------+---------------------+------------+---------+
 ~
-
-All BoW implementations must support the minimum 1 GHz clock rate, 
-2 Gbps data rate using source-terminated I/O.
-For ease of interoperation, data rate multiples of 
-N Gbps should be supported for integer N>=2 to the max rate for that implementation.
 
 
 # BoW Physicals
@@ -664,6 +874,18 @@ The position-A slices (at the chips' edges) are connected together on the topmos
 layer used for signals and the position-B slices are connected together on the next 
 layer used for signals.
 
+
+Each BoW slice consists of a differential clock pair, 16 single-ended data wires, 
+and optional wires FEC and AUX. Each BoW slice is unidirectional when in operation.
+A chiplet may be designed with with Rx-only and Tx-only slices, or
+each slice may have both Tx and Rx capability, one of which is selected at runtime. 
+A bidirectional link is composed of some number of slices configured for Rx and some for Tx.
+
+FEC (Forward Error Correction) is an optional signal that allows using FEC to 
+improve the bit error rate (BER).  AUX is an optional signal that can be used for purposes
+such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
+the details on FEC and AUX usage, which is defined in the Link layer.
+
 This reference example uses hexagonal closest packing for the bumps: two rows for signal bumps and
 one row for power and ground bumps. 
 In this pattern, the wire pitch is half the bump pitch.
@@ -672,13 +894,26 @@ pattern than slices A and C.
 But bump patterns are not specified by BoW; only the signal *ordering* at 
 the chip edge is specified for interoperability. 
 
-
 Alternate bump arrangements may include:
 90-degree rotation of the hexagonal packing direction to decrease the wire pitch 14%;
 square bump arrays instead of hexagonal for regularity of layout; 
 more than two rows of signal bumps to decrease the wire pitch;
 different ordering of power and ground bumps;
 multiple power and ground rows.
+
+~ TableFigure {#tab-signals; caption: "BoW Signals"; }
+|--------------|---------|------------|-------------|
+| Function     | # Signals| Signal Name| Notes      |
++:-------------+:-------:+:-----------+:------------+
+| Clock        | 2       | CLK+, CLK- | Differential|
+|--------------|---------|------------|-------------|
+| Data         | 16      | D[15:0]    |             |
+|--------------|---------|------------|-------------|
+|Forward Error | 1       |FEC         | Optional    |
+|Correction    |         |            |             |
++--------------+---------+------------+-------------|
+|Auxilliary    |1        |AUX         | Optional    |
+|--------------|---------|------------|-------------|
 
 An alternate slice arrangement may be to place the Tx and Rx slices side by side at the 
 chip edges. This would take up more chip edge, but allow all the signals to run on the same 
@@ -717,6 +952,10 @@ due to low via density passing through the thick central core layer.
 
 ## Signal Ordering 
 
+~ Framed {color: blue}
+Ken sez: I copied this table from the HotI 2020 paper, but what is our 
+supporting data for 8 Gbps cases?
+
 A BoW interface must conform to these wire and slice order rules at the edge of the chip:
 
 
@@ -753,6 +992,7 @@ for 8 Tx and 8 Rx slices on each chiplet.
 ~ Figure { #fig-checkerboard; caption: "Checkerboard Pattern of Tx and Rx Slices in a 1.25 Tb/s Link" }
 ![checkerboard]
 [checkerboard]: images/bowspec_figure_checkerboard.PNG { width:auto; max-width:70% }
+
 ~
 
 An alternate approach may be used: provision every slice to operate as either Rx or Tx. 
@@ -784,7 +1024,8 @@ and are serialized to the line rate.
 At the Rx side, they are sampled with a common slicer clock in BoW Basic. 
 BoW Fast may optionally implement per-bit delay adjust or per-bit slicer clock adjust.
 
-All BoW interfaces shall be DDR (Double Data Rate) at the chip-to-chip itnerface: the data bit rate is twice the clock frequency, 
+All BoW interfaces shall be DDR (Double Data Rate) at the chip-to-chip interface: 
+the data bit rate is twice the clock frequency, 
 so data is clocked in on both edges of the clock in the Rx slice.
 
 The following table provides clock and data rates for an example with 4 Gbps wire data rate 
@@ -818,24 +1059,42 @@ Chiplet-B.
 On the Rx side, the PHY must align the slicer clock to sample the data correctly.
 This may be done with a DLL or adjustable delays or other methods.
 The PHY shall include control logic to self-align the slicer clock for correct sampling of the data.
-Alignment is started by signal AlignDll? from the Rx Link Layer; 
-the PHY provides a signal DllAligned? to the Link Layer when it is complete.
+Alignment is started by signal AlignDll from the Rx Link Layer; 
+the PHY provides a signal DllAligned to the Link Layer when it is complete.
 
+All BoW interfaces shall be source synchronous within a slice. 
 BoW Basic interfaces do not require per-wire alignment - the signals
 within a slice are aligned sufficiently well by matching their paths.
 BoW Fast interfaces may need per-wire delay adjustment or per-slicer clock adjustment.
 
-All BoW interfaces shall be source synchronous within a slice. 
-However clock skew between all the slices in a link depends on the implementation of the
-TxClk distribution on the Tx slices in a link; this skew must be no more than 3 ns.
+Clock skew between the slices in each direction of a link depends on the implementation of the
+TxClk distribution to all the Tx slices. 
+That is, for the data flow from Chiplet A to Chiplet B, 
+the TxClk distribution on Chiplet A sets the 
+the clock skew of the Tx slices on Chiplet A and the clock skew of the Rx slices on Chiplet B,
+and vice versa for flow from B to A. This skew must be no more than 3 ns.
+There is no specification of the skew between TxClk on Chiplet A vs TxClk on Chiplet B.
+
+~ Framed {color: blue}
+Ed: 3 ns is sufficient to cover Tx clock distribution skew across a 30 mm chip edge.
+Specifying a skew limit seems useful to clarify the requirements that will be imposed on 
+the bonding FIFO in the Rx Link layer.
+Do we want to weaken this to a Should?
+~
+
 On both the Tx and Rx sides, the Link layer must include a Clock Domain Crossing (CDC) to 
 align the data between CoreClk and PhyClk. 
 These CDCs must also be able to absorb the slice-to-slice clock skew and 
 core clock distribution skew across the whole link.
 
 If DCCs are included in the PHY and they need an alignment cycle, they shall include 
-control logic to perform self-alignment on a signal from the Link layer and send a completion 
-signal back to the Link layer.
+control logic to perform self-alignment on a signal AlignDcc from the Link layer to the PHY
+and send a completion signal DccAligned back to the Link layer.
+
+~ Framed {color: blue}
+Ed: Need to use the same names for AlignDll, DllAligned, AlignDcc and DccAligned as in Logic Interface section.
+~
+
 
 ## Clock and Data Specifications
 
@@ -1122,159 +1381,6 @@ What is the origin of the Xtalk Limit equation?  Is there a paper reference?
 
 
 
-
-# Control Signals
-
-An BoW interface shall provide control and status bits for calibration and communication of 
-control and status information between the transmitter(receiver) and receiver(transmitter) chiplets. 
-These status bits shall be implemented as documented in Section XX.xxx.xx.
-
-
-Transmit Slice Shift Register
-
-A Transmit slice shall include two shift registers: one for holding Transmit control and status 
-signals to its link partner (the Transmit shift register), and one for receiving control 
-and status signals from its interface partner (the Receive-copy shift register). 
-The Transmit shift register shall contain 81 bits. The Receive-copy shift register 
-shall contain 73 bits. All bits shall be implemented regardless of whether optional 
-signals are implemented. Any signals not implemented shall permanently maintain their 
-default values as defined in Table 50.
-
-
-Receive Slice Shift Register
-
-A Receive slice shall include two shift registers: one for holding Receive control and status
- signals to its interface partner (the Receive register), and one for receiving  control 
- and status signals from its link partner (the Transmit-copy shift register). 
- The Receive shift register shall contain 73 bits. The Transmit-copy shift register 
- shall contain 81 bits. All bits shall be implemented regardless of whether optional
-  signals are implemented. Any signals not implemented shall permanently maintain their
-   default values as defined in Table 51
-
-Control Signals
- Control signals fall into one of the following categories:
-
-* Calibration handshake
-* Selective reset
-* User-defined
-* Reserved
-
-The bits for any unused signals shall be maintained with default values for correct shift- register length.
-The control signals are summarized in Table 11 and are detailed in Table 51.
-
-Calibration Status Signals
-
-Calibration status signals shall be generated by internal state machines as described in Section 3.2.3.
-
-User-Defined Signals 
-
-    User-defined signals are available for application use. 
-    Since both sides need to understand the function of user-defined signals, 
-    using these signals may limit chiplet interoperability. If implemented in an application, 
-    user-defined signals should be described in the chiplet data sheet.
-
-Shift-Register Signals
-
-Table 10 defines the control signals for Transmit and Receive slices. The table is organized by signal type; in-order signal tables with default values are provided in Section 7.2. tx_ prefixes refer to signals originating on the Transmit slice; rx_ prefixes refer to signals originating on the Receive slice.
-
-
-
-~ TableFigure {#tab-control_signals; caption: "Control Signals"; width:100%; }
-
-+---------------------+-----------------------------+--------------+---------------------+----------------------+         
-|                     |                             |              | Signal  Origin      |    Bit Number        |
-|                     |                             |              |                     |                      |
-+---------------------+-----------------------------+              +                     +------------+---------+
-|                     |                             |              |                     |            |         |
-| Signal Name         | Signal Function             | Bits         | (Receive or MAC)    | Transmit   | Receive |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-| Calibration         |                             |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| tx_dcc_cal_done     | TX DCC calibration complete | 1            | LINK PARTNER        | 68         | 31      |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| rx_transfer_en      | RX calibration complete     | 1            | LINK PARTNER        | 75         | 70      |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| rx_dcc_dll_lock_req | Start RX calibration        | 1            | MAC                 | NA         | 69      |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| rx_dll_lock         | RX DLL locked               | 1            | LINK PARTNER        | 74         | 68      |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| tx_transfer_en      | TX calibration complete     | 1            | LINK PARTNER        | 78         | 64      |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| tx_dcc_dll_lock_req | Start TX calibration        | 1            | MAC                 | NA         | 63      |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| Device_ID           | Chiplet ID                  | 4            | Transmit            | 8-11       | 32-35   |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| Link_ID             | Chiplet Link ID             | 4            | Transmit            | 12-15      | 36-39   |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| Slice_ID            | Chiplet Slice ID            | 5            | Transmit            | 16-20      | 40-43   |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| Power_on_reset      | PoR complete                | 1            | Receive             | 21         | 44      |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| tx_mac_rdy          | For resetting               | 1            | MAC                 | 22         | 45      |
-|                     | Transmit data               |              |                     |            |         |
-|                     | transfers and               |              |                     |            |         |
-|                     | communicating MAC           |              |                     |            |         |
-|                     | readiness for               |              |                     |            |         |
-|                     | calibration to the link     |              |                     |            |         |
-|                     | partner                     |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| rx_mac_rdy          | For resetting               | 1            | MAC                 | 23         | 46      |
-|                     | Receive data                |              |                     |            |         |
-|                     | transfers and               |              |                     |            |         |
-|                     | communicating MAC           |              |                     |            |         |
-|                     | readiness for               |              |                     |            |         |
-|                     | calibration to the link     |              |                     |            |         |
-|                     | partner                     |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| tx_adapter_rstn     | Reset BoW adapter           | 1            | MAC                 | 24         | 47      |
-|                     | signal from Transmit        |              |                     |            |         |
-|                     | slice to Link Partner       |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| rx_adapter_rstn     | Reset BoW adapter           | 1            | Receive             | 25         | 48      |
-|                     | signal from Transmit        |              |                     |            |         |
-|                     | slice to Link Partner       |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| AUX_DBI             | Select DBI mode (1)         | 1            | MAC                 | 26         | 49      |
-|                     | or AUX mode (0)             |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-| User-defined        |                             |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| external_cntl[]     | Defined by protocol         | fo: 30       | MAC or LINK PARTNER | 0-4        | 49-57   |
-|                     | and/or application          |              |                     |            |         |
-|                     |                             | le: 63       |                     | 26-65      | 28-30   |
-|                     |                             |              |                     |            |         |
-|                     |                             |              |                     |            | 0-26    |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-| Other               |                             |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| Reserved            |                             |              | NA                  | 79         | 71      |
-|                     |                             |              |                     |            |         |
-|                     |                             |              |                     | 76-77      | 65-67   |
-|                     |                             |              |                     |            |         |
-|                     |                             |              |                     | 69-73      | 58-62   |
-|                     |                             |              |                     |            |         |
-|                     |                             |              |                     | 66-67      | 27      |
-|                     |                             |              |                     |            |         |
-|                     |                             |              |                     | 5-7        |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-~
 
 # TX_AUX_DBI
 

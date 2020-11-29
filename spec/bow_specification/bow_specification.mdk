@@ -1422,7 +1422,7 @@ Within a group of 16 RX signals, the RX DBI logic extracts the DBI bit.
 
 
 In a system with one or more BoW interfaces, each interface pair
- (defined as one Tx slice on a first chiplet and one Rx slice ona second chiplet)
+ (defined as one Tx slice on a first chiplet and one Rx slice on a second chiplet)
  in the system shall achieve interface ready status in each of its component slices. 
  Once done, the interface shall signal readiness to the rest of the system. 
  If any BoW link or slice is down (either at the MAC or the PHY level), 
@@ -1430,8 +1430,8 @@ In a system with one or more BoW interfaces, each interface pair
 
 Calibration and training will require the two endpoints of an interface to exchange status and control information.
  There is no dedicated sideband control interface defined. Instead, this exchange shall be facilitated 
- using an independent I2C interface, assumed to exist outside of the BoW interface, on each chiplet.
-  I2C was chosen as the preferred interface for the following reasons:
+ using an independent I2C (I3C) interface, assumed to exist outside of the BoW interface, on each chiplet.
+  I2C(I3C) was chosen as the preferred interface for the following reasons:
 
 * It is a two wire interface 
 *	It is multi-point
@@ -1440,11 +1440,11 @@ Calibration and training will require the two endpoints of an interface to excha
 *	It is widely used as a configuration/status monitoring interface 
 *	It does not require additional control signals such as chip select (SPI, one per follower) or BSDL files (JTAG) to access register information
 
-However, the system designer is free to choose any suitable method for their application
+However, the system designer is free to choose any suitable method for their application.
 
 
 An example BoW system configuration is shown in Figure 3. 
-Any of the chiplets shown can act as an I2C leader or follower. 
+Any of the chiplets shown can act as an I2C (I3C) leader or follower. 
 Alternatively, a central system controller (shown in dotted lines in the figure) 
 shall behave as the leader and the BoW chiplets shall be followers.
 
@@ -1479,7 +1479,7 @@ De-asserting the data-transfer ready signal may also be necessary due to conditi
 Internal BoW conditions indicating the need for de-assertion of the data-transfer ready signal 
 shall be sent to the MAC so that the MAC can de-assert the data-transfer ready signal.
 Once data-transfer ready has been re-asserted after having been de-asserted, the 
-BoW Adapter shall be re-calibrated (Section 3.2.3). The reverse is not true: 
+BoW Adapter shall be re-calibrated (Section 11). The reverse is not true: 
 calibration may be initiated without de-asserting data-transfer ready first.
 
 ##Standby Mode
@@ -1513,11 +1513,11 @@ While the tx_mac_rdy signal is de-asserted:
 ~
 
 * Data transmission shall halt
-* Data outputs shall be placed into standby mode (Section 3.1.1)
+* Data outputs shall be placed into standby mode (Section 9.3)
 * The clock output tx_fwd_clk shall go into standby mode.
 * The reset signal tx_mac_rdy shall be sent to the interface partner in order to communicate that data transmission has halted and to allow for the interface partner to be reset.
 
-The contents of retiming registers (Section 2.2.1) shall be undefined following 
+The contents of any retiming registers in the data path shall be undefined following 
 de- assertion of data-transfer ready.
 De-assertion of the data-transfer ready signal shall not affect the
  free-running clock signals or the -control signals.
@@ -1549,7 +1549,7 @@ One signal (register bit) shall participate in power-on reset: power_on_reset.
 
 ##	Power-on Reset Sequence
 During power-on reset, all input and output signals shall be placed 
-into standby mode (Section 3.1.1). The power-on reset sequence shall proceed as follows:
+into standby mode (Section 9.3). The power-on reset sequence shall proceed as follows:
 
 1.	If no paired device_ID signal is detected by the Receive, then the Receive may act both to ensure that it and its chiplet are in a safe state and to alert the MAC.
 2.	If no paired device_ID signal is detected by the Transmit, then the Transmit may act both to ensure that it and its chiplet are in a safe state and to alert the MAC
@@ -1586,7 +1586,7 @@ The tx_mac_rdy signal shall be de-asserted LO during configuration and shall be 
 
 ##	Output State During Configuration
 
-All outputs, including data outputs, shall be in standby mode (Section 3.1.1) during configuration. 
+All outputs, including data outputs, shall be in standby mode (Section 9.3) during configuration. 
 
 ##	Chiplet Configuration
 
@@ -1632,7 +1632,7 @@ configuration to generate a module-level CONF_DONE signal that shall be HI
 ~
 [bow_config_complete]: images/bow_config_done.png { width:auto; max-width:70% }
 
-Data outputs shall remain in standby mode (Section 3.1.1) until CONF_DONE is asserted,
+Data outputs shall remain in standby mode (Section 9.3) until CONF_DONE is asserted,
 including in the case where CONF_DONE is pulled low some time after being asserted high.
 
 The resistance and VDD values should comply with
@@ -1676,79 +1676,8 @@ Data-path calibration shall be implemented via state machines on the Transmit
 [data_path_calibration]: images/data_path_calibration.png { width:auto; max-width:90% }
 
 Following the de-assertion of the adapter-reset signal(s), a calibration request
- shall be made by asserting a calibration request signal. Separate calibration sequences 
- shall be used for a Transmit transmitting to a Receive (Section 3.2.3.3.6) and a 
- Receive transmitting to a Transmit (Section 3.2.3.3.7). The two sequences may occur 
- in any order or concurrently.
-
-## Adapter Reset
-
-Data-path calibration shall be initiated when the MAC layer asserts the 
-tx_adapter_rstn signal LO. If the data-transfer ready signal was de-asserted prior 
-to the start of calibration, then the tx_mac_rdy signal must be asserted HI prior 
-to asserting the adapter-reset signals HI
-The MAC must de-assert the adapter-reset signal prior to requesting calibration start.
-
-## Calibration Request
-
-Calibration can be requested by either the Transmit or the Receive slice 
-using the tx_dcc_dll_lock_req signal or the rx_dcc_dll_lock_req signal, respectively.
-
-~ TableFigure {#tab-calib_init; caption: "Calibration Initiation Signals"; width:100%; }
-
-+-----------------------+---------------------+---------------------+
-| Calibration Initiator | Dataflow direction  | Initiation signal   |
-+-----------------------+---------------------+---------------------+
-|                       |                     |                     |
-| Transmit              | Transmit to Receive | tx_dcc_dll_lock_req |
-+-----------------------+---------------------+---------------------+
-|                       |                     |                     |
-| Receive               | Receive to Transmit | rx_dcc_dll_lock_req |
-+-----------------------+---------------------+---------------------+
-~
-
-
-Calibration for a dataflow direction shall commence when either Transmit 
-and Receive side has asserted its calibration request signal for 
-that dataflow direction. Calibration request signals shall remain asserted 
-until a new calibration is requested.
-
-## DCC Calibration
-
-Upon receipt of an xx_dcc_dll_lock_req signal, the DCC shall be calibrated. 
-The means of calibration is not specified and is left to the designer. 
-If the optional DCC is not present, then the state machines in Section 3.2.3.3
- shall remain the same, with the DCC calibration state serving only to provide a 
- signal indicating DCC calibration completion.
-
-## DLL Calibration
-Following DCC calibration, the receiving DLL shall be calibrated. 
-The means of calibrating the DLL is not specified and is left to the designer.
-If the optional DLL is not present, then the state machine in Section 3.2.3.3
- shall remain the same, with the DLL lock state serving only to provide a signal indicating DLL lock completion.
-
-## Calibration Completion
-
-Calibration completion shall be indicated by the following signals.
- Full completion shall be indicated when all four signals are asserted HI. 
- All four signals, once asserted, shall remain asserted until a new calibration sequence is requested.
-
-~ TableFigure {#tab-calib_complete; caption: "Calibration Completion Signals"; width:100%; }
-+------------------------+-------------------------------+
-| Calibration Completion | Meaning                       |
-| Signal                 |                               |
-+------------------------+-------------------------------+
-|                        |                               |
-| tx_transfer_en         | Transmit transmit block       |
-|                        | has completed calibration.    |
-+------------------------+-------------------------------+
-|                        |                               |
-| rx_transfer_en         | Receive receive block         |
-|                        | has completed calibration     |
-+------------------------+-------------------------------+
-~
-
-Calibration of Datapath
+ shall be made by asserting a calibration request signal. Either the transmit or receive slice
+ can initiate data path calibration.
 
 Datapath calibration shall comply with Figure [#fig-data_path_state_machine]. The numbers in black indicate the sequence of steps
 
@@ -1797,14 +1726,85 @@ Signals used in the datapath calibration sequence are listed in Table [#tab-cali
 +------------------------+----------------------------------------------------------+
 ~
 
+
+## Adapter Reset
+
+Data-path calibration shall be initiated when the MAC layer asserts the 
+tx_adapter_rstn signal LO. If the data-transfer ready signal was de-asserted prior 
+to the start of calibration, then the tx_mac_rdy signal must be asserted HI prior 
+to asserting the adapter-reset signals HI
+The MAC must de-assert the adapter-reset signal prior to requesting calibration start.
+
+## Calibration Request
+
+Calibration can be requested by either the Transmit or the Receive slice 
+using the tx_dcc_dll_lock_req signal or the rx_dcc_dll_lock_req signal, respectively.
+
+~ TableFigure {#tab-calib_init; caption: "Calibration Initiation Signals"; width:100%; }
+
++-----------------------+---------------------+---------------------+
+| Calibration Initiator | Dataflow direction  | Initiation signal   |
++-----------------------+---------------------+---------------------+
+|                       |                     |                     |
+| Transmit              | Transmit to Receive | tx_dcc_dll_lock_req |
++-----------------------+---------------------+---------------------+
+|                       |                     |                     |
+| Receive               | Receive to Transmit | rx_dcc_dll_lock_req |
++-----------------------+---------------------+---------------------+
+~
+
+
+Calibration for a dataflow direction shall commence when either Transmit 
+and Receive side has asserted its calibration request signal for 
+that dataflow direction. Calibration request signals shall remain asserted 
+until a new calibration is requested.
+
+## DCC Calibration
+
+Upon receipt of an xx_dcc_dll_lock_req signal, the DCC shall be calibrated. 
+The means of calibration is not specified and is left to the designer. 
+If the optional DCC is not present, then the state machine in Section 11.1
+ shall remain the same, with the DCC calibration state serving only to provide a 
+ signal indicating DCC calibration completion.
+
+## DLL Calibration
+Following DCC calibration, the receiving DLL shall be calibrated. 
+The means of calibrating the DLL is not specified and is left to the designer.
+If the optional DLL is not present, then the state machine in Section 11.1
+ shall remain the same, with the DLL lock state serving only to provide a signal indicating DLL lock completion.
+
+## Calibration Completion
+
+Calibration completion shall be indicated by the following signals.
+ Full completion shall be indicated when all four signals are asserted HI. 
+ All four signals, once asserted, shall remain asserted until a new calibration sequence is requested.
+
+~ TableFigure {#tab-calib_complete; caption: "Calibration Completion Signals"; width:100%; }
++------------------------+-------------------------------+
+| Calibration Completion | Meaning                       |
+| Signal                 |                               |
++------------------------+-------------------------------+
+|                        |                               |
+| tx_transfer_en         | Transmit transmit block       |
+|                        | has completed calibration.    |
++------------------------+-------------------------------+
+|                        |                               |
+| rx_transfer_en         | Receive receive block         |
+|                        | has completed calibration     |
++------------------------+-------------------------------+
+~
+
+
+
 ##	BoW Link Ready
 
 When both tx_transfer_en and rx_transfer_en are true, then the link shall be ready to transmit data.
 
 ~framed {color:Green}
-Should we include this?
 
 ##Link Training
+
+Link training will be addressed in a future revision of the spec
 ~
 
 # Control-Signal Shift Register Mapping
@@ -2050,13 +2050,13 @@ Should we include this?
 #Testability
 
 ## Test Pattern
-Suggest test patterns are:
+Suggested test patterns are:
 
 * PRBS-9 Pattern, defined  by polynomial of X^9^+ X^5^ +1
 
 * PRBS-31 Pattern, defined by polynomial of X^31^ + X^28^ +1
 
-Furthermore, to cover the DC wandering and single  bit response, the following suggest pattern should be added to the beginning of the preferred 
+Furthermore, to cover the DC wandering and single  bit response, the following suggested pattern should be added to the beginning of the preferred 
 PRBS pattern.
 
 ['0'] X 10 + '1' + ['0'] X 10 + ['1'] X 10 + '0' + ['1'] X 10 + ['0'] X 10
@@ -2076,7 +2076,7 @@ PRBS pattern.
 ## Loopback Test
 
 A BoW interface will be used for loopback testing in two use cases: 
-at wafer-sort time for chiplet test for full-system bring-up and debug validation. 
+at wafer-sort time for chiplet test for full-system bring-up, and debug validation. 
   
   
   Wafer sort tests are currently only practical for the BoW interface with regular bump pitches (~130um), where ATE (automatic testing equipment) probe boards with matching pin pitches are available. Microbump probes will require additional effort.

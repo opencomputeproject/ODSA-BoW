@@ -425,7 +425,10 @@ All BoW implementations must support the minimum 1 GHz clock rate,
 For ease of interoperation, data rate multiples of 
 N Gbps should be supported for integer N>=2 to the max rate for that implementation.
 
+### BoW Mode Extensions
 
+System designers are allowed the flexbility to extend the two BoW modes defined above provided, at a minimum, the 
+BoW Basic Mode (Section 2.3.1) is supported to guarantee interoperability with other BoW PHY implementations.
 
 # Signal Definitions
 

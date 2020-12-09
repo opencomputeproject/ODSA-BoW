@@ -120,8 +120,6 @@ The Bunch of Wires (BoW) specification is a very simple, open and interoperable
 physical interface between any 2 or more  chiplets or chip-scale-packages (CSP) 
 on a common package.
 
-## Overview
-
 This specification will describe the BoW interface.  The specification also leaves 
 open the possibility of pin-compatible interfaces that operate at higher data rates 
 for increased throughput per chip edge.  This specification also describes a 
@@ -131,7 +129,7 @@ increase throughput per chipedge.  Examples of this include previous discussions
 on a Turbo mode using simultaneous bidirectional communication.  That mode is not 
 covered in this draft.
 
-### Objectives
+## Objectives
 
 The BoW interface is a set of backward compatible die-to-die parallel 
 interfaces that provides the flexibility to trade off throughput/wire, 
@@ -169,7 +167,7 @@ applications and has been demonstrated to be achievable.
     stack depth no greater than 4 routing layers with advanced 
     packaging.
 
-### Advantages
+## Advantages
 
 The Bunch of Wires interface provides several key advantages for chiplet based systems:
 
@@ -190,7 +188,7 @@ pitches and ‘stacked’ BoW implementations, adding some complexity and cost i
 and packaging.  Lower bandwidth implementations are free to use more standard 
 packaging technology with coarse bump pitch.
 
-### Scope
+## Scope
 The scope of this document and of any contributions to this document are limited to:
 
 1. The specification of the BoW interface that specifies the following functionality:
@@ -218,7 +216,7 @@ to this document:
 of this specification:
   a. Security
 
-### Language
+## Language
 * "Shall" or "must" indicates a requirement.
 Failure to meet the requirement results in non-compliance
 * "Should" indicates a strong suggestion, but not a requirement.
@@ -233,7 +231,7 @@ Note to spec writers:
 Avoid using more than one of the above specification verbs in a single sentence to avoid confusion. 
 XX>
 
-### Compliance Summary
+## Compliance Summary
 
 The must specifications must be met over process variation, supply voltage range and 
 temperature range (PVT). 
@@ -247,6 +245,11 @@ This section will also include a discussion on interoperability.
 <to be completed in subsequent draft>
 
 # BoW Overview
+
+## BoW in a System 
+
+interposer in a dotted line
+extend the package out a bit - or show it as a thicker line
 
 ~ Figure { #fig-bow_overviews; caption: "BoW Overview" }
 ![bow_overview]
@@ -285,7 +288,7 @@ to the die's core logic. This will place all clock transitions in the core logic
 [bowspec_figcomponents]: images/bowspec_figcomponents.png {width:auto; max-width: 100%}
 
 
-## BoW in a System
+## BoW for Common Transaction Protocols
 The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
 Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
 integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
@@ -376,20 +379,27 @@ minimize signal reflections to enable higher data rates and longer wires.
 
 ### Modes and Data Rates
 
-Bow links shall follow the specifications in the following table.
+Bow links shall follow the specifications in the following table. Add interop
+columns.
 
 ~ TableFigure {#tab-rates1; caption: "BoW Modes and Data Rates"; width:100%;  }
-|--------------|------------|-----------|-----------|-------------|-------|
-|  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
-+:------------:+:----------:+:----------+:----------+:------------+-------+
-| BoW Basic    | Interposer | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
-|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
-+--------------+------------+-----------+-----------+-------------+-------+
-| BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
-|              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |
-+--------------+------------+-----------+-----------+-------------+-------+
-| BoW Fast     | Laminate   | 1-8 GHz   | 2-16 Gbps | Double      | 50 mm |
-|--------------|------------|-----------|-----------|-------------+-------|
+|-----------|----------|-----------|-----------|-------------|-------|
+| Mode      |Package   |Recom      | Recom     | Recommended | Recom |
+|           |          |Clock rate | Data rate | Termination | Reach |
++:---------:+:--------:+:----------+:----------+:------------+-------+
+| BoW Basic | All      | 4 GHz     | 8 Gbps    | No          | 1 mm  |
+|           |          |           |           |             |       |
++-----------+----------+-----------+-----------+-------------+-------+
+| BoW Basic |Advanced  | 4 Ghz     | 8 Gbps    | Source      | 3 mm  |
+|           |          |           |           |             |       |
+|-----------|----------|-----------|-----------|-------------+-------|
+| BoW Basic | Laminate | 4 GHz     | 8 Gbps    | Source      | 10 mm |
+|           |          |           |           |             |       |
++-----------+----------+-----------+-----------+-------------+-------+
+| BoW Fast  |Advanced  | 8 GHz     | 16 Gbps   | No          | 1 mm  |
+|-----------|----------|-----------|-----------|-------------+-------|
+| BoW Fast  | Laminate | 8 GHz     | 16 Gbps   | Double      | 50 mm |
+|-----------|----------|-----------|-----------|-------------+-------|
 ~
 <Note this table appears in two places!!>
 
@@ -400,26 +410,6 @@ DDR is defined as one data bit transmitted for each rising and each falling edge
 technologies with approximately 25 um line and space rules.
 "Interposer" is intended to include silicon interposer and similar technologies 
 with approximately 1 um line and space rules.
-
-### Supported Data Rates
-
-BOW supports the following data rates:
-
-~ TableFigure {#tab-rates2; caption: "BoW Modes and Data Rates"; width:100%;  }
-|--------------|------------|-----------|-----------|-------------|-------|
-|  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
-+:------------:+:----------:+:----------+:----------+:------------+-------+
-| BoW Basic    | Interposer | 1-2.5 GHz | 2-5 Gbps  | Optional    | 2 mm  |
-|              |            | 1-4 GHz   | 2-8 Gbps  |             | 1 mm  |
-+--------------+------------+-----------+-----------+-------------+-------+
-| BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
-|              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |
-+--------------+------------+-----------+-----------+-------------+-------+
-| BoW Fast     | Laminate   | 1-8 GHz   | 2-16 Gbps | Double      | 50 mm |
-|--------------|------------|-----------|-----------|-------------+-------|
-~
-<Note this table appears in two places!!>
-
 
 ~ Framed {color: blue}
 Ken sez: I copied this table from the HotI 2020 paper, but what is our 

@@ -247,38 +247,19 @@ This section will also include a discussion on interoperability.
 <to be completed in subsequent draft>
 
 # BoW Overview
-The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
-Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
-integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
-interface. The logical component of the ODSA interface aims to 
-support protocols used commonly for the two most common chiplet use cases, package 
-aggregation and die disaggregation across a wide range of open and proprietary D2D PHYs
-such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. The ODSA stack abstracts
-the PHY layer from the logical interface by using well-defined abstraction interfaces.
-Specifically, the ODSA will use two abstraction interfaces, the PIPE and LPIF
-interfaces. Any logic transaction controller, say a PCIe controller for example, that
-supports a PIPE (LPIF) interface can use any D2D PHY that also supports a PIPE (LPIF)
-interface as a physical layer to transport protocol bits between die.
 
-~ Figure {#fig-odsa-stack; caption: "The BoW PHY in the ODSA Stack"}
-![bowspec_figure1]
+~ Figure { #fig-bow_overviews; caption: "BoW Overview" }
+![bow_overview]
+[bow_overview]: images/bowspec_figintro.jpg { width:auto; max-width:70% }
 ~
 
-[bowspec_figure1]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
 
-## BoW in a System 
-In a system, the BoW is expected to be driven by a media-access controller (MAC) driven by the core 
-logic clock as shown in Figure [#fig-bow-components] and may be implemented as a 
-combination of a control path and datapath.
-
-~ Figure {#fig-bow-components; caption: "BoW components and interfaces"}
-![bowspec_figcomponents]
+~ Figure { #fig-slice_signals; caption: "BoW Single Slice Signals" }
+![slice_signals]
+[slice_signals]: images/bowspec_figure_slice_signals.PNG { width:auto; max-width:70% }
 ~
 
-[bowspec_figcomponents]: images/fig-bow_components.jpg {width:auto; max-width: 100%}
-
-
-The BoW datapath transports bits from the MAC to wires on the packaging substrate.
+The BoW datapath transports bits from a link layer to wires on the packaging substrate.
 It is a mixture of analog and digital circuitry. On one side, the on-die BoW datapath 
 terminates in bumps, at the edge of the die connected to wires on the substrate. Internally 
 the datapath is connected to a MAC. The datapath also expected to include serializer 
@@ -297,6 +278,38 @@ shared across multiple slices. A BoW Rx slice is  expected to forward the clock 
 from the far side to the core logic. A BoW Tx slice is expected to forward its PLL clock
 to the die's core logic. This will place all clock transitions in the core logic.
 
+~ Figure {#fig-bow-components; caption: "BoW connection to core logic"}
+![bowspec_figcomponents]
+~
+
+[bowspec_figcomponents]: images/bowspec_figcomponents.png {width:auto; max-width: 100%}
+
+
+## BoW in a System
+The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
+Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
+integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
+interface. The logical component of the ODSA interface aims to 
+support protocols used commonly for the two most common chiplet use cases, package 
+aggregation and die disaggregation across a wide range of open and proprietary D2D PHYs
+such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. The ODSA stack abstracts
+the PHY layer from the logical interface by using well-defined abstraction interfaces.
+Specifically, the ODSA will use two abstraction interfaces, the PIPE and LPIF
+interfaces. Any logic transaction controller, say a PCIe controller for example, that
+supports a PIPE (LPIF) interface can use any D2D PHY that also supports a PIPE (LPIF)
+interface as a physical layer to transport protocol bits between die.
+
+~ Figure {#fig-odsa-stack; caption: "The BoW PHY in the ODSA Stack"}
+![bowspec_figstack]
+~
+
+[bowspec_figstack]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
+
+ 
+The BoW is expected to be driven by a link layer controller driven by the core 
+logic clock as shown in Figure [#fig-bow-components] and may be implemented as a 
+combination of a control path and datapath.
+
 As shown in Figure [#fig-odsa-stack], the BoW interface may need to receive data
 through either the PIPE or LPIF interfaces to support common transaction protocols. For this
 use case, in addition to the components in Figure [#fig-bow-components], the BoW interface will have to be
@@ -311,13 +324,6 @@ BoW with an adapter to transport PCIe transactions as an underlay.
 
 [bowspec_figcomponentspcie]: images/fig-bow_pcie.jpg {width:auto; max-width: 100%}
 
-
-## BoW Physical Interface Block Diagram
-
-~ Figure { #fig-slice_signals; caption: "BoW Single Slice Signals" }
-![slice_signals]
-[slice_signals]: images/bowspec_figure_slice_signals.PNG { width:auto; max-width:70% }
-~
 
 ## BoW Modes
 
@@ -350,10 +356,10 @@ between physically close chiplets to offer a higher data rate per wire than a te
 BoW interface in some configurations. A high level view of the BoW Interface Data-rate ranges is shown below:
 
 ~ Center
-![bowspec_figure2]
+![bowspec_figtradeoff]
 ~
 
-[bowspec_figure2]: images/bowspec_figure2.jpg "bowspec_figure2" { width:auto; max-width:100% }
+[bowspec_figtradeoff]:images/bowspec_figtradeoff.png {width:auto; max-width:100% }
 
 
 ### BoW Basic Mode 

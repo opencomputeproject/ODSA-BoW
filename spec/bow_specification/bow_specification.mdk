@@ -245,41 +245,68 @@ This section will also include a discussion on interoperability.
 <to be completed in subsequent draft>
 
 # BoW Overview
+Chiplet-based designs require physical and logical connectivity between the die in a
+single package. They also require the use of more complex packaging to accommodate the
+multiple die sharing a package. This section provides an overview of the BoW physical 
+interface, its use in a multi-chipletdesign, and how with the Open Domain-Specific 
+Architecture stack it can be used as an underlay for popular transaction protocols.
 
-## BoW in a System 
+## BoW Application
+The BoW is intended to be an energy-efficient easy-to-use PHY
+interface between a pair of die as shown in Figure [#fig-bow_overview].
+The BoW
 
-interposer in a dotted line
-extend the package out a bit - or show it as a thicker line
+  * Provides physical digital connectivity between the die
+  * Can be used with multiple packaging technologies including organic laminate, interposers,
+  bridges and RDL
+  * Requires a separate protocol for the logical transport of information between the die
 
-~ Figure { #fig-bow_overviews; caption: "BoW Overview" }
+
+interposer in a dotted line extend the package out a bit - or show it as a thicker line
+
+~ Figure { #fig-bow_overview; caption: "BoW Overview" }
 ![bow_overview]
 [bow_overview]: images/bowspec_figintro.jpg { width:auto; max-width:70% }
 ~
 
+A unidirectional slice is the basic unit of BoW physical connectivity. Any BoW interface between a
+pair of die is composed of one or more slices. 
+Figure [#fig-slice_signals] shows the component signals of a BoW slice between
+two die and is specified in detail below in Section [#sec-signal-definitions]
 
 ~ Figure { #fig-slice_signals; caption: "BoW Single Slice Signals" }
 ![slice_signals]
 [slice_signals]: images/bowspec_figure_slice_signals.PNG { width:auto; max-width:70% }
 ~
 
-The BoW datapath transports bits from a link layer to wires on the packaging substrate.
-It is a mixture of analog and digital circuitry. On one side, the on-die BoW datapath 
-terminates in bumps, at the edge of the die connected to wires on the substrate. Internally 
-the datapath is connected to a MAC. The datapath also expected to include serializer 
-(deserializer) logic on transmit (receive) that is not specified in this document.
+## BoW in a Chiplet
+
+Within a chiplet, a BoW slice  transports bits from a link layer controller through 
+the edge of the die to wires on the packaging substrate, as shown in 
+Figure [#fig-bow-components]. A BoW slice implementation may be decomposed
+into a datapath and a control path.
+
+Per-slice, The datapath consists of the clock and data signals shown in 
+Figure [#fig-slice_signals]. On one side, the on-die BoW datapath 
+terminates in bumps, at the edge of the die connected to wires on the substrate. 
+Internally, the datapath is connected to a Link Layer controller. The datapath is 
+also expected to include serializer (deserializer) logic on transmit (receive) 
+that is not specified in this document.
 
 The BoW control path stores information to initialize and operate the datapath in status
-registers. The control path is expected to receive input from the an external digital
-control and management bus such I2C. The control path outputs information to manage the
+registers.  The control path outputs information to manage the
 datapath. The interface between the control and datapath is specific to an
 implementation. The BoW PHY may be implemented with the control and datapath physically 
 commingled. Implementing them separately allows the control logic to be
-implemented in a separate block for multi-PHY macros.
+implemented in a separate block for multi-slice macros. The 
+control path may also receive input from  an external digital control and management 
+bus such as I2C to coordinate interface operation with other components in the package.
 
-Any BoW implementation is expected to receive a clock input from a PLL, which may be
+Any BoW implementation must receive a clock input from a PLL, which may be
 shared across multiple slices. A BoW Rx slice is  expected to forward the clock received 
 from the far side to the core logic. A BoW Tx slice is expected to forward its PLL clock
-to the die's core logic. This will place all clock transitions in the core logic.
+to the die's core logic. This will place all clock transitions in the core logic. 
+
 
 ~ Figure {#fig-bow-components; caption: "BoW connection to core logic"}
 ![bowspec_figcomponents]

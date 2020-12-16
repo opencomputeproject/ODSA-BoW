@@ -245,41 +245,68 @@ This section will also include a discussion on interoperability.
 <to be completed in subsequent draft>
 
 # BoW Overview
+Chiplet-based designs require physical and logical connectivity between the die in a
+single package. They also require the use of more complex packaging to accommodate the
+multiple die sharing a package. This section provides an overview of the BoW physical 
+interface, its use in a multi-chiplet design, and how with the Open Domain-Specific 
+Architecture stack it can be used as an underlay for popular transaction protocols.
 
-## BoW in a System 
+## BoW Application
+The BoW is intended to be an energy-efficient easy-to-use PHY
+interface between a pair of die as shown in Figure [#fig-bow_overview].
+The BoW
 
-interposer in a dotted line
-extend the package out a bit - or show it as a thicker line
+  * Provides physical digital connectivity between the die
+  * Can be used with multiple packaging technologies including organic laminate, interposers,
+  bridges and RDL
+  * Requires a separate protocol for the logical transport of information between the die
 
-~ Figure { #fig-bow_overviews; caption: "BoW Overview" }
+
+interposer in a dotted line extend the package out a bit - or show it as a thicker line
+
+~ Figure { #fig-bow_overview; caption: "BoW Overview" }
 ![bow_overview]
 [bow_overview]: images/bowspec_figintro.jpg { width:auto; max-width:70% }
 ~
 
+A unidirectional slice is the basic unit of BoW physical connectivity. Any BoW interface between a
+pair of die is composed of one or more slices. 
+Figure [#fig-slice_signals] shows the component signals of a BoW slice between
+two die and is specified in detail below in Section [#sec-signal-definitions]
 
 ~ Figure { #fig-slice_signals; caption: "BoW Single Slice Signals" }
 ![slice_signals]
 [slice_signals]: images/bowspec_figure_slice_signals.PNG { width:auto; max-width:70% }
 ~
 
-The BoW datapath transports bits from a link layer to wires on the packaging substrate.
-It is a mixture of analog and digital circuitry. On one side, the on-die BoW datapath 
-terminates in bumps, at the edge of the die connected to wires on the substrate. Internally 
-the datapath is connected to a MAC. The datapath also expected to include serializer 
-(deserializer) logic on transmit (receive) that is not specified in this document.
+## BoW Inside the Chiplet
+
+Within a chiplet, a BoW slice  transports bits from a link layer controller through 
+the edge of the die to wires on the packaging substrate, as shown in 
+Figure [#fig-bow-components]. A BoW slice implementation may be decomposed
+into a datapath and a control path.
+
+Per-slice, The datapath consists of the clock and data signals shown in 
+Figure [#fig-slice_signals]. On one side, the on-die BoW datapath 
+terminates in bumps, at the edge of the die connected to wires on the substrate. 
+Internally, the datapath is connected to a Link Layer controller. The datapath is 
+also expected to include serializer (deserializer) logic on transmit (receive) 
+that is not specified in this document.
 
 The BoW control path stores information to initialize and operate the datapath in status
-registers. The control path is expected to receive input from the an external digital
-control and management bus such I2C. The control path outputs information to manage the
+registers.  The control path outputs information to manage the
 datapath. The interface between the control and datapath is specific to an
 implementation. The BoW PHY may be implemented with the control and datapath physically 
 commingled. Implementing them separately allows the control logic to be
-implemented in a separate block for multi-PHY macros.
+implemented in a separate block for multi-slice macros. The 
+control path may also receive input from  an external digital control and management 
+bus such as I2C to coordinate interface operation with other components in the package.
 
-Any BoW implementation is expected to receive a clock input from a PLL, which may be
+Any BoW implementation must receive a clock input from a PLL, which may be
 shared across multiple slices. A BoW Rx slice is  expected to forward the clock received 
 from the far side to the core logic. A BoW Tx slice is expected to forward its PLL clock
-to the die's core logic. This will place all clock transitions in the core logic.
+to the die's core logic. This will place all clock transitions in the core logic. 
+
 
 ~ Figure {#fig-bow-components; caption: "BoW connection to core logic"}
 ![bowspec_figcomponents]
@@ -287,20 +314,23 @@ to the die's core logic. This will place all clock transitions in the core logic
 
 [bowspec_figcomponents]: images/bowspec_figcomponents.png {width:auto; max-width: 100%}
 
+## BoW in the Package
+Within the package, the BoW datapath is transported on physical passive wires between 
+the pair of connected die. The specifics of the wires, such as their density,
+maximum length, impedence characteristics and how they are realized vary with
+the packaging technology. 
+
 
 ## BoW for Common Transaction Protocols
-The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
-Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
-integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
-interface. The logical component of the ODSA interface aims to 
+Multi-chiplet designs require both physical and logical connectivty between
+connected die.
+To enable chiplets from multiple vendors to interoperate and be integrated in a 
+multi-die package, the ODSA aims to define an open physical and logical interface 
+for chiplets, as shown in Figure [#fig-odsa-stack]. The Bunch of Wires is an open 
+D2D PHY option in the interface. The logical component of the ODSA interface aims to 
 support protocols used commonly for the two most common chiplet use cases, package 
 aggregation and die disaggregation across a wide range of open and proprietary D2D PHYs
-such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. The ODSA stack abstracts
-the PHY layer from the logical interface by using well-defined abstraction interfaces.
-Specifically, the ODSA will use two abstraction interfaces, the PIPE and LPIF
-interfaces. Any logic transaction controller, say a PCIe controller for example, that
-supports a PIPE (LPIF) interface can use any D2D PHY that also supports a PIPE (LPIF)
-interface as a physical layer to transport protocol bits between die.
+such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. 
 
 ~ Figure {#fig-odsa-stack; caption: "The BoW PHY in the ODSA Stack"}
 ![bowspec_figstack]
@@ -308,18 +338,20 @@ interface as a physical layer to transport protocol bits between die.
 
 [bowspec_figstack]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
 
- 
-The BoW is expected to be driven by a link layer controller driven by the core 
-logic clock as shown in Figure [#fig-bow-components] and may be implemented as a 
-combination of a control path and datapath.
-
+The ODSA stack abstracts
+the PHY layer from the logical interface by using well-defined abstraction interfaces.
+Specifically, the ODSA will use two abstraction interfaces, the PIPE and LPIF
+interfaces. Any logic transaction controller, say a PCIe controller for example, that
+supports a PIPE (LPIF) interface can use any D2D PHY that also supports a PIPE (LPIF)
+interface as a physical layer to transport protocol bits between die.
 As shown in Figure [#fig-odsa-stack], the BoW interface may need to receive data
-through either the PIPE or LPIF interfaces to support common transaction protocols. For this
-use case, in addition to the components in Figure [#fig-bow-components], the BoW interface will have to be
+through either the PIPE or LPIF interfaces to support common transaction protocols. 
+For this use case, the BoW interface will have to be
 augmented with an interface-specific adapter to support a protocol controller. The 
 serializer/de-serializer functionality may also be integrated with the adapter. The 
-specifications for each adapter are outside the scope of this document. Figure [#fig-bow-pcie] shows the
-BoW with an adapter to transport PCIe transactions as an underlay.
+specifications for each adapter are outside the scope of this document. 
+Figure [#fig-bow-pcie] shows how the
+BoW with an example PIPE adapter can be an underlay to transport PCIe transactions.
 
 ~ Figure {#fig-bow-pcie; caption: "BoW with a PIPE adapter for PCIe transactions"}
 ![bowspec_figcomponentspcie]
@@ -329,28 +361,18 @@ BoW with an adapter to transport PCIe transactions as an underlay.
 
 
 ## BoW Modes
+BoW is designed and specified so as to be en extensible protocol. The minimum
+"BoW Basic" definition is defined to be a performance-competitive cross-package
+easy-to-design and use PHY. Extensibility allows designers to further gracefully 
+trade-off design and/or packaging complexity for performance in one or more
+parameters of interest as shown in Figure [#fig_bowspec_tradeoff]. 
 
-There are multiple BoW modes. All modes must be 
-interoperable with the minimum definition. All modes are source synchronous 
-parallel interfaces using a differential clock that may operate at multiple.
+Extensions may be open or proprietary. All modes are source synchronous 
+parallel interfaces using a differential clock.
 The range of operating frequencies for a mode must be documented in a data sheet. 
 frequencies. Beyond the basic mode, adding termination provides higher performance 
-per mm of beachfront bandwidth but is more complex to design. It is also possible
-to get high performance by using 
-
-The various BoW modes are specified such that they can be directly connected 
-to one another. ** When two interfaces are connected, data rate for the operating mode must be 
-configured such that both ends support the same configuration at the same data rate.** All 
-BoW implementations must support the minimum configuration of BoW (2Gbps datarate, 
-1 Ghz clock rate, un-terminated IO). 
-
-In each mode, a BoW interface can operate at multiple frequencies.
-The operating frequency and throughput per wire on a BoW interface mode will be affected by:
-
-* The choice of packaging technology
-* The physical distance between the chiplets being connected: Faster data rates may be easier 
-to realize with chiplets that are physically closer 
-* Bump spacing: Coarse bumps may allow for circuitry to enable faster data rates.
+per mm of beachfront bandwidth but is more complex to design. It may also be possible
+to get higher performance by using advanced packaging.
 
 The BoW specification provides for optional technology to increase the data rate per wire, 
 to enable a graceful cost-performance tradeoff. 
@@ -358,73 +380,20 @@ It is also possible for basic BoW configuration implemented with advanced packag
 between physically close chiplets to offer a higher data rate per wire than a terminated 
 BoW interface in some configurations. A high level view of the BoW Interface Data-rate ranges is shown below:
 
-~ Center
-![bowspec_figtradeoff]
+~  Figure {#fig_bowspec_tradeoff; caption: "Tradeoffs across BoW modes"}
+![fig_bowspec_figtradeoff] 
 ~
 
-[bowspec_figtradeoff]:images/bowspec_figtradeoff.png {width:auto; max-width:100% }
+[fig_bowspec_figtradeoff]:images/bowspec_figtradeoff.png {width:auto; max-width:100% }
 
 
-### BoW Basic Mode 
-
-In BoW Basic, 
-data rates can go up to 5 or 8 Gbps, depending on the package technology and wire length.
-Wires are source-terminated (in the transmit circuit), but not terminated at the receiver.
-
-### BoW Fast Mode
-
-In BoW Fast, data rates can go up to 16 Gbps.
-Wires are both source-terminated and receiver-terminated to 
-minimize signal reflections to enable higher data rates and longer wires.
-
-### Modes and Data Rates
-
-Bow links shall follow the specifications in the following table. Add interop
-columns.
-
-~ TableFigure {#tab-rates1; caption: "BoW Modes and Data Rates"; width:100%;  }
-|-----------|----------|-----------|-----------|-------------|-------|
-| Mode      |Package   |Recom      | Recom     | Recommended | Recom |
-|           |          |Clock rate | Data rate | Termination | Reach |
-+:---------:+:--------:+:----------+:----------+:------------+-------+
-| BoW Basic | All      | 4 GHz     | 8 Gbps    | No          | 1 mm  |
-|           |          |           |           |             |       |
-+-----------+----------+-----------+-----------+-------------+-------+
-| BoW Basic |Advanced  | 4 Ghz     | 8 Gbps    | Source      | 3 mm  |
-|           |          |           |           |             |       |
-|-----------|----------|-----------|-----------|-------------+-------|
-| BoW Basic | Laminate | 4 GHz     | 8 Gbps    | Source      | 10 mm |
-|           |          |           |           |             |       |
-+-----------+----------+-----------+-----------+-------------+-------+
-| BoW Fast  |Advanced  | 8 GHz     | 16 Gbps   | No          | 1 mm  |
-|-----------|----------|-----------|-----------|-------------+-------|
-| BoW Fast  | Laminate | 8 GHz     | 16 Gbps   | Double      | 50 mm |
-|-----------|----------|-----------|-----------|-------------+-------|
-~
-<Note this table appears in two places!!>
-
-All BoW links are DDR (double data rate). 
-DDR is defined as one data bit transmitted for each rising and each falling edge of the clock.
-
-"Laminate" is intended to include organic laminate packages (a.k.a. buildup) and similar 
-technologies with approximately 25 um line and space rules.
-"Interposer" is intended to include silicon interposer and similar technologies 
-with approximately 1 um line and space rules.
-
-~ Framed {color: blue}
-Ken sez: I copied this table from the HotI 2020 paper, but what is our 
-supporting data for 8 Gbps and 50 mm cases?
-~
-
-All BoW implementations must support the minimum 1 GHz clock rate, 
-2 Gbps data rate using source-terminated I/O.
-For ease of interoperation, data rate multiples of 
-N Gbps should be supported for integer N>=2 to the max rate for that implementation.
-
-### BoW Mode Extensions
-
-System designers are allowed the flexbility to extend the two BoW modes defined above provided, at a minimum, the 
-BoW Basic Mode (Section 2.3.1) is supported to guarantee interoperability with other BoW PHY implementations.
+All modes must be 
+interoperable with the minimum definition. 
+The various BoW modes are specified such that they can be directly connected 
+to one another. ** When two interfaces are connected, data rate for the operating mode must be 
+configured such that both ends support the same configuration at the same data rate.** All 
+BoW implementations must support the minimum configuration of BoW (2Gbps datarate, 
+1 Ghz clock rate, un-terminated IO). 
 
 # Signal Definitions
 
@@ -634,6 +603,81 @@ The range of operating frequencies for a mode must be documented in a data sheet
 frequencies. Beyond the basic mode, adding termination provides higher performance 
 per mm of beachfront bandwidth but is more complex to design. It is also possible
 to get high performance by using 
+
+
+In each mode, a BoW interface can operate at multiple frequencies.
+The operating frequency and throughput per wire on a BoW interface mode will be affected by:
+
+* The choice of packaging technology
+* The physical distance between the chiplets being connected: Faster data rates may be easier 
+to realize with chiplets that are physically closer 
+* Bump spacing: Coarse bumps may allow for circuitry to enable faster data rates.
+
+
+
+### BoW Basic Mode 
+
+In BoW Basic, 
+data rates can go up to 5 or 8 Gbps, depending on the package technology and wire length.
+Wires are source-terminated (in the transmit circuit), but not terminated at the receiver.
+
+### BoW Fast Mode
+
+In BoW Fast, data rates can go up to 16 Gbps.
+Wires are both source-terminated and receiver-terminated to 
+minimize signal reflections to enable higher data rates and longer wires.
+
+### Modes and Data Rates
+
+
+
+With proper attention to design, 
+~ TableFigure {#tab-rates1; caption: "BoW Modes and Data Rates"; width:100%;  }
+|-----------|----------|-----------|-----------|-------------|-------|
+| Mode      |Package   |Recom      | Recom     | Recommended | Recom |
+|           |          |Clock rate | Data rate | Termination | Reach |
++:---------:+:--------:+:----------+:----------+:------------+-------+
+| BoW Basic | All      | 4 GHz     | 8 Gbps    | No          | 1 mm  |
+|           |          |           |           |             |       |
++-----------+----------+-----------+-----------+-------------+-------+
+| BoW Basic |Advanced  | 4 Ghz     | 8 Gbps    | Source      | 3 mm  |
+|           |          |           |           |             |       |
+|-----------|----------|-----------|-----------|-------------+-------|
+| BoW Basic | Laminate | 4 GHz     | 8 Gbps    | Source      | 10 mm |
+|           |          |           |           |             |       |
++-----------+----------+-----------+-----------+-------------+-------+
+| BoW Fast  |Advanced  | 8 GHz     | 16 Gbps   | No          | 1 mm  |
+|-----------|----------|-----------|-----------|-------------+-------|
+| BoW Fast  | Laminate | 8 GHz     | 16 Gbps   | Double      | 50 mm |
+|-----------|----------|-----------|-----------|-------------+-------|
+~
+<Note this table appears in two places!!>
+
+All BoW links are DDR (double data rate). 
+DDR is defined as one data bit transmitted for each rising and each falling edge of the clock.
+
+Add an interop data rate columns of 2 Gbps/1 Ghz to the table.
+
+"Laminate" is intended to include organic laminate packages (a.k.a. buildup) and similar 
+technologies with approximately 25 um line and space rules.
+"Interposer" is intended to include silicon interposer and similar technologies 
+with approximately 1 um line and space rules.
+
+~ Framed {color: blue}
+Ken sez: I copied this table from the HotI 2020 paper, but what is our 
+supporting data for 8 Gbps and 50 mm cases?
+~
+
+All BoW implementations must support the minimum 1 GHz clock rate, 
+2 Gbps data rate using source-terminated I/O.
+For ease of interoperation, data rate multiples of 
+N Gbps should be supported for integer N>=2 to the max rate for that implementation.
+
+### BoW Mode Extensions
+
+System designers are allowed the flexbility to extend the two BoW modes defined above provided, at a minimum, the 
+BoW Basic Mode (Section 2.3.1) is supported to guarantee interoperability with other BoW PHY implementations.
+
 
 ## Control Signals
 

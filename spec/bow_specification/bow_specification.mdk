@@ -115,46 +115,43 @@ due and proper execution of this Agreement by the applicable party.
 [TITLE]
 
 # Introduction 
+The Bunch of Wires (BoW) is a very simple, open and interoperable 
+physical interface between two chiplets or chip-scale-packages (CSP) 
+on a common package. This document specifies the BoW interface.
 
-The Bunch of Wires (BoW) specification is a very simple, open and interoperable 
-physical interface between any 2 or more  chiplets or chip-scale-packages (CSP) 
-on a common package.
-
-This specification will describe the BoW interface.  The specification also leaves 
-open the possibility of pin-compatible interfaces that operate at higher data rates 
-for increased throughput per chip edge.  This specification also describes a 
-terminated mode that operates at increased data rates.  It is also possible 
-that in the future other BoW-compatible technology enhancements will further 
-increase throughput per chipedge.  Examples of this include previous discussions 
-on a Turbo mode using simultaneous bidirectional communication.  That mode is not 
-covered in this draft.
 
 ## Objectives
-
 The BoW interface is a set of backward compatible die-to-die parallel 
-interfaces that provides the flexibility to trade off throughput/wire, 
+interfaces that provides the flexibility to trade off throughput/chipedge for, 
 design complexity, cost, packaging technology. Backward as defined by 
 every new mode being compatible with the "Basic mode" defined in this 
-specification. Each future version of this specification is expected 
+specification. This document specifies a "Terminated mode" in addition to
+the Basic mode. It is also possible that future technology enhancements 
+will enable modes that further increase throughput per chipedge. 
+Examples of this include previous discussions on a Turbo mode using 
+simultaneous bidirectional communication (not covered in this document).
+Each future version of this specification is expected 
 to be compatible with at least two previous significant versions.
+
 The use of the BoW is expected to be confined to connect die
 placed closed to one another within the same package. Signal loss
 in transmission is expected to be lower than for off-package protocols. 
-The BoW interface aims to meet the following design objectives:
+The definition of the BoW interface aims to meet the following design 
+objectives:
 
 * Inexpensive to implement 
 * Portable across process nodes ranging from 28nm to 5nm
 * Portable across multiple bump pitches
-* Have the flexibility to support advancing packaging technology
-* Unencumbered by technology license costs
-* Very low power (< 1 pJ/bit) as defined by Tx IO Pad, wire and Rx IO Pad.
-* Very low latency: <5 ns without FEC, <15 ns with FEC. Latency as 
+* Have the flexibility to support advancing packaging technologies
+* Be unencumbered by technology license costs
+* Be very low power (< 1 pJ/bit) as defined by Tx IO Pad, wire and Rx IO Pad.
+* Offer very low latency: <5 ns without FEC, <15 ns with FEC. Latency as 
 defined from the PCS parallel interface at the source, through Tx 
 interface, channel, Rx interface received at the PCS parallel 
 interface at the receiver. Based on experience, the 5 ns 
 target meets the latency requirements of high-performance 
 applications and has been demonstrated to be achievable.
-* Unidirectional throughput/Chip Edge target range:
+* Offer the following unidirectional throughput/chipedge target range:
   - Minimum Targets
     - 100 Gbps/mm with all packaging options
     - 1 Tbps/mm with advanced packaging options
@@ -169,13 +166,13 @@ applications and has been demonstrated to be achievable.
 
 ## Advantages
 
-The Bunch of Wires interface provides several key advantages for chiplet based systems:
+The Bunch of Wires interface provides several key advantages for chiplet-based systems:
 
 * Can operate at higher data rates per pin than existing parallel standards
   *  -or-  lower data rates for compatibility with existing parallel standards
 * Can be implemented in legacy technologies (process nodes) with generally available IP
 * Terminated mode can be implemented in less effort than a traditional SERDES
-* Does not require silicon based interconnect
+* Does not require silicon-based interconnect
 * Is not constrained or intended to be used with a specific bump pitch
   * Two BoW interfaces can each be implemented at different bump pitches and can be 
   directly connected on an organic substrate, through fanout technology or through 
@@ -194,15 +191,12 @@ The scope of this document and of any contributions to this document are limited
 1. The specification of the BoW interface that specifies the following functionality:
   a. Operating modes
   b. Physical design
-  c. Test, testability and test enablement
-  d. Operation
-  e. Management controls
-  f. Methods to verify and validate compliance with this specification
-  g. Recommended bump patterns and signal ordering
-  h. Performance estimates
-  i. Functions or design practices that may be necessary to meet the design objectives 
-  l. Initialization
-  
+  c. Recommended bump patterns and signal ordering
+  d. Initialization, operation and management
+  e. Methods to verify and validate compliance with this specification
+  f. Performance estimates
+  g. Functions or design practices that may be necessary to meet the design objectives 
+  h. Test, testability and test enablement
 
 2. The following activities are outside the scope of this document and contributions 
 to this document:
@@ -233,16 +227,16 @@ XX>
 
 ## Compliance Summary
 
-The must specifications must be met over process variation, supply voltage range and 
+The specifications must be met over process variation, supply voltage range and 
 temperature range (PVT). 
 Each implementation must document its supported supply voltage range and temperature range.
 
 Table XX will summarize the compliance points that shall be met in order to meet the BoW requirements. Each of the 
 compliance points is discussed in the specification.
 
-This section will also include a discussion on interoperability.
+[This section will also include a discussion on interoperability?]{font-weight:bold}.
 
-<to be completed in subsequent draft>
+to be completed in subsequent draft
 
 # BoW Overview
 

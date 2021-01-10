@@ -242,22 +242,39 @@ to be completed in subsequent draft
 
 ## BoW in a System 
 
-interposer in a dotted line
-extend the package out a bit - or show it as a thicker line
+The BoW is intended to be a low-power die-to-die interface in a chiplet-based package.
+As shown in Figure [#fig-bow_overviews], the BoW PHYs between two wires are physically
+connected through wires on a substrate or interposer. A BoW PHY will not have enough 
+drive strength for off-package interfaces. A BoW PHY is also not expected to be used 
+for buses that are entirely on die.
 
 ~ Figure { #fig-bow_overviews; caption: "BoW Overview" }
 ![bow_overview]
 [bow_overview]: images/bowspec_figintro.jpg { width:auto; max-width:70% }
 ~
 
+The basic BoW PHY unit is a 16-bit slice. A BoW PHY slice transmits and receives 16 bits of 
+data between die. Figure [#fig-slice_signals] details the wires between BoW PHY instances 
+on connected die in one direction. Since the BoW is a source-synchronous PHY, the transmitting
+PHY transmits a CLK signal with the data. A BoW PHY optionally has two additional
+wires that may be used for data or functions to improve data correctness -
+Forward Error Correction (FEC) and Data Bus Inversion (DBI).
+
+~ Framed {color: blue}
+Bapi: Need Figure [#fig-slice_signals] to have Tx and Rx.
+~
 
 ~ Figure { #fig-slice_signals; caption: "BoW Single Slice Signals" }
 ![slice_signals]
 [slice_signals]: images/bowspec_figure_slice_signals.PNG { width:auto; max-width:70% }
 ~
 
-The BoW datapath transports bits from a link layer to wires on the packaging substrate.
-It is a mixture of analog and digital circuitry. On one side, the on-die BoW datapath 
+A BoW slice consists of a transmit (Tx)
+and receive (Rx) component. In Figure [#fig-bow-components], the Tx and Rx paths
+each use a separate set of bumps at the die edge and wires between the connected die. 
+On die, the BoW datapath is a mixture of 
+analog and digital circuitry that transports. Each BoW slice consists of a
+bits from a link layer to the die edge. On one side, the on-die BoW datapath 
 terminates in bumps, at the edge of the die connected to wires on the substrate. Internally 
 the datapath is connected to a MAC. The datapath also expected to include serializer 
 (deserializer) logic on transmit (receive) that is not specified in this document.
@@ -273,7 +290,7 @@ implemented in a separate block for multi-PHY macros.
 Any BoW implementation is expected to receive a clock input from a PLL, which may be
 shared across multiple slices. A BoW Rx slice is  expected to forward the clock received 
 from the far side to the core logic. A BoW Tx slice is expected to forward its PLL clock
-to the die's core logic. This will place all clock transitions in the core logic.
+to the die's core logic. This will place all clock domain transitions in the core logic.
 
 ~ Figure {#fig-bow-components; caption: "BoW connection to core logic"}
 ![bowspec_figcomponents]
@@ -283,6 +300,7 @@ to the die's core logic. This will place all clock transitions in the core logic
 
 
 ## BoW for Common Transaction Protocols
+Two connected die in a multi-chiplet device need to exchange logical information. 
 The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
 Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
 integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
@@ -324,7 +342,8 @@ BoW with an adapter to transport PCIe transactions as an underlay.
 
 ## BoW Modes
 
-There are multiple BoW modes. All modes must be 
+BoW has been developed and specified such that multiple modes of operation can
+be defined and supported. All modes must be 
 interoperable with the minimum definition. All modes are source synchronous 
 parallel interfaces using a differential clock that may operate at multiple.
 The range of operating frequencies for a mode must be documented in a data sheet. 
@@ -351,6 +370,12 @@ to enable a graceful cost-performance tradeoff.
 It is also possible for basic BoW configuration implemented with advanced packaging or 
 between physically close chiplets to offer a higher data rate per wire than a terminated 
 BoW interface in some configurations. A high level view of the BoW Interface Data-rate ranges is shown below:
+
+~ Framed {color: blue}
+Bapi: Do we want all modes to be compatible with BoW Basic or BoW interop? I think we want
+every BoW implementation to support the BoW Basic Mode? How does BoW BiDi become compatible
+with that? It's a bit late, but configuration seems a more appropriate name than mode.
+~
 
 ~ Center
 ![bowspec_figtradeoff]

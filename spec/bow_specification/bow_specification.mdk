@@ -115,46 +115,43 @@ due and proper execution of this Agreement by the applicable party.
 [TITLE]
 
 # Introduction 
+The Bunch of Wires (BoW) is a very simple, open and interoperable 
+physical interface between two chiplets or chip-scale-packages (CSP) 
+on a common package. This document specifies the BoW interface.
 
-The Bunch of Wires (BoW) specification is a very simple, open and interoperable 
-physical interface between any 2 or more  chiplets or chip-scale-packages (CSP) 
-on a common package.
-
-This specification will describe the BoW interface.  The specification also leaves 
-open the possibility of pin-compatible interfaces that operate at higher data rates 
-for increased throughput per chip edge.  This specification also describes a 
-terminated mode that operates at increased data rates.  It is also possible 
-that in the future other BoW-compatible technology enhancements will further 
-increase throughput per chipedge.  Examples of this include previous discussions 
-on a Turbo mode using simultaneous bidirectional communication.  That mode is not 
-covered in this draft.
 
 ## Objectives
-
 The BoW interface is a set of backward compatible die-to-die parallel 
-interfaces that provides the flexibility to trade off throughput/wire, 
+interfaces that provides the flexibility to trade off throughput/chipedge for, 
 design complexity, cost, packaging technology. Backward as defined by 
 every new mode being compatible with the "Basic mode" defined in this 
-specification. Each future version of this specification is expected 
+specification. This document specifies a "Terminated mode" in addition to
+the Basic mode. It is also possible that future technology enhancements 
+will enable modes that further increase throughput per chipedge. 
+Examples of this include previous discussions on a Turbo mode using 
+simultaneous bidirectional communication (not covered in this document).
+Each future version of this specification is expected 
 to be compatible with at least two previous significant versions.
+
 The use of the BoW is expected to be confined to connect die
 placed closed to one another within the same package. Signal loss
 in transmission is expected to be lower than for off-package protocols. 
-The BoW interface aims to meet the following design objectives:
+The definition of the BoW interface aims to meet the following design 
+objectives:
 
 * Inexpensive to implement 
 * Portable across process nodes ranging from 28nm to 5nm
 * Portable across multiple bump pitches
-* Have the flexibility to support advancing packaging technology
-* Unencumbered by technology license costs
-* Very low power (< 1 pJ/bit) as defined by Tx IO Pad, wire and Rx IO Pad.
-* Very low latency: <5 ns without FEC, <15 ns with FEC. Latency as 
+* Have the flexibility to support advancing packaging technologies
+* Be unencumbered by technology license costs
+* Be very low power (< 1 pJ/bit) as defined by Tx IO Pad, wire and Rx IO Pad.
+* Offer very low latency: <5 ns without FEC, <15 ns with FEC. Latency as 
 defined from the PCS parallel interface at the source, through Tx 
 interface, channel, Rx interface received at the PCS parallel 
 interface at the receiver. Based on experience, the 5 ns 
 target meets the latency requirements of high-performance 
 applications and has been demonstrated to be achievable.
-* Unidirectional throughput/Chip Edge target range:
+* Offer the following unidirectional throughput/chipedge target range:
   - Minimum Targets
     - 100 Gbps/mm with all packaging options
     - 1 Tbps/mm with advanced packaging options
@@ -169,13 +166,13 @@ applications and has been demonstrated to be achievable.
 
 ## Advantages
 
-The Bunch of Wires interface provides several key advantages for chiplet based systems:
+The Bunch of Wires interface provides several key advantages for chiplet-based systems:
 
 * Can operate at higher data rates per pin than existing parallel standards
   *  -or-  lower data rates for compatibility with existing parallel standards
 * Can be implemented in legacy technologies (process nodes) with generally available IP
 * Terminated mode can be implemented in less effort than a traditional SERDES
-* Does not require silicon based interconnect
+* Does not require silicon-based interconnect
 * Is not constrained or intended to be used with a specific bump pitch
   * Two BoW interfaces can each be implemented at different bump pitches and can be 
   directly connected on an organic substrate, through fanout technology or through 
@@ -194,15 +191,12 @@ The scope of this document and of any contributions to this document are limited
 1. The specification of the BoW interface that specifies the following functionality:
   a. Operating modes
   b. Physical design
-  c. Test, testability and test enablement
-  d. Operation
-  e. Management controls
-  f. Methods to verify and validate compliance with this specification
-  g. Recommended bump patterns and signal ordering
-  h. Performance estimates
-  i. Functions or design practices that may be necessary to meet the design objectives 
-  l. Initialization
-  
+  c. Recommended bump patterns and signal ordering
+  d. Initialization, operation and management
+  e. Methods to verify and validate compliance with this specification
+  f. Performance estimates
+  g. Functions or design practices that may be necessary to meet the design objectives 
+  h. Test, testability and test enablement
 
 2. The following activities are outside the scope of this document and contributions 
 to this document:
@@ -233,16 +227,16 @@ XX>
 
 ## Compliance Summary
 
-The must specifications must be met over process variation, supply voltage range and 
+The specifications must be met over process variation, supply voltage range and 
 temperature range (PVT). 
 Each implementation must document its supported supply voltage range and temperature range.
 
 Table XX will summarize the compliance points that shall be met in order to meet the BoW requirements. Each of the 
 compliance points is discussed in the specification.
 
-This section will also include a discussion on interoperability.
+[This section will also include a discussion on interoperability?]{font-weight:bold}.
 
-<to be completed in subsequent draft>
+to be completed in subsequent draft
 
 # BoW Overview
 Chiplet-based designs require physical and logical connectivity between the die in a
@@ -256,6 +250,11 @@ The BoW is intended to be an energy-efficient easy-to-use PHY
 interface between a pair of die as shown in Figure [#fig-bow_overview].
 The BoW
 
+The BoW is intended to be a low-power die-to-die interface in a chiplet-based package.
+As shown in Figure [#fig-bow_overviews], the BoW PHYs between two wires are physically
+connected through wires on a substrate or interposer. A BoW PHY will not have enough 
+drive strength for off-package interfaces. A BoW PHY is also not expected to be used 
+for buses that are entirely on die.
   * Provides physical digital connectivity between the die
   * Can be used with multiple packaging technologies including organic laminate, interposers,
   bridges and RDL
@@ -269,29 +268,33 @@ interposer in a dotted line extend the package out a bit - or show it as a thick
 [bow_overview]: images/bowspec_figintro.jpg { width:auto; max-width:70% }
 ~
 
-A unidirectional slice is the basic unit of BoW physical connectivity. Any BoW interface between a
-pair of die is composed of one or more slices. 
-Figure [#fig-slice_signals] shows the component signals of a BoW slice between
-two die and is specified in detail below in Section [#sec-signal-definitions]
+The basic BoW PHY unit is a 16-bit slice. A BoW PHY slice transmits and receives 16 bits of 
+data between die. Figure [#fig-slice_signals] details the wires between BoW PHY instances 
+on connected die in one direction. Since the BoW is a source-synchronous PHY, the transmitting
+PHY transmits a CLK signal with the data. A BoW PHY optionally has two additional
+wires that may be used for data or functions to improve data correctness -
+Forward Error Correction (FEC) and Data Bus Inversion (DBI). The connectivity between
+die is  specified in detail below in Section [#sec-signal-definitions]
+
+~ Framed {color: blue}
+Bapi: Need Figure [#fig-slice_signals] to have Tx and Rx.
+~
+
 
 ~ Figure { #fig-slice_signals; caption: "BoW Single Slice Signals" }
 ![slice_signals]
 [slice_signals]: images/bowspec_figure_slice_signals.PNG { width:auto; max-width:70% }
 ~
 
-## BoW Inside the Chiplet
-
-Within a chiplet, a BoW slice  transports bits from a link layer controller through 
-the edge of the die to wires on the packaging substrate, as shown in 
-Figure [#fig-bow-components]. A BoW slice implementation may be decomposed
-into a datapath and a control path.
-
-Per-slice, The datapath consists of the clock and data signals shown in 
-Figure [#fig-slice_signals]. On one side, the on-die BoW datapath 
-terminates in bumps, at the edge of the die connected to wires on the substrate. 
-Internally, the datapath is connected to a Link Layer controller. The datapath is 
-also expected to include serializer (deserializer) logic on transmit (receive) 
-that is not specified in this document.
+A BoW slice consists of a transmit (Tx)
+and receive (Rx) component. In Figure [#fig-bow-components], the Tx and Rx paths
+each use a separate set of bumps at the die edge and wires between the connected die. 
+On die, the BoW datapath is a mixture of 
+analog and digital circuitry that transports. Each BoW slice consists of a
+bits from a link layer to the die edge. On one side, the on-die BoW datapath 
+terminates in bumps, at the edge of the die connected to wires on the substrate. Internally 
+the datapath is connected to a MAC. The datapath also expected to include serializer 
+(deserializer) logic on transmit (receive) that is not specified in this document.
 
 The BoW control path stores information to initialize and operate the datapath in status
 registers.  The control path outputs information to manage the
@@ -305,7 +308,7 @@ bus such as I2C to coordinate interface operation with other components in the p
 Any BoW implementation must receive a clock input from a PLL, which may be
 shared across multiple slices. A BoW Rx slice is  expected to forward the clock received 
 from the far side to the core logic. A BoW Tx slice is expected to forward its PLL clock
-to the die's core logic. This will place all clock transitions in the core logic. 
+to the die's core logic. This will place all clock domain transitions in the core logic.
 
 
 ~ Figure {#fig-bow-components; caption: "BoW connection to core logic"}
@@ -322,12 +325,12 @@ the packaging technology.
 
 
 ## BoW for Common Transaction Protocols
-Multi-chiplet designs require both physical and logical connectivty between
-connected die.
-To enable chiplets from multiple vendors to interoperate and be integrated in a 
-multi-die package, the ODSA aims to define an open physical and logical interface 
-for chiplets, as shown in Figure [#fig-odsa-stack]. The Bunch of Wires is an open 
-D2D PHY option in the interface. The logical component of the ODSA interface aims to 
+Two connected die in a multi-chiplet device need to exchange logical information. 
+The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
+Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
+integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
+interface. The logical component of the ODSA interface aims to 
+
 support protocols used commonly for the two most common chiplet use cases, package 
 aggregation and die disaggregation across a wide range of open and proprietary D2D PHYs
 such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. 
@@ -361,14 +364,12 @@ BoW with an example PIPE adapter can be an underlay to transport PCIe transactio
 
 
 ## BoW Modes
-BoW is designed and specified so as to be en extensible protocol. The minimum
-"BoW Basic" definition is defined to be a performance-competitive cross-package
-easy-to-design and use PHY. Extensibility allows designers to further gracefully 
-trade-off design and/or packaging complexity for performance in one or more
-parameters of interest as shown in Figure [#fig_bowspec_tradeoff]. 
 
-Extensions may be open or proprietary. All modes are source synchronous 
-parallel interfaces using a differential clock.
+BoW has been developed and specified such that multiple modes of operation can
+be defined and supported. All modes must be 
+interoperable with the minimum definition. All modes are source synchronous 
+parallel interfaces using a differential clock that may operate at multiple.
+
 The range of operating frequencies for a mode must be documented in a data sheet. 
 frequencies. Beyond the basic mode, adding termination provides higher performance 
 per mm of beachfront bandwidth but is more complex to design. It may also be possible
@@ -380,8 +381,15 @@ It is also possible for basic BoW configuration implemented with advanced packag
 between physically close chiplets to offer a higher data rate per wire than a terminated 
 BoW interface in some configurations. A high level view of the BoW Interface Data-rate ranges is shown below:
 
-~  Figure {#fig_bowspec_tradeoff; caption: "Tradeoffs across BoW modes"}
-![fig_bowspec_figtradeoff] 
+~ Framed {color: blue}
+Bapi: Do we want all modes to be compatible with BoW Basic or BoW interop? I think we want
+every BoW implementation to support the BoW Basic Mode? How does BoW BiDi become compatible
+with that? It's a bit late, but configuration seems a more appropriate name than mode.
+~
+
+~ Center
+![bowspec_figtradeoff]
+
 ~
 
 [fig_bowspec_figtradeoff]:images/bowspec_figtradeoff.png {width:auto; max-width:100% }

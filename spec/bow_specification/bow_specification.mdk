@@ -286,8 +286,8 @@ Bapi: Need Figure [#fig-slice_signals] to have Tx and Rx.
 [slice_signals]: images/bowspec_figure_slice_signals.PNG { width:auto; max-width:70% }
 ~
 
-A BoW slice consists of a transmit (Tx)
-and receive (Rx) component. In Figure [#fig-bow-components], the Tx and Rx paths
+A BoW slice consists of either a transmit (Tx)
+or a receive (Rx) component. In Figure [#fig-bow-components], the Tx and Rx paths
 each use a separate set of bumps at the die edge and wires between the connected die. 
 On die, the BoW datapath is a mixture of 
 analog and digital circuitry that transports. Each BoW slice consists of a
@@ -405,8 +405,21 @@ BoW implementations must support the minimum configuration of BoW (2Gbps datarat
 
 # Signal Definitions
 
-Each BoW slice consists of a differential clock pair, 16 single-ended data wires, 
-and optional FEC and AUX wires. Each BoW slice is unidirectional when in operation.
+Figures. [#fig-bowspec_ll_tx_slice_FIFO] - [#fig-bowspec_ll_tx_slice_noFIFO] provide a high level overview of the typical components that make up
+a Tx slice. Figures. [#fig-bowspec_ll_rx_slice_FIFO] - [#fig-bowspec_ll_rx_slice_noFIFO] do the same for the Rx slice. The scope of this specification
+is limited to the inputs and outputs, as well as the components shown in the light blue box. In this section, we cover the signal definitions for the
+external [#sec-external-facing-signals] and link layer [#sec-link-layer-interface-signals] facing interfaces. In Sections [#sec-reset-and-initialization],[#sec-configuration],[#sec-calibration], the details pertaining
+to reset, initialization, configuration, and the calibration state machine are specified. In Section [#sec-control-signal-shift-register-mapping], a
+complete register definition for control and status signals is provided. Section [#sec-loopback-test] has details on testability. In 
+Figures. [#fig-bowspec_ll_tx_slice_FIFO] - [#fig-bowspec_ll_rx_slice_noFIFO], the datapath shown is only for illustrative purposes, specific 
+implementations are left to the designer. The BoW PHY can accommodate FIFO implementations that are internal or external to the PHY. Examples for the
+Tx slice are shown in Figures [#fig-bowspec_ll_tx_slice_FIFO] - [#fig-bowspec_ll_tx_slice_noFIFO] and for Rx slice in 
+Figures [#fig-bowspec_ll_rx_slice_FIFO] - [#fig-bowspec_ll_rx_slice_noFIFO]. However, the Serializer/Deserializer fucntions with the 
+appropriate gear ratios shall be implemented in the BoW PHY.
+
+## External Facing Signals
+As shown in Figures. [#fig-bowspec_ll_tx_slice_FIFO] - [#fig-bowspec_ll_rx_slice_noFIFO], each BoW slice consists of a differential clock pair 
+, 16 single-ended data wires, and optional FEC and AUX wires. Each BoW slice is unidirectional when in operation.
 A chiplet may be designed with with Rx-only and Tx-only slices, or
 each slice may have both Tx and Rx capability which is configured at runtime. 
 A bidirectional link is composed of some number of slices configured for Rx and some for Tx.
@@ -416,7 +429,7 @@ improve the bit error rate (BER).  AUX is an optional signal that can be used fo
 such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
 the details on FEC and AUX usage.
 
-A BoW link is only specified for operation inside a package for reach and ESD reasons.
+Table [#tab-signals] below summarizes these signals.
 
 ~ TableFigure {#tab-signals; caption: "BoW Signals"; }
 |--------------|---------|------------|-------------|
@@ -432,6 +445,40 @@ A BoW link is only specified for operation inside a package for reach and ESD re
 |Auxilliary    |1        |AUX         | Optional    |
 |--------------|---------|------------|-------------|
 ~
+
+## Link Layer Interface Signals
+Each Tx or Rx slice shall interface to the link layer with a datapath width ranging from 32 bits to 512 bits. The corresponding pclk (tx, or rx)
+shall have a frequency (datawidth\*pclk) that matches the overall throughput on the output wires of the slice (16\* 0.5\*line_rate). This allows
+for a wide range of core logic implementations and gear ratios by trading off latency. The serializer/deserializer functions shall 
+be implemented in the PHY, as needed. However, the specification is flexible on the location of the FIFO (inside or outside the PHY) without compromising
+interoperability. Example datapath implementations of the FIFO inside are shown in Figs [#fig-bowspec_ll_tx_slice_fifo], [#fig-bowspec_ll_rx_slice_fifo].
+FIFO outside examples are shown in Figs [#fig-bowspec_ll_tx_slice_nofifo], [#fig-bowspec_ll_rx_slice_nofifo]. More details on the Link Layer interface
+signals can be found in Section [#sec-bow-to-link-layerll-interface].
+
+
+
+~ Figure { #fig-bowspec_ll_tx_slice_FIFO; caption: "BoW Link Layer and Tx Slice with FIFO" }
+![bowspec_ll_tx_slice_FIFO]
+~
+[bowspec_ll_tx_slice_FIFO]: images/bowspec_LL_Tx_slice_FIFO.png { width:auto; max-width:90% }
+
+
+~ Figure { #fig-bowspec_ll_tx_slice_noFIFO; caption: "BoW Link Layer and Tx Slice with no FIFO" }
+![bowspec_ll_tx_slice_noFIFO]
+~
+[bowspec_ll_tx_slice_noFIFO]: images/bowspec_LL_Tx_slice_noFIFO.png { width:auto; max-width:90% }
+
+~ Figure { #fig-bowspec_ll_rx_slice_FIFO; caption: "BoW Link Layer and Rx Slice with FIFO" }
+![bowspec_ll_rx_slice_FIFO]
+~
+[bowspec_ll_rx_slice_FIFO]: images/bowspec_LL_Rx_slice_FIFO.png { width:auto; max-width:90% }
+
+~ Figure { #fig-bowspec_ll_rx_slice_noFIFO; caption: "BoW Link Layer and Rx Slice with no FIFO" }
+![bowspec_ll_rx_slice_noFIFO]
+~
+[bowspec_ll_rx_slice_noFIFO]: images/bowspec_LL_Rx_slice_noFIFO.png { width:auto; max-width:90% }
+
+
 
 
 
@@ -464,143 +511,137 @@ The BoW interface comprises either a transmit or receive slice with three signal
 +---------------------------+------------------------------------------------------------+
 |                           |                                                            |
 |           TX              |            Synchronous data transmitted from the           |
-|                           |               interface. (Section   2.1.1)                 |
+|                           |               interface.                                   |
 +---------------------------+------------------------------------------------------------+
 |                           |                                                            |
 |           RX              |             Synchronous data received from the             |
-|                           |                interface. (Section 2.1.2)                  |
+|                           |                interface.                                  |
 +---------------------------+------------------------------------------------------------+
 |                           |                                                            |
 | tx_fwd_clk/tx_fwd_clkb    |           Transmit transfer clock, forwarded from          |
 |                           |           the transmitter to its link partner for          |
-|                           |        capturing received data. (Section 2.1.6.3)          |
+|                           |        capturing received data.                            |
 +---------------------------+------------------------------------------------------------+
 |                           |                                                            |
 | rx_fwd_clk/rx_fwd_clkb    |          Receive transfer clock, forwarded to the          |
 |                           |        receiver from its link partner for capturing        |
-|                           |             received data. (Section 2.1.6.3)               |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-| tx_rcv_clk/tx_rcv_clkb    |           Receive-domain clock forwarded from the          |
-|                           |       near side to the link partner for transmitting       |
-|                           |      data from the link partner. (Section 2.1.6.4)         |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-| rx_rcv_clk/rx_rcv_clkb    |           Receive-domain clock forwarded from the          |
-|                           |             link partner to the near side for              |
-|                           | transmitting data from the near side. (Section 2.1.6.4)    |
+|                           |             received data.                                 |
 +---------------------------+------------------------------------------------------------+
 |                           |                                                            |
 |       tx_AUX_DBI          |         Optional signal from the transmitter to its        |
 |                           |           link partner to indicate bus inversion           |
 |                           |     status. If not used as DBI, this signal can also be    |
-|                           |            used as Mode bit (Section 2.2.2.2)              |
+|                           |            used as Mode bit                                |
 +---------------------------+------------------------------------------------------------+
 |                           |                                                            |
 |       rx_AUX_DBI          |            Optional input signal to receive bus            |
 |                           |    inversion status. If not used as DBI, this signal can   |
-|                           |        also be used as Mode bit (Section 2.2.2.2)          |
+|                           |        also be used as Mode bit                            |
 +---------------------------+------------------------------------------------------------+
 |                           |                                                            |
 |         tx_FEC            |                Optional signal to carry FEC                |
 |                           |          information from transmitter to its link          |
-|                           |                partner. (Section 2.2.2.5)                  |
+|                           |                partner.                                    |
 +---------------------------+------------------------------------------------------------+
 |                           |                                                            |
 |         rx_FEC            |            Optional input signal to receive FEC            |
-|                           |             information.   (Section 2.2.2.5)               |
+|                           |             information.                                   |
 +---------------------------+------------------------------------------------------------+
 ~
 
 
-## BoW-to-MAC Interface
+## BoW-to-Link Layer(LL) Interface
 
 The following signals shall constitute the interface to the MAC
 
-~ TableFigure {#tab-mac_interface; caption: "MAC Interface"; width:100%;  }
+~ TableFigure {#tab-mac_interface; caption: "Link Layer Interface"; width:100%;  }
 +-------------------------+--------------+--------------------------------------------------------+
-| Signals                 | In(from MAC) | Description                                            |
-|                         | Out (to MAC) |                                                        |
-+-------------------------+--------------+--------------------------------------------------------+
-|                         |              |                                                        |
-| data_in                 | In           | For transmitting across the BoW link (Section 2.1.1)   |
+| Signals                 | In(from LL) | Description                                            |
+|                         | Out (to LL) |                                                        |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
-| data_out                | Out          | Received through the BoW link (Section 2.1.2)          |
+| data_in                 | In           | For transmitting across the BoW link                   |
++-------------------------+--------------+--------------------------------------------------------+
+|                         |              |                                                        |
+| data_out                | Out          | Received through the BoW link                          |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
 | tx_fwd_clk              | In           | For transmitting data from the                         |
-|                         |              | transmitter to the link partner (Section 2.1.6)        |
+|                         |              | transmitter to the link partner                        |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
 | rx_fwd_clk              | Out          | Received from the link partner                         |
 |                         |              | and converted from quasi-                              |
 |                         |              | differential to single-ended                           |
-|                         |              | (Section 2.1.6.3)                                      |
+|                         |              |                                                        |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
 | tx_mac_rdy              | In           | For resetting Transmit data                            |
 |                         |              | transfers and communicating                            |
-|                         |              | MAC readiness for calibration to                       |
-|                         |              | the link partner (Section 3.1)                         |
+|                         |              | LL readiness for calibration to                       |
+|                         |              | the link partner                                       |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
-| rx_mac_rdy              | Out          | Indicates that the Receive MAC is                      |
-|                         |              | ready to transmit data   (Section 3.1)                 |
+| rx_mac_rdy              | Out          | Indicates that the Receive LL is                      |
+|                         |              | ready to transmit data                                 |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
-| tx_adapter_rstn         | In           | Resets the BoW Adapter (section 3.1)                   |
+| tx_adapter_rstn         | In           | Resets the BoW Adapter                                 |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
 | tx_dcc_dll_lock_req     | In           | Initiates calibration of transmit                      |
 |                         |              | slice and its link partner (receive                    |
 |                         |              | slice) for a BoW interface                             |
-|                         |              | (Section 3.2.3.3)                                      |
+|                         |              |                                                        |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
 | rx_dcc_dll_lock_req     | In           | Initiates calibration of receive                       |
 |                         |              | slice and its link partner (transmit                   |
 |                         |              | slice) for a BoW interface                             |
-|                         |              | (Section 3.2.3.3)                                      |
+|                         |              |                                                        |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
 | tx_transfer_en          | Out          | Indicate that calibration on the                       |
 |                         |              | Transmit is complete for transmit                      |
-|                         |              | and receive paths (Section 3.2.3.3)                    |
+|                         |              | and receive paths                                      |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
-| rx   _transfer_en       | Out          | Indicate that calibration on the                       |
+| rx_transfer_en          | Out          | Indicate that calibration on the                       |
 |                         |              | Receive is complete for transmit                       |
-|                         |              | and receive paths (Section 3.2.3.3)                    |
+|                         |              | and receive paths                                      |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
-| Signals indicating any  | Out          | Sent to MAC for possible                               |
+| Signals indicating any  | Out          | Sent to LL for possible                               |
 | conditions that may     |              | data- transfer ready de-assertion                      |
-| cause de-assertion of   |              | by MAC (Section 3.1)                                   |
+| cause de-assertion of   |              | by LL                                                 |
 | data-transfer ready     |              |                                                        |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
-| Signals indicating any  | Out          | Sent to MAC for possible                               |
-| conditions that may     |              | adapter reset by MAC (Section 3.2.3)                   |
+| Signals indicating any  | Out          | Sent to LL for possible                               |
+| conditions that may     |              | adapter reset by LL                                   |
 | cause BoW Adapter       |              |                                                        |
 | reset and recalibration |              |                                                        |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
 | User-defined shift-     | In           | For transmitting application-                          |
-| register bits           |              | defined bits to the link   partner (Section 2.2.2.5.2) |
+| register bits           |              | defined bits to the link partner                       |
 |                         |              |                                                        |
 |                         |              |                                                        |
 +-------------------------+--------------+--------------------------------------------------------+|                         |              |                                                        |
+| |
 ~
 
 
 
-~ Figure { #fig-mac_interface; caption: "MAC Interface" }
-![mac_interface]
+~ Figure { #fig-ll_tx_interface; caption: "Link Layer Tx Slice Interface" }
+![ll_tx_interface]
 ~
-[mac_interface]: images/mac_interface.png { width:auto; max-width:70% }
+[ll_tx_interface]: images/bowspec_LL_Tx_slice.png { width:auto; max-width:70% }
 
-
+~ Figure { #fig-ll_rx_interface; caption: "Link Layer Rx Slice Interface" }
+![ll_rx_interface]
+~
+[ll_rx_interface]: images/bowspec_LL_Rx_slice.png { width:auto; max-width:70% }
 
 ## BoW Modes
 
@@ -884,6 +925,39 @@ Table 10 defines the control signals for Transmit and Receive slices. The table 
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
 ~
 
+## AUX_DBI
+
+Data Bus Inversion (DBI) is intended to mitigate simultaneous switching
+ output (SSO) noise of a BoW PHY by limiting the number of BoW data bits
+  that can switch between immediate data transfer cycles. 
+
+DBI functionality is optional, but if implemented, DBI Mode shall 
+be enabled by setting register bit AUX_DBI = HI
+
+When DBI is on, DBI bits are part of the data bus [AUX_DBI + 16 bits] . 
+The example below shows a 16 bit TX slice. RX wires have DBI at the same bit locations. 
+
+### TX DBI with DBI Enabled 
+Within a group of 16 data signals, the TX DBI logic calculates the DBI bit 
+based on the number of data signals changing from their previous state on the BoW slice data bus. 
+The DBI logic below uses “+” to indicate arithmetic addition, “^” to indicate 
+exclusive OR, and “?” as a ternary IF. “Current” refers to the new data word 
+being prepared for sending on TX. “Prev” refers to the data immediately preceding 
+the current data, that is the data issued onto the BoW bus before the current data. 
+
+DBIcurrent = ((data[15]current ^ data[15]prev) 
++ (data[14]current ^ data[14]prev) 
+... 
++ (data[1]current ^ data[1]prev) 
++ (data[0]current ^ data[0]prev)) > 8 ? 1 : 0); 
+
+Within a group of 16 data signals, if the DBI bit=1 then the
+ TX DBI logic inverts the data signals. Each calculated DBI bit 
+ replaces one data bit in TX as described previously. 
+
+### RX DBI with DBI Enabled 
+Within a group of 16 RX signals, the RX DBI logic extracts the DBI bit.
+ If DBI = 1 then the RX DBI logic inverts the other RX bits. 
 
 # BoW Physicals
 
@@ -963,7 +1037,7 @@ multiple power and ground rows.
 |Forward Error | 1       |FEC         | Optional    |
 |Correction    |         |            |             |
 +--------------+---------+------------+-------------|
-|Auxilliary    |1        |AUX         | Optional    |
+|Auxiliary    |1        |AUX          | Optional    |
 |--------------|---------|------------|-------------|
 
 An alternate slice arrangement may be to place the Tx and Rx slices side by side at the 
@@ -1428,44 +1502,6 @@ What is the origin of the Xtalk Limit equation?  Is there a paper reference?
 ~
 
 
-
-
-
-
-
-# TX_AUX_DBI
-
-Data Bus Inversion (DBI) is intended to mitigate simultaneous switching
- output (SSO) noise of a BoW PHY by limiting the number of BoW data bits
-  that can switch between immediate data transfer cycles. 
-
-DBI functionality is optional, but if implemented, DBI Mode shall 
-be enabled by setting bit the AUX_DBI bit HI
-
-With DBI on, DBI bits replace certain data bits on the data bus. 
-The example below shows a 16 bit TX slice. RX wires have DBI at the same bit locations. 
-
-## TX DBI with DBI Enabled 
-Within a group of 16 data signals, the TX DBI logic calculates the DBI bit 
-based on the number of data signals changing from their previous state on the BoW slice data bus. 
-The DBI logic below uses “+” to indicate arithmetic addition, “^” to indicate 
-exclusive OR, and “?” as a ternary IF. “Current” refers to the new data word 
-being prepared for sending on TX. “Prev” refers to the data immediately preceding 
-the current data, that is the data issued onto the AIB bus before the current data. 
-
-DBIcurrent = ((data[15]current ^ data[15]prev) 
-+ (data[14]current ^ data[14]prev) 
-... 
-+ (data[1]current ^ data[1]prev) 
-+ (data[0]current ^ data[0]prev)) > 8 ? 1 : 0); 
-
-Within a group of 16 data signals, if the DBI bit=1 then the
- TX DBI logic inverts the data signals. Each calculated DBI bit 
- replaces one data bit in TX as described previously. 
-
-## RX DBI with DBI Enabled 
-Within a group of 16 RX signals, the RX DBI logic extracts the DBI bit.
- If DBI = 1 then the RX DBI logic inverts the other RX bits. 
 
 # Reset and Initialization
 

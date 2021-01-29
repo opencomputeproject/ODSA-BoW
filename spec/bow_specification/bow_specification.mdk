@@ -566,23 +566,24 @@ The following signals shall constitute the interface to the MAC
 | data_out                | Out          | Received through the BoW link                          |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
-| tx_fwd_clk              | In           | For transmitting data from the                         |
-|                         |              | transmitter to the link partner                        |
+| tx_pclk                 | In/Out       | Parallel Clock between                                 |
+|                         |              | LL and Tx slice                                        |
+|                         |              | In (if FIFO in Slice), Out(if FIFO in LL)              | 
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
-| rx_fwd_clk              | Out          | Received from the link partner                         |
-|                         |              | and converted from quasi-                              |
-|                         |              | differential to single-ended                           |
+| rx_pclk                 | In/Out       | Parallel Clock between                                 |
+|                         |              | LL and Rx slice                                        |
+|                         |              | In (if FIFO in Slice), Out(if FIFO in LL)               |
 |                         |              |                                                        |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
 | tx_mac_rdy              | In           | For resetting Transmit data                            |
 |                         |              | transfers and communicating                            |
-|                         |              | LL readiness for calibration to                       |
+|                         |              | LL readiness for calibration to                        |
 |                         |              | the link partner                                       |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
-| rx_mac_rdy              | Out          | Indicates that the Receive LL is                      |
+| rx_mac_rdy              | Out          | Indicates that the Receive LL is                       |
 |                         |              | ready to transmit data                                 |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
@@ -611,14 +612,14 @@ The following signals shall constitute the interface to the MAC
 |                         |              | and receive paths                                      |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
-| Signals indicating any  | Out          | Sent to LL for possible                               |
+| Signals indicating any  | Out          | Sent to LL for possible                                |
 | conditions that may     |              | data- transfer ready de-assertion                      |
-| cause de-assertion of   |              | by LL                                                 |
+| cause de-assertion of   |              | by LL                                                  |
 | data-transfer ready     |              |                                                        |
 +-------------------------+--------------+--------------------------------------------------------+
 |                         |              |                                                        |
-| Signals indicating any  | Out          | Sent to LL for possible                               |
-| conditions that may     |              | adapter reset by LL                                   |
+| Signals indicating any  | Out          | Sent to LL for possible                                |
+| conditions that may     |              | adapter reset by LL                                    |
 | cause BoW Adapter       |              |                                                        |
 | reset and recalibration |              |                                                        |
 +-------------------------+--------------+--------------------------------------------------------+
@@ -835,7 +836,7 @@ Table 10 defines the control signals for Transmit and Receive slices. The table 
 |                     |                             |              |                     |                      |
 +---------------------+-----------------------------+              +                     +------------+---------+
 |                     |                             |              |                     |            |         |
-| Signal Name         | Signal Function             | Bits         | (Receive or MAC)    | Transmit   | Receive |
+| Signal Name         | Signal Function             | Bits         | (Slice or LL)       | Transmit   | Receive |
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
 | Calibration         |                             |              |                     |            |         |
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
@@ -846,7 +847,7 @@ Table 10 defines the control signals for Transmit and Receive slices. The table 
 | rx_transfer_en      | RX calibration complete     | 1            | LINK PARTNER        | 75         | 70      |
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
 |                     |                             |              |                     |            |         |
-| rx_dcc_dll_lock_req | Start RX calibration        | 1            | MAC                 | NA         | 69      |
+| rx_dcc_dll_lock_req | Start RX calibration        | 1            | LL                  | NA         | 69      |
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
 |                     |                             |              |                     |            |         |
 | rx_dll_lock         | RX DLL locked               | 1            | LINK PARTNER        | 74         | 68      |
@@ -855,7 +856,7 @@ Table 10 defines the control signals for Transmit and Receive slices. The table 
 | tx_transfer_en      | TX calibration complete     | 1            | LINK PARTNER        | 78         | 64      |
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
 |                     |                             |              |                     |            |         |
-| tx_dcc_dll_lock_req | Start TX calibration        | 1            | MAC                 | NA         | 63      |
+| tx_dcc_dll_lock_req | Start TX calibration        | 1            | LL                  | NA         | 63      |
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
 |                     |                             |              |                     |            |         |
 | Device_ID           | Chiplet ID                  | 4            | Transmit            | 8-11       | 32-35   |
@@ -870,25 +871,25 @@ Table 10 defines the control signals for Transmit and Receive slices. The table 
 | Power_on_reset      | PoR complete                | 1            | Receive             | 21         | 44      |
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
 |                     |                             |              |                     |            |         |
-| tx_mac_rdy          | For resetting               | 1            | MAC                 | 22         | 45      |
+| tx_mac_rdy          | For resetting               | 1            | LL                  | 22         | 45      |
 |                     | Transmit data               |              |                     |            |         |
 |                     | transfers and               |              |                     |            |         |
-|                     | communicating MAC           |              |                     |            |         |
+|                     | communicating LL            |              |                     |            |         |
 |                     | readiness for               |              |                     |            |         |
 |                     | calibration to the link     |              |                     |            |         |
 |                     | partner                     |              |                     |            |         |
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
 |                     |                             |              |                     |            |         |
-| rx_mac_rdy          | For resetting               | 1            | MAC                 | 23         | 46      |
+| rx_mac_rdy          | For resetting               | 1            | LL                  | 23         | 46      |
 |                     | Receive data                |              |                     |            |         |
 |                     | transfers and               |              |                     |            |         |
-|                     | communicating MAC           |              |                     |            |         |
+|                     | communicating LL            |              |                     |            |         |
 |                     | readiness for               |              |                     |            |         |
 |                     | calibration to the link     |              |                     |            |         |
 |                     | partner                     |              |                     |            |         |
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
 |                     |                             |              |                     |            |         |
-| tx_adapter_rstn     | Reset BoW adapter           | 1            | MAC                 | 24         | 47      |
+| tx_adapter_rstn     | Reset BoW adapter           | 1            |LL                   | 24         | 47      |
 |                     | signal from Transmit        |              |                     |            |         |
 |                     | slice to Link Partner       |              |                     |            |         |
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
@@ -898,13 +899,13 @@ Table 10 defines the control signals for Transmit and Receive slices. The table 
 |                     | slice to Link Partner       |              |                     |            |         |
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
 |                     |                             |              |                     |            |         |
-| AUX_DBI             | Select DBI mode (1)         | 1            | MAC                 | 26         | 49      |
+| AUX_DBI             | Select DBI mode (1)         | 1            | LL                  | 26         | 49      |
 |                     | or AUX mode (0)             |              |                     |            |         |
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
 | User-defined        |                             |              |                     |            |         |
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
 |                     |                             |              |                     |            |         |
-| external_cntl[]     | Defined by protocol         | fo: 30       | MAC or LINK PARTNER | 0-4        | 49-57   |
+| external_cntl[]     | Defined by protocol         | fo: 30       | LL or LINK PARTNER | 0-4        | 49-57   |
 |                     | and/or application          |              |                     |            |         |
 |                     |                             | le: 63       |                     | 26-65      | 28-30   |
 |                     |                             |              |                     |            |         |

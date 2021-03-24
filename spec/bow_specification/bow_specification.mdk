@@ -117,7 +117,7 @@ due and proper execution of this Agreement by the applicable party.
 # Introduction 
 The Bunch of Wires (BoW) is a very simple, open and interoperable 
 physical interface between two chiplets or chip-scale-packages (CSP) 
-on a common package. This document specifies the BoW interface.
+on a common package. This document specifies the BoW interface PHY layer.
 
 
 ## Objectives

@@ -296,7 +296,7 @@ On die, the BoW datapath is a mixture of
 analog and digital circuitry that transports. Each BoW slice consists of a
 bits from a link layer to the die edge. On one side, the on-die BoW datapath 
 terminates in bumps, at the edge of the die connected to wires on the substrate. Internally 
-the datapath is connected to a MAC. The datapath also expected to include serializer 
+the datapath is connected to a link layer. The datapath also expected to include serializer 
 (deserializer) logic on transmit (receive) that is not specified in this document.
 
 The BoW control path stores information to initialize and operate the datapath in status
@@ -1516,7 +1516,7 @@ In a system with one or more BoW interfaces, each interface pair
  (defined as one Tx slice on a first chiplet and one Rx slice on a second chiplet)
  in the system shall achieve interface ready status in each of its component slices. 
  Once done, the interface shall signal readiness to the rest of the system. 
- If any BoW link or slice is down (either at the MAC or the PHY level), 
+ If any BoW link or slice is down (either at the link layeror the PHY level), 
  it shall communicate this information to the appropriate interface partner as well as to the rest of the system.
 
 Calibration and training will require the two endpoints of an interface to exchange status and control information.
@@ -1555,7 +1555,7 @@ each chiplet is left to the system designer.
 
 
 ##	Data-Transfer Ready
-A data-transfer ready signal shall be made available for control by the MAC layer. 
+A data-transfer ready signal shall be made available for control by the link layer. 
 The data-transfer ready signal may be de-asserted due to application-driven changes, including but not limited to:
 
 * An intentional change in clock frequency
@@ -1568,7 +1568,7 @@ De-asserting the data-transfer ready signal may also be necessary due to conditi
 * Loss of DLL lock
 
 Internal BoW conditions indicating the need for de-assertion of the data-transfer ready signal 
-shall be sent to the MAC so that the MAC can de-assert the data-transfer ready signal.
+shall be sent to the link layerso that the link layercan de-assert the data-transfer ready signal.
 Once data-transfer ready has been re-asserted after having been de-asserted, the 
 BoW Adapter shall be re-calibrated (Section 11). The reverse is not true: 
 calibration may be initiated without de-asserting data-transfer ready first.
@@ -1589,8 +1589,8 @@ transmit slice is ready for calibration and data transfer. De-assertion of
 tx_mac_rdy shall affect only its own slice; other slices may continue transmitting data.
 
     The tx_mac_rdy signal shall be forwarded to the link partner, and appropriate status 
-    and control register shall be updated, in order to inform the Receive MAC 
-    that the Transmit MAC is or is not ready for calibration.
+    and control register shall be updated, in order to inform the Receive link layer
+    that the Transmit link layeris or is not ready for calibration.
 
 ##	The Effects of De-asserting Data-Transfer Ready
 
@@ -1673,7 +1673,7 @@ Configuration may include:
 * BoW interface configuration
 * BoW redundancy activation
 
-The tx_mac_rdy signal shall be de-asserted LO during configuration and shall be asserted HI when configuration completes and the chiplet is ready for calibration and data transfer. The clock input from the MAC shall be stable prior to assertion of tx_mac_rdy.
+The tx_mac_rdy signal shall be de-asserted LO during configuration and shall be asserted HI when configuration completes and the chiplet is ready for calibration and data transfer. The clock input from the link layershall be stable prior to assertion of tx_mac_rdy.
 
 ##	Output State During Configuration
 
@@ -1820,11 +1820,11 @@ Signals used in the datapath calibration sequence are listed in Table [#tab-cali
 
 ## Adapter Reset
 
-Data-path calibration shall be initiated when the MAC layer asserts the 
+Data-path calibration shall be initiated when the link layerlayer asserts the 
 tx_adapter_rstn signal LO. If the data-transfer ready signal was de-asserted prior 
 to the start of calibration, then the tx_mac_rdy signal must be asserted HI prior 
 to asserting the adapter-reset signals HI
-The MAC must de-assert the adapter-reset signal prior to requesting calibration start.
+The link layermust de-assert the adapter-reset signal prior to requesting calibration start.
 
 ## Calibration Request
 

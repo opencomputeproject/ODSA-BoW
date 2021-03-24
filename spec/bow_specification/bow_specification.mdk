@@ -1,4 +1,4 @@
-Title         : Bunch of Wires Specification
+Title         : Bunch of Wires PHY Specification
 Subtitle      : The Open Domain-Specific Architecture BoW Workstream
 Author        : Mark Kuemerle, Ramin Farjad,  Ken Poulton, Suresh Subramaniam, Bapi Vinnakota 
 Logo          : True
@@ -133,81 +133,69 @@ simultaneous bidirectional communication (not covered in this document).
 Each future version of this specification is expected 
 to be compatible with at least two previous significant versions.
 
-The use of the BoW is expected to be confined to connect die
+The use of BoW is expected to be confined to connect die
 placed closed to one another within the same package. Signal loss
 in transmission is expected to be lower than for off-package protocols. 
 The definition of the BoW interface aims to meet the following design 
 objectives:
 
 * Inexpensive to implement 
-* Portable across process nodes ranging from 28nm to 5nm
+* Portable across process nodes ranging from 65 nm to 5 nm
 * Portable across multiple bump pitches
-* Have the flexibility to support advancing packaging technologies
-* Be unencumbered by technology license costs
-* Be very low power (< 1 pJ/bit) as defined by Tx IO Pad, wire and Rx IO Pad.
-* Offer very low latency: <5 ns without FEC, <15 ns with FEC. Latency as 
-defined from the PCS parallel interface at the source, through Tx 
-interface, channel, Rx interface received at the PCS parallel 
-interface at the receiver. Based on experience, the 5 ns 
-target meets the latency requirements of high-performance 
-applications and has been demonstrated to be achievable.
-* Offer the following unidirectional throughput/chipedge target range:
-  - Minimum Targets
-    - 100 Gbps/mm with all packaging options
-    - 1 Tbps/mm with advanced packaging options
-    - Enable higher throughput at very short reach < 1 mm.
-  - As reference examples, with a data rate of 4 Gbps/wire
-    - achieve 200+ Gbps/mm with a bump pitch of 130um and with a die 
-    edge stack depth no greater than 2 routing layers with organic 
-    laminate packaging.
-    - achieve 1+ Tbps/mm with a bump pitch of 50 um and with a die edge 
-    stack depth no greater than 4 routing layers with advanced 
-    packaging.
+* Flexible to support advancing packaging technologies
+* Unencumbered by technology license costs
+* Very low power (< 1 pJ/bit) as defined by Tx IO Pad, wire and Rx IO Pad.
+* Very low latency (<5 ns without FEC, <15 ns with FEC from link layer to link layer)
+* High throughput density (100-1000 Gb/s/mm-chip-edge)
 
 ## Advantages
 
 The Bunch of Wires interface provides several key advantages for chiplet-based systems:
 
-* Can operate at higher data rates per pin than existing parallel standards
-  *  -or-  lower data rates for compatibility with existing parallel standards
+* Can operate at higher data rates per pin than existing parallel standards 
+  * or at lower data rates for compatibility with existing parallel standards
 * Can be implemented in legacy technologies (process nodes) with generally available IP
-* Terminated mode can be implemented in less effort than a traditional SERDES
-* Does not require silicon-based interconnect
-* Is not constrained or intended to be used with a specific bump pitch
-  * Two BoW interfaces can each be implemented at different bump pitches and can be 
-  directly connected on an organic substrate, through fanout technology or through 
-  silicon based interconnect.
+* Can be implemented in low-cost laminates or higher-density silicon-based interconnect
+* Can be implemented with much less design effort than a traditional SERDES
+* Is not constrained to a specific bump pitch
+  * interfaces with somewhat different bump pitches can be connected
 
-While the advantages and simplicity are excellent benefits, the BoW interface does 
-require more package routing traces than other serial based XSR or USR interconnect.
-This drives BoW implementations that need the highest bandwidth to use fine bump 
-pitches and ‘stacked’ BoW implementations, adding some complexity and cost in test 
-and packaging.  Lower bandwidth implementations are free to use more standard 
-packaging technology with coarse bump pitch.
+Compared to serdes, BoW uses a lower data rate/wire and so it requires more wires. 
+But the lower data rates allow use of single-ended signaling and denser wire packing.
+In addition, in laminates, BoW can take advantage of multiple wiring layers and in advanced packaging
+it can take advantage of the much-increased wire density.
 
 ## Scope
-The scope of this document and of any contributions to this document are limited to:
+The scope of this document has several levels.
 
-1. The specification of the BoW interface that specifies the following functionality:
+1. The specification of the BoW interface includes these requirements:
   a. Operating modes
-  b. Physical design
-  c. Recommended bump patterns and signal ordering
-  d. Initialization, operation and management
-  e. Methods to verify and validate compliance with this specification
+  b. Chip-to-chip wire signals
+  c. Wire ordering
+  c. Timing and electrical specifications on the chip-to-chip interface
+  d. Signals at the link layer interface
+  e. Configuration, initialization, calibration
+  f. Functions that must be supported at the link layer or above
+
+1. The specification includes recommendations for these elements:
+  a. Bump patterns
+  b. Arrangement of multiple slices in a link
+  c. Arrangement of wires in laminate and advanced packaging
+  a. signal integrity of the wire channel
+  d. Configuration and management programming
+  e. Design for test and test methods
   f. Performance estimates
-  g. Functions or design practices that may be necessary to meet the design objectives 
-  h. Test, testability and test enablement
+  e. Compliance verification
 
-2. The following activities are outside the scope of this document and contributions 
-to this document:
-  a. Physical implementations of the interface
-  b. Integration of the interface with system-level data flow e.g. adapting a 
-  standard PHY-layer abstraction such as PIPE interface to the BoW
-  c. The actual use of this interface in systems
-  d. The use of this interface outside a package
+1. The following activities are outside the scope of this document:
+  a. Specific implementations of the interface
+  a. Integration of the interface with system-level data flow e.g. interface to a 
+   PHY-layer abstraction such as PIPE/PCIe interface to the BoW
+  a. The use of this interface outside of a package
 
-3. The following activities are intended to be addressed in subsequent versions 
+1. The following aspects are intended to be addressed in subsequent versions 
 of this specification:
+  a. Simultaneous bidirectional data (full duplex on each wire)
   a. Security
 
 ## Language
@@ -215,7 +203,7 @@ of this specification:
 Failure to meet the requirement results in non-compliance
 * "Should" indicates a strong suggestion, but not a requirement.
 Failure to implement the suggestion does not result in non-compliance.
-* "May" indicates an option.
+* "May" indicates an implementation option.
 * The lack of one of the above verbs indicates the material is informative.
 * "Reference" indicates a reference design that is provided as example for explanation, 
 but is not a requirement.
@@ -237,6 +225,8 @@ compliance points is discussed in the specification.
 [This section will also include a discussion on interoperability?]{font-weight:bold}.
 
 to be completed in subsequent draft
+
+
 
 # BoW Overview
 Chiplet-based designs require physical and logical connectivity between the die in a

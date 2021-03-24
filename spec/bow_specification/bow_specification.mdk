@@ -18,6 +18,7 @@ title,titlenote,titlefooter,h1,h2,h3,h4,h5 {
 [bowspec_logo]: images/bowspec_logo.jpg "bowspec_logo" { width:auto; max-width:90% }
 ~
 
+[TITLE]
 
 This document to be released under the following OCP copyright release:
 { page-break-before: always }
@@ -115,38 +116,32 @@ due and proper execution of this Agreement by the applicable party.
 [TITLE]
 
 # Introduction 
-The Bunch of Wires (BoW) is a very simple, open and interoperable 
+The Bunch of Wires (BoW) is a simple, open and interoperable 
 physical interface between two chiplets or chip-scale-packages (CSP) 
-on a common package. This document specifies the BoW interface PHY layer.
+in a common package. This document specifies the BoW interface PHY layer.
 
 
 ## Objectives
-The BoW interface is a set of backward compatible die-to-die parallel 
-interfaces that provides the flexibility to trade off throughput/chipedge for, 
-design complexity, cost, packaging technology. Backward as defined by 
-every new mode being compatible with the "Basic mode" defined in this 
-specification. This document specifies a "Terminated mode" in addition to
-the Basic mode. It is also possible that future technology enhancements 
-will enable modes that further increase throughput per chipedge. 
-Examples of this include previous discussions on a Turbo mode using 
-simultaneous bidirectional communication (not covered in this document).
-Each future version of this specification is expected 
-to be compatible with at least two previous significant versions.
+The BoW interface is a set of die-to-die parallel 
+interfaces that provides the flexibility to trade off throughput/chipedge for 
+design complexity, cost, and packaging technology. 
 
 The use of BoW is expected to be confined to connect die
-placed closed to one another within the same package. Signal loss
-in transmission is expected to be lower than for off-package protocols. 
+placed close to one another within the same package. 
+In this environment, signal attenuation is small and the interface can be simple.
+
 The definition of the BoW interface aims to meet the following design 
 objectives:
 
 * Inexpensive to implement 
-* Portable across process nodes ranging from 65 nm to 5 nm
+* Portable across IC process nodes ranging from 65 nm to 5 nm
+* Flexible to support both existing and advancing packaging technologies
 * Portable across multiple bump pitches
-* Flexible to support advancing packaging technologies
 * Unencumbered by technology license costs
 * Very low power (< 1 pJ/bit) as defined by Tx IO Pad, wire and Rx IO Pad.
 * Very low latency (<5 ns without FEC, <15 ns with FEC from link layer to link layer)
 * High throughput density (100-1000 Gb/s/mm-chip-edge)
+* Backwards compatible (across at least two major specification versions)
 
 ## Advantages
 
@@ -219,13 +214,31 @@ The specifications must be met over process variation, supply voltage range and
 temperature range (PVT). 
 Each implementation must document its supported supply voltage range and temperature range.
 
-Table XX will summarize the compliance points that shall be met in order to meet the BoW requirements. Each of the 
+Table XX will summarize the compliance points that shall be met in order to comply 
+with the BoW specification. Each of the 
 compliance points is discussed in the specification.
 
-[This section will also include a discussion on interoperability?]{font-weight:bold}.
 
-to be completed in subsequent draft
 
+Table [#tab-compliance] below summarizes these signals.
+~ Framed {color: blue}
+Todo: Need to fill in this table:
+~
+
+~ TableFigure {#tab-compliance; caption: "BoW Compliance Summary"; }
++---------+------------------------------+
+| Section | Description                  |
++---------+------------------------------+
+| 2.3     | BoW Modes                    |
+| 3.1     | Chip to chip signals (wires) |
+|      ?  | Wire order                   |
+|         |                              |
++---------+------------------------------+
+~
+
+~ Framed {color: blue}
+Do we also need a discussion of interoperability?
+~
 
 
 # BoW Overview

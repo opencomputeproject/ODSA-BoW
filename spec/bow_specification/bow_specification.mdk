@@ -186,7 +186,8 @@ The scope of this document has several levels.
   a. Specific implementations of the interface
   a. Integration of the interface with system-level data flow e.g. interface to a 
    PHY-layer abstraction such as PIPE/PCIe interface to the BoW
-  a. The use of this interface outside of a package
+  a. The use of this interface outside of a package or entirely inside a chip
+  a. Definition of protocols for logical data transfer
 
 1. The following aspects are intended to be addressed in subsequent versions 
 of this specification:
@@ -231,8 +232,8 @@ Todo: Need to fill in this table:
 +---------+------------------------------+
 | 2.3     | BoW Modes                    |
 | 3.1     | Chip to chip signals (wires) |
-|      ?  | Wire order                   |
-|         |                              |
+| [#sec-bow-components] | Wire order                   |
+|         |                  Much more....            |
 +---------+------------------------------+
 ~
 
@@ -243,51 +244,83 @@ Do we also need a discussion of interoperability?
 
 # BoW Overview
 Chiplet-based designs require physical and logical connectivity between the die in a
-single package. They also require the use of more complex packaging to accommodate the
-multiple die sharing a package. This section provides an overview of the BoW physical 
-interface, its use in a multi-chiplet design, and how with the Open Domain-Specific 
+single package. This section provides an overview of the BoW physical 
+interface (PHY), its use in a multi-chiplet design, and how with the Open Domain-Specific 
 Architecture stack it can be used as an underlay for popular transaction protocols.
 
-## BoW Application
-The BoW is intended to be an energy-efficient easy-to-use PHY
-interface between a pair of die as shown in Figure [#fig-bow_overview].
-The BoW
+## BoW Slice
+BoW is an energy-efficient, easy-to-use PHY
+interface between a pair of die inside a single package 
+as shown in Figure [#fig-bow_overview2].
+The BoW PHYs between two die are physically
+connected through wires on a substrate or interposer. 
+A BoW PHY does not have enough drive strength for off-package interfaces,
+nor is it designed for buses that are entirely on die.
 
-The BoW is intended to be a low-power die-to-die interface in a chiplet-based package.
-As shown in Figure [#fig-bow_overviews], the BoW PHYs between two wires are physically
-connected through wires on a substrate or interposer. A BoW PHY will not have enough 
-drive strength for off-package interfaces. A BoW PHY is also not expected to be used 
-for buses that are entirely on die.
-  * Provides physical digital connectivity between the die
-  * Can be used with multiple packaging technologies including organic laminate, interposers,
-  bridges and RDL
-  * Requires a separate protocol for the logical transport of information between the die
+The BoW PHY is defined as a single unidirectional slice. 
+Multiple slices are combined to create links of the desired throughput.
+A link may be symmetric, asymmetric or unidirectional.
 
+~ Figure { #fig-bow_overview2; caption: "BoW Overview" }
+![bow_overview2]
+[bow_overview2]: images/Bow-link-PHY-wires2.png { width:auto; max-width:70% }
+~
 
-interposer in a dotted line extend the package out a bit - or show it as a thicker line
-
+<xx
 ~ Figure { #fig-bow_overview; caption: "BoW Overview" }
 ![bow_overview]
 [bow_overview]: images/bowspec_figintro.jpg { width:auto; max-width:70% }
 ~
+XX>
 
-The basic BoW PHY unit is a 16-bit slice. A BoW PHY slice transmits and receives 16 bits of 
-data between die. Figure [#fig-slice_signals] details the wires between BoW PHY instances 
-on connected die in one direction. Since the BoW is a source-synchronous PHY, the transmitting
-PHY transmits a CLK signal with the data. A BoW PHY optionally has two additional
-wires that may be used for data or functions to improve data correctness -
-Forward Error Correction (FEC) and Data Bus Inversion (DBI). The connectivity between
-die is  specified in detail below in Section [#sec-signal-definitions]
+A BoW PHY slice either transmits or receives 16 bits of data between die. 
+Since the BoW is a source-synchronous PHY, each transmitting
+PHY slice transmits a complementary clock signal CLK+ and CLK- with the data.
+A BoW PHY optionally has two additional wires designated 
+FEC (for Forward Error Correction) and 
+AUX, for other optional functions such as Data Bus Inversion (DBI). 
+
+## BoW Modes
+
+BoW has four speed modes as seen in Tqble [#tab-levels].
+
+~ TableFigure {#tab-levels; caption: "BoW Levels"; }
++----------+----------------+---------------+-------+
+|BoW Mode | Slice Bit Rate | Wire Bit Rate | TxClk |
+|          | Gb/s           | Gb/s/wire     | GHz   |
++----------+----------------+---------------+-------+
+| BoW-32   | 32             | 2             | 1     |
+| BoW-64   | 64             | 4             | 2     |
+| BoW-128  | 128            | 8             | 4     |
+| BoW-256  | 256            | 16            | 8     |
++----------+----------------+---------------+-------+
+~
+The BoW Mode defines the wire speed of the PHY. 
+All modes are DDR: the data wire bit rate is double the clock wire frequency.
+All BoW interfaces must be able to interoperate with all the lower modes.
+
+The speed at the link layer interface (Figure [#fig-bow_overview2]) is implementation-dependent.
+Typically, PCLK will be the TxClk frequency divided by a power of 2, so 250, 500 and 1000 MHz
+are common rates.
+The data at the link layer interface is SDR (bit rate equal to PCLK frequency).
 
 ~ Framed {color: blue}
-Bapi: Need Figure [#fig-slice_signals] to have Tx and Rx.
+NEED THIS CONTENT, BUT SHOULD THIS GO LATER ?
+
+The BoW PHY must contain the serialization or deserialization to go between the link 
+level interface and the wire interface.
+
+A clock domain crossing (CDC FIFO) will generally be required between the chip core and the PHY's
+internal clocks; PCLK flows towards the CDC.
+Figure [#fig-bow_overview2] is drawn assuming the CDC is in the Link layer.
+In this case, PCLK is provided from the PHY to the CDC in the link layer.
+A PHY implementation may optionally include the CDC FIFO.
+In this case, PCLK would flow from the link layer to the CDC in the PHY.
 ~
 
+~ Framed {color: blue}
+OLD - do we need any of this?
 
-~ Figure { #fig-slice_signals; caption: "BoW Single Slice Signals" }
-![slice_signals]
-[slice_signals]: images/bowspec_figure_slice_signals.PNG { width:auto; max-width:70% }
-~
 
 A BoW slice consists of either a transmit (Tx)
 or a receive (Rx) component. In Figure [#fig-bow-components], the Tx and Rx paths
@@ -312,7 +345,7 @@ Any BoW implementation must receive a clock input from a PLL, which may be
 shared across multiple slices. A BoW Rx slice is  expected to forward the clock received 
 from the far side to the core logic. A BoW Tx slice is expected to forward its PLL clock
 to the die's core logic. This will place all clock domain transitions in the core logic.
-
+~
 
 ~ Figure {#fig-bow-components; caption: "BoW connection to core logic"}
 ![bowspec_figcomponents]
@@ -320,11 +353,12 @@ to the die's core logic. This will place all clock domain transitions in the cor
 
 [bowspec_figcomponents]: images/bowspec_figcomponents.png {width:auto; max-width: 100%}
 
-## BoW in the Package
+## BoW Wires
 Within the package, the BoW datapath is transported on physical passive wires between 
 the pair of connected die. The specifics of the wires, such as their density,
 maximum length, impedence characteristics and how they are realized vary with
-the packaging technology. 
+the packaging technology. In order to minimize power, unterminated and source-terminated
+links will have short reaches requiring chips to be adjacent.
 
 
 ## BoW for Common Transaction Protocols
@@ -333,22 +367,20 @@ The ODSA aims to define an open physical and logical interface for chiplets, as 
 Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
 integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
 interface. The logical component of the ODSA interface aims to 
-
-support protocols used commonly for the two most common chiplet use cases, package 
+support protocols used for the two most common chiplet use cases, package 
 aggregation and die disaggregation across a wide range of open and proprietary D2D PHYs
 such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. 
 
 ~ Figure {#fig-odsa-stack; caption: "The BoW PHY in the ODSA Stack"}
 ![bowspec_figstack]
 ~
-
 [bowspec_figstack]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
 
 The ODSA stack abstracts
 the PHY layer from the logical interface by using well-defined abstraction interfaces.
 Specifically, the ODSA will use two abstraction interfaces, the PIPE and LPIF
 interfaces. Any logic transaction controller, say a PCIe controller for example, that
-supports a PIPE (LPIF) interface can use any D2D PHY that also supports a PIPE (LPIF)
+supports a PIPE or LPIF interface can use any D2D PHY that also supports that
 interface as a physical layer to transport protocol bits between die.
 As shown in Figure [#fig-odsa-stack], the BoW interface may need to receive data
 through either the PIPE or LPIF interfaces to support common transaction protocols. 
@@ -359,10 +391,13 @@ specifications for each adapter are outside the scope of this document.
 Figure [#fig-bow-pcie] shows how the
 BoW with an example PIPE adapter can be an underlay to transport PCIe transactions.
 
+~ Framed {color: blue}
+Bapi: remove "serializer" and "deserializer" from the labels - these are part of the PHY.
+~
+
 ~ Figure {#fig-bow-pcie; caption: "BoW with a PIPE adapter for PCIe transactions"}
 ![bowspec_figcomponentspcie]
 ~
-
 [bowspec_figcomponentspcie]: images/fig-bow_pcie.jpg {width:auto; max-width: 100%}
 
 

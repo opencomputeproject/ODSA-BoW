@@ -282,7 +282,7 @@ AUX, for other optional functions such as Data Bus Inversion (DBI).
 
 ## BoW Modes
 
-BoW has four speed modes as seen in Tqble [#tab-levels].
+A BoW interface must conform to one of the Bow Modes seen in Table [#tab-levels].
 
 ~ TableFigure {#tab-levels; caption: "BoW Levels"; }
 +----------+----------------+---------------+-------+
@@ -295,32 +295,41 @@ BoW has four speed modes as seen in Tqble [#tab-levels].
 | BoW-256  | 256            | 16            | 8     |
 +----------+----------------+---------------+-------+
 ~
-The BoW Mode defines the wire speed of the PHY. 
-All modes are DDR: the data wire bit rate is double the clock wire frequency.
+The BoW Mode defines the speed of clock and data of the PHY on the die-to-die wires.
+In all modes, the data must be clocked DDR: 
+the data wire bit rate is double the clock wire frequency.
 All BoW interfaces must be able to interoperate with all the lower modes.
+Supporting rates other than the defined four modes is an implementation choice.
+
+~ Figure {#fig-bowspec_tradeoff2; caption: "BoW Data Rate vs. Reach tradeoff"}
+![bowspec_figtradeoff2]
+[bowspec_figtradeoff2]: images/Bow-tradeoff2.png {width:auto; max-width:70% }
+~
+
+Figure [#fig-bowspec_tradeoff2] shows the tradeoff between package, data rate, termination,
+and reach. 
+Source-terminated BoW on laminate allows a longer reach than advanced packaging, 
+but the wider design rules in laminate means that both of these cases are barely able to 
+reach 8 Gb/s/wire.
+A doubly-terminated link offers longer distances and higher rates, but 
+requires a more complicated receiver design.
+
+## PHY - Link Layer Interface
 
 The speed at the link layer interface (Figure [#fig-bow_overview2]) is implementation-dependent.
 Typically, PCLK will be the TxClk frequency divided by a power of 2, so 250, 500 and 1000 MHz
 are common rates.
 The data at the link layer interface is SDR (bit rate equal to PCLK frequency).
 
+
 ~ Framed {color: blue}
 NEED THIS CONTENT, BUT SHOULD THIS GO LATER ?
 
-The BoW PHY must contain the serialization or deserialization to go between the link 
-level interface and the wire interface.
 
-A clock domain crossing (CDC FIFO) will generally be required between the chip core and the PHY's
-internal clocks; PCLK flows towards the CDC.
-Figure [#fig-bow_overview2] is drawn assuming the CDC is in the Link layer.
-In this case, PCLK is provided from the PHY to the CDC in the link layer.
-A PHY implementation may optionally include the CDC FIFO.
-In this case, PCLK would flow from the link layer to the CDC in the PHY.
 ~
 
 ~ Framed {color: blue}
 OLD - do we need any of this?
-
 
 A BoW slice consists of either a transmit (Tx)
 or a receive (Rx) component. In Figure [#fig-bow-components], the Tx and Rx paths
@@ -347,11 +356,6 @@ from the far side to the core logic. A BoW Tx slice is expected to forward its P
 to the die's core logic. This will place all clock domain transitions in the core logic.
 ~
 
-~ Figure {#fig-bow-components; caption: "BoW connection to core logic"}
-![bowspec_figcomponents]
-~
-
-[bowspec_figcomponents]: images/bowspec_figcomponents.png {width:auto; max-width: 100%}
 
 ## BoW Wires
 Within the package, the BoW datapath is transported on physical passive wires between 
@@ -377,22 +381,22 @@ such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols.
 [bowspec_figstack]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
 
 The ODSA stack abstracts
-the PHY layer from the logical interface by using well-defined abstraction interfaces.
-Specifically, the ODSA will use two abstraction interfaces, the PIPE and LPIF
-interfaces. Any logic transaction controller, say a PCIe controller for example, that
+the PHY layer from the logical interface by using the well-defined abstraction interfaces
+PIPE and LPIF. 
+Any logic transaction controller, such as a PCIe controller, that
 supports a PIPE or LPIF interface can use any D2D PHY that also supports that
-interface as a physical layer to transport protocol bits between die.
-As shown in Figure [#fig-odsa-stack], the BoW interface may need to receive data
+interface as its physical layer.
+As shown in Figure [#fig-odsa-stack], the BoW interface may receive data
 through either the PIPE or LPIF interfaces to support common transaction protocols. 
-For this use case, the BoW interface will have to be
-augmented with an interface-specific adapter to support a protocol controller. The 
-serializer/de-serializer functionality may also be integrated with the adapter. The 
-specifications for each adapter are outside the scope of this document. 
+For this use case, some BoW-specific adapter logic will be needed to support the requirements of PIPE 
+or LPIF.
+The specifications for these adapters are outside the scope of this document. 
 Figure [#fig-bow-pcie] shows how the
-BoW with an example PIPE adapter can be an underlay to transport PCIe transactions.
+BoW with an PIPE adapter can be interfaced to a PCIe controller.
 
 ~ Framed {color: blue}
-Bapi: remove "serializer" and "deserializer" from the labels - these are part of the PHY.
+Bapi: please remove "serializer" and "deserializer" from the labels in Figure [#fig-bow-pcie]
+ - these are part of the PHY.
 ~
 
 ~ Figure {#fig-bow-pcie; caption: "BoW with a PIPE adapter for PCIe transactions"}
@@ -417,20 +421,8 @@ The BoW specification provides for optional technology to increase the data rate
 to enable a graceful cost-performance tradeoff. 
 It is also possible for basic BoW configuration implemented with advanced packaging or 
 between physically close chiplets to offer a higher data rate per wire than a terminated 
-BoW interface in some configurations. A high level view of the BoW Interface Data-rate ranges is shown below:
-
-~ Framed {color: blue}
-Bapi: Do we want all modes to be compatible with BoW Basic or BoW interop? I think we want
-every BoW implementation to support the BoW Basic Mode? How does BoW BiDi become compatible
-with that? It's a bit late, but configuration seems a more appropriate name than mode.
-~
-
-~ Center
-![bowspec_figtradeoff]
-
-~
-
-[fig_bowspec_figtradeoff]:images/bowspec_figtradeoff.png {width:auto; max-width:100% }
+BoW interface in some configurations. 
+A high level view of the BoW Interface Data-rate ranges is shown below:
 
 
 All modes must be 
@@ -443,19 +435,34 @@ BoW implementations must support the minimum configuration of BoW (2Gbps datarat
 
 # Signal Definitions
 
-Figures. [#fig-bowspec_ll_tx_slice_FIFO] - [#fig-bowspec_ll_tx_slice_noFIFO] provide a high level overview of the typical components that make up
-a Tx slice. Figures. [#fig-bowspec_ll_rx_slice_FIFO] - [#fig-bowspec_ll_rx_slice_noFIFO] do the same for the Rx slice. The scope of this specification
-is limited to the inputs and outputs, as well as the components shown in the light blue box. In this section, we cover the signal definitions for the
-external [#sec-external-facing-signals] and link layer [#sec-link-layer-interface-signals] facing interfaces. In Sections [#sec-reset-and-initialization],[#sec-configuration],[#sec-calibration], the details pertaining
-to reset, initialization, configuration, and the calibration state machine are specified. In Section [#sec-control-signal-shift-register-mapping], a
-complete register definition for control and status signals is provided. Section [#sec-loopback-test] has details on testability. In 
-Figures. [#fig-bowspec_ll_tx_slice_FIFO] - [#fig-bowspec_ll_rx_slice_noFIFO], the datapath shown is only for illustrative purposes, specific 
-implementations are left to the designer. The BoW PHY can accommodate FIFO implementations that are internal or external to the PHY. Examples for the
-Tx slice are shown in Figures [#fig-bowspec_ll_tx_slice_FIFO] - [#fig-bowspec_ll_tx_slice_noFIFO] and for Rx slice in 
-Figures [#fig-bowspec_ll_rx_slice_FIFO] - [#fig-bowspec_ll_rx_slice_noFIFO]. However, the Serializer/Deserializer fucntions with the 
+<XX  Ken says: This section is a nearly a table of contents.  Do we need any of this?
+
+Figures. [#fig-bowspec_ll_tx_slice_FIFO] and [#fig-bowspec_ll_tx_slice_noFIFO] provide 
+a high level overview of the typical components that make up
+a Tx slice. Figures. [#fig-bowspec_ll_rx_slice_FIFO] and [#fig-bowspec_ll_rx_slice_noFIFO] 
+do the same for the Rx slice. The scope of this specification
+is limited to the inputs and outputs, as well as the components shown in the light blue box. 
+In this section, we cover the signal definitions for the
+external [#sec-external-facing-signals] and link layer [#sec-link-layer-interface-signals] 
+facing interfaces. In Sections [#sec-reset-and-initialization],[#sec-configuration],[#sec-calibration], the details pertaining
+to reset, initialization, configuration, and the calibration state machine are specified. 
+In Section [#sec-control-signal-shift-register-mapping], a
+complete register definition for control and status signals is provided. 
+Section [#sec-loopback-test] has details on testability. In 
+Figures. [#fig-bowspec_ll_tx_slice_FIFO] - [#fig-bowspec_ll_rx_slice_noFIFO], 
+the datapath shown is only for illustrative purposes, specific 
+implementations are left to the designer. 
+The BoW PHY can accommodate FIFO implementations that are internal or external to the PHY. 
+Examples for the
+Tx slice are shown in Figures [#fig-bowspec_ll_tx_slice_FIFO] - [#fig-bowspec_ll_tx_slice_noFIFO] 
+and for Rx slice in 
+Figures [#fig-bowspec_ll_rx_slice_FIFO] - [#fig-bowspec_ll_rx_slice_noFIFO]. 
+However, the serialized/Deserializer fucntions with the 
 appropriate gear ratios shall be implemented in the BoW PHY.
 
-## External Facing Signals
+XX>
+
+## Die-to-die Signals (Wires)
 As shown in Figures. [#fig-bowspec_ll_tx_slice_FIFO] - [#fig-bowspec_ll_rx_slice_noFIFO], each BoW slice consists of a differential clock pair 
 , 16 single-ended data wires, and optional FEC and AUX wires. Each BoW slice is unidirectional when in operation.
 A chiplet may be designed with with Rx-only and Tx-only slices, or
@@ -485,39 +492,53 @@ Table [#tab-signals] below summarizes these signals.
 ~
 
 ## Link Layer Interface Signals
-Each Tx or Rx slice shall interface to the link layer with a datapath width ranging from 32 bits to 512 bits. The corresponding pclk (tx, or rx)
-shall have a frequency (datawidth\*pclk) that matches the overall throughput on the output wires of the slice (16\* 0.5\*line_rate). This allows
-for a wide range of core logic implementations and gear ratios by trading off latency. The serializer/deserializer functions shall 
-be implemented in the PHY, as needed. However, the specification is flexible on the location of the FIFO (inside or outside the PHY) without compromising
-interoperability. Example datapath implementations of the FIFO inside are shown in Figs [#fig-bowspec_ll_tx_slice_fifo], [#fig-bowspec_ll_rx_slice_fifo].
-FIFO outside examples are shown in Figs [#fig-bowspec_ll_tx_slice_nofifo], [#fig-bowspec_ll_rx_slice_nofifo]. More details on the Link Layer interface
+
+The data at the link layer interface must be SDR (bit rate equal to PCLK frequency).
+Each Tx or Rx slice shall interface to the link layer with a datapath width of 32, 64, 128,
+256 or 512 bits. 
+The corresponding PCLK (Tx, or Rx)
+shall have a frequency (datawidth\*PCLK) that matches the overall 
+throughput on the output wires of the slice (16\*data_rate). 
+This allows supporting a range of core logic speeds. 
+
+The BoW PHY must contain the serialization or deserialization needed to 
+go between the data rates at the link level interface and the wire interface.
+
+A clock domain crossing (CDC FIFO) is required between the chip core and the PHY's
+internal clocks; this can be either in the PHY or the link layer.
+The CDC receives clocks from both the core and the PHY internal clocks, 
+so PCLK flows towards the CDC as seen in the following four figures.
+
+Example datapath implementations of the FIFO 
+inside the PHY are shown in Figs [#fig-bowspec_ll_tx_slice_fifo], [#fig-bowspec_ll_rx_slice_fifo].
+FIFO in the link level is shown in 
+Figs [#fig-bowspec_ll_tx_slice_nofifo], [#fig-bowspec_ll_rx_slice_nofifo]. 
+More details on the Link Layer interface
 signals can be found in Section [#sec-bow-to-link-layerll-interface].
+Note that these four figures are intended to illustrate
+the signals at the perimeter of the PHY slices.
+The details of the blocks internal to a slice is implementation-dependent.
 
 
-
-~ Figure { #fig-bowspec_ll_tx_slice_FIFO; caption: "BoW Link Layer and Tx Slice with FIFO" }
+~ Figure { #fig-bowspec_ll_tx_slice_FIFO; caption: "BoW Link Layer and Tx PHY Slice with FIFO in the PHY" }
 ![bowspec_ll_tx_slice_FIFO]
 ~
 [bowspec_ll_tx_slice_FIFO]: images/bowspec_LL_Tx_slice_FIFO.png { width:auto; max-width:90% }
 
-
-~ Figure { #fig-bowspec_ll_tx_slice_noFIFO; caption: "BoW Link Layer and Tx Slice with no FIFO" }
+~ Figure { #fig-bowspec_ll_tx_slice_noFIFO; caption: "BoW Link Layer and Tx Slice with FIFO in the link layer" }
 ![bowspec_ll_tx_slice_noFIFO]
 ~
 [bowspec_ll_tx_slice_noFIFO]: images/bowspec_LL_Tx_slice_noFIFO.png { width:auto; max-width:90% }
 
-~ Figure { #fig-bowspec_ll_rx_slice_FIFO; caption: "BoW Link Layer and Rx Slice with FIFO" }
+~ Figure { #fig-bowspec_ll_rx_slice_FIFO; caption: "BoW Link Layer and Rx PHY Slice with FIFO in the PHY" }
 ![bowspec_ll_rx_slice_FIFO]
 ~
 [bowspec_ll_rx_slice_FIFO]: images/bowspec_LL_Rx_slice_FIFO.png { width:auto; max-width:90% }
 
-~ Figure { #fig-bowspec_ll_rx_slice_noFIFO; caption: "BoW Link Layer and Rx Slice with no FIFO" }
+~ Figure { #fig-bowspec_ll_rx_slice_noFIFO; caption: "BoW Link Layer and Rx Slice with FIFO in the link level" }
 ![bowspec_ll_rx_slice_noFIFO]
 ~
 [bowspec_ll_rx_slice_noFIFO]: images/bowspec_LL_Rx_slice_noFIFO.png { width:auto; max-width:90% }
-
-
-
 
 
 

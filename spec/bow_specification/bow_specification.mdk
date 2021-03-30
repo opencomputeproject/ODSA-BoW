@@ -1213,7 +1213,7 @@ In an interposer, if the bump pitch is 40 um, the edge width is 1.28 or 1.60 mm 
 Figure [#fig-clocking] shows the clock and data flow for a single Tx slice and a single Rx slice.
 On the Tx side, data bits (and optional FEC and AUX bits) come in a wide word from the link layer, 
 and are serialized to the line rate. 
-At the Rx side, they are sampled with a common slicer clock in BoW Basic. 
+At the Rx side, they are sampled with a common slicer clock in most BoW implementations.
 BoW Fast may optionally implement per-bit delay adjust or per-bit slicer clock adjust.
 
 All BoW interfaces shall be DDR (Double Data Rate) at the chip-to-chip interface: 
@@ -1300,23 +1300,30 @@ Figure [#fig-eye] shows the definition of the eye diagram parameters.
 [eye]: images/bowspec_figure_eye.PNG { width:auto; max-width:80% }
 ~
 
-The CLK and data signals at the receiving slice bumps must be able to meet these conditions:
+The CLK and data signals at the receiving slice bumps must meet the conditions in Table [#tab-integrity]
 
-~ TableFigure {#tab-clocks; caption: "BoW Basic Timing Requirements"; width:100%; }
+~ TableFigure {#tab-integrity; caption: "BoW Signal Integrity Requirements"; width:100%; }
 <This table generated with https://www.tablesgenerator.com/markdown_tables# >
 
-| Symbol  | Spec                       | BoW Basic        | BoW Fast         |
-|---------|:---------------------------|------------------|------------------|
-| V~hi~   | High signal voltage        | 750 mV           | 562 mV           |
-| V~lo~   | Low signal voltage         | 0 mV             | 188 mV           |
-| V~tol~  | Tolerance of Vhi, Vlo (5%) | \+- 37 mV        | \+- 19 mV        |
-| t~eye~  | Data eye width             | 50% UI           | 50% UI           |
-| V~eye~  | Data eye height            | 40%(V~hi~-V~lo~) | 20%(V~hi~-V~lo~) |
-|         |                            | (300 mV)         | (75 mV)          |
-| V~ov~   | Data and CLK overshoot     | 25%(V~hi~-V~lo~) | 50%(V~hi~-V~lo~) |
-|         |                            | (188 mV)         | (188 mV)         |
-| t~skew~ | Slice to slice CLK skew    | 3 ns             | 3 ns             |
-|         |                            |                  |                  |
++---------+----------------------------+-----------------------------------+-------------------+
+| Symbol  | Spec                       | Unterminated or Source Terminated | Doubly Terminated |
++---------+----------------------------+-----------------------------------+-------------------+
+| V~hi~   | High signal voltage        | 750 mV                            | 562 mV            |
++---------+----------------------------+-----------------------------------+-------------------+
+| V~lo~   | Low signal voltage         | 0 mV                              | 188 mV            |
++---------+----------------------------+-----------------------------------+-------------------+
+| V~tol~  | Tolerance of Vhi, Vlo (5%) | \+- 37 mV                         | \+- 19 mV         |
++---------+----------------------------+-----------------------------------+-------------------+
+| t~eye~  | Data eye width             | 50% UI                            | 50% UI            |
++---------+----------------------------+-----------------------------------+-------------------+
+| V~eye~  | Data eye height            | 40%(V~hi~-V~lo~)                  | 20%(V~hi~-V~lo~)  |
+|         |                            | (300 mV)                          | (75 mV)           |
++---------+----------------------------+-----------------------------------+-------------------+
+| V~ov~   | Data and CLK overshoot     | 25%(V~hi~-V~lo~)                  | 50%(V~hi~-V~lo~)  |
+|         |                            | (188 mV)                          | (188 mV)          |
++---------+----------------------------+-----------------------------------+-------------------+
+| t~skew~ | Slice to slice CLK skew    | 100 ps/stack                      | 100 ps/stack      |
++---------+----------------------------+-----------------------------------+-------------------+
 
 
 ~
@@ -1334,7 +1341,8 @@ The evaluation of jitter must include all possible jitter contributors,
 including reference clock, clock distribution networks, 
 any DCC, PLL and DLL jitter, power-supply noise and switching noise.
 
-The slice to slice clock skew t~skew~ across the width of a BoW link must be less than 3 ns.
+The slice to slice clock skew t~skew~ across the width of a BoW link (along the chip edge) 
+must be less than 100 ps/stack.
 This is dominated by the TxClk distribution network.
 
 Since these signals do not leave the package, these values must be verified with simulation.
@@ -1344,18 +1352,14 @@ varying those values after locking the DLL may provide timing margin information
 If the slice implementation allows programmatic control of the receiver voltage 
 thresholds, varying those values may provide vertical margin information.
 
-~framed {color:blue}
-Should we require programmatic DLL control to enable margin testing?  
-Should we require threshold voltage control to enable margin testing?
-~
-
+<XX
 ### Reference Slice Timing
 
 ~framed {color:blue}
 Is this section worth keeping?
 ~
 
-
+XX>
 <XX  COMMENT
 ~ Framed {color: blue}
 
@@ -1380,6 +1384,7 @@ Slice to slice:
    * 2.5 ns to go 30 mm, across 22 slices
 ~
 XX END COMMENT>
+<XX
 
 The following table shows clock and data timing for a 4 Gbps BoW Basic 
 reference design in 65 nm CMOS on 
@@ -1415,72 +1420,65 @@ DataEyeWidth - BitToBitSkewFanout - BitToBitSkewMismatch
 - BitToBitClockDistn - CLKtoMeanDataSkew - CLKdutyCycleError  
 - CLKrandomJitter - DataToDataSkew < 0.10 UI
 ~
-
+XX>
 
 # Electrical Specifications
 
 ## Voltages
 
-To support a wide range of technologies BoW does not enforce a common 
-VDD power rail voltage. In order to ensure that there is at least one common 
-interoperable mode BoW implementations must support electrical specifications targeting 
-rail to rail signaling based on a 0.75 V +/- 5% power supply (see electrical 
-specifications). BoW interfaces can support higher or lower signaling 
-voltages without limit but must support 0.75 V based signaling at 2 Gbps 
-Double Data Rate (DDR) to ensure interoperability.
-BoW does not enforce a common VDD power rail voltage. 
+BoW implementations must support electrical specifications corresponding to 
+rail to rail signaling based on a 0.75 V +/- 5% power supply as in as in Table [#tab-integrity] 
+BoW interfaces may also upport higher or lower signaling 
+voltages but must support 0.75 V based signaling to ensure interoperability.
+BoW does not specify the VDD power rail voltage. 
 
 ## ESD 
 BOW I/O shall be designed to withstand 50 V CDM (Charged Device Model) and 
-250 V HBM (Human Body Model).  This requirement is similar to other die-to-die 
-interface standards.
+250 V HBM (Human Body Model). 
+This requirement is deemed sufficient for intra-package signalling, 
+similar to other die-to-die interface standards.
 
 ## Termination and Return Loss
 
-On laminate or similar packages, 
-BoW Basic and BoW Fast transmitters shall be source-terminated to 50 +/-8 ohms.
+See Table [#tab-reaches] for the recommended termination vs. reach and mode.
+In most cases, on laminate or similar packages, 
+BoW transmitters should be source-terminated to 50 +/-8 ohms and BoW receivers unterminated.
 
-BoW Basic receivers shall be unterminated.
-BoW Fast receivers shall be terminated in 50 +/-8 ohms to V~swing~/2 +/- 5% where V~swing~
-is the signal voltage swing without a receiver termination.
+For reach over 10 mm, BoW receivers should also be terminated in 50 +/- 8 ohms and designed 
+for the smaller signal swings this delivers.
 
-A BoW Basic transmitter (both data and clock) shall meet the return loss specified in
-figure [#fig-s11] when outputting a logic 0, 1 or at the midscale voltage.
-A BoW Fast transmitter and receiver shall meet the return loss specified in the same figure, 
-when outputting a logic 0, 1 or at the midscale voltage.
+A terminated BoW transmitter or receiver (both data and clock) 
+shall have 16 dB return loss (-16 dB S11 or S22) from 0 to F(CLK) and -4 dB loss
+at 2*F(CLK) when outputting a logic 0, 1 or at the midscale voltage. 
+See the trace "BoW Fast" in Figure [#fig-s11] for the BoW-128 case.
+
+~framed {color:blue}
+Need to update Figure [#fig-s11].
+~
+
 
 ~ Figure { #fig-S11; caption: "BoW Termination Return Loss S11 and S22" }
 ![S11]
 ~
 [S11]: images/bowspec_figure_S11.PNG { width:auto; max-width:60% }
 
-A Source-Series-Terminated (SST) transmitter can meet the the BoW Basic specification.
+A Source-Series-Terminated (SST) transmitter can generally meet the the transmitter specification.
 
 
 # Chip-to-Chip Channel Specifications
 
-The channel (wires) between chips is not a required part of the specification of the PHY, 
-but implementations should meet the following specs to ensure signal integrity.
+The channel (wires) between chips should meet the following specs to ensure signal integrity.
 
-~framed {color:blue}
-Should the channel between chips be Shall or Should?
-~
+## BoW Channel Specifications on Laminate
 
+BoW channel length on laminate is limited by the round trip reflection delay to 10 mm for 4 Gb/s/wire.
 
-## BoW Basic Channel Specifications
-
-BoW Basic channel length on laminate 
-is limited by the round trip reflection delay to 10 mm for 5 Gbps.
-
-BoW Basic channels longer than 2 mm (e.g., on laminate) should meet these specs:
+BoW channels longer than 2 mm on laminate should meet these specs:
 
 ~ TableFigure {#tab-clocks; caption: "BoW Clock Specifications"; width:100%;  }
 |-------------------------|----------------|---------|
 |Parameter                |Value           | Comment |
 +:-----------------------:+:--------------:+:-------:+
-| Length                  | 10 mm @ 5 Gbps |         |
-|                         |  5 mm @ 8 Gbps |         |
-+-------------------------+----------------+---------+
 | Length mismatch within a slice |  1 mm   | = ~6 ps <= 0.05 UI |
 +-------------------------+----------------+---------+
 |Impedance                | 50\+-5 ohms    |         |
@@ -1492,14 +1490,15 @@ BoW Basic channels longer than 2 mm (e.g., on laminate) should meet these specs:
 ~
 C~cross~ is the total capacitance of a wire to all its neighboring wires.
 C~total~ is the total capacitance of a wire including to grounds.
+
+<XX
 Stripline (buried) wires with 25 um line, 40 um space and 33 um dielectric thickness have 
 C~cross~/C~total~ of 28% and an impedance of 48 ohms.
+XX>
 
+Channels on interposer will have different requirements, not yet specified.
 
-Channels shorter than 2 mm (e.g., on interposer) will have different requirements, 
-not yet specified.
-
-
+<XX
 ~Framed {color: blue}
 Interposers have only 4 layers, very thin dielectrics, 
 cannot reach 50 ohm impedances without huge series R.  So they need to be designed differently.
@@ -1518,21 +1517,16 @@ we cant build a reasonable controlled impedance line.
 Is this enough data to spec a BoW Basic on interposer?  
 Does anyone have more data?
 ~
+XX>
 
 
-<XXXX Comment
-~Framed {color: blue}
-Ken todo: add wire twist diagram for clock?
-~
-XXXX>
+## BoW Channel Specifications for Doubly-Terminated Links
 
-## BoW Fast Channel Specifications
-
-BoW Fast channels should meet the following characteristics.
+Doubly-terminated links should meet the following characteristics.
 
 ### Channel Loss
 
-To minimize the need for equalization, the channel should meet the limit in Figure [#fig-loss].
+To avoid the need for equalization, the channel should meet the limit in Figure [#fig-loss].
 
 ~ Figure { #fig-loss; caption: "BoW Fast Wire Channel Loss Limit" }
 ![loss]
@@ -1555,6 +1549,7 @@ The limit is
 XtalkLimit = -37*e^-f/8GHz^-10 dB
 ~
 
+<XX
 ~Framed {color: blue}
 Proposed text that needs numbers:
 
@@ -1567,6 +1562,7 @@ X um line and Y um space, on Z um dielectric over a ground plane.
 What is the origin of the Xtalk Limit equation?  Is there a paper reference?
 
 ~
+XX>
 
 
 

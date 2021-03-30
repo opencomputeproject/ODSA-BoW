@@ -997,12 +997,15 @@ the data wire bit rate is double the clock wire frequency.
 All BoW interfaces must be able to interoperate with all the lower modes.
 Supporting rates other than the defined four modes is an implementation choice.
 
-The recommended wire reach are seen in Table [#tab-reaches].
-"Laminate" is intended to include organic laminate packages (a.k.a. buildup) and similar 
+The recommended maximum wire reach for different packaging types and terminations is 
+seen in Table [#tab-reaches].
+Exceeding these reach values degrades the voltage margins at the receiver.
+"Laminate" is intended to include organic laminate packages (a.k.a. "buildup) and similar 
 technologies with approximately 25 um line and space rules.
-"Advanced" is intended to include silicon interposer and similar technologies which are often
-more resistive than organic laminate packages and must operate with reduced trace lengths.  Termination 
-(source or double) may not be necessary for implementations targeting Advanced packaging.
+"Advanced" is intended to include silicon interposer and similar technologies.  
+These have much finer line and space dimensions, but traces are usually much
+more resistive than in organic laminate packages and must operate with reduced trace lengths. 
+Termination is not expected to be necessary for implementations targeting Advanced packaging.
 
 ~ TableFigure {#tab-reaches; caption: "BoW Wire Reaches"; width:100%;  }
 
@@ -1025,111 +1028,7 @@ more resistive than organic laminate packages and must operate with reduced trac
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
 
 ~
-
-
-
-Table 10 defines the control signals for Transmit and Receive slices. The table is organized by signal type; in-order signal tables with default values are provided in Section 7.2. tx_ prefixes refer to signals originating on the Transmit slice; rx_ prefixes refer to signals originating on the Receive slice.
-
-
-~ TableFigure {#tab-rates2; caption: "BoW Modes and Data Rates"; width:100%;  }
-|--------------|------------|-----------|-----------|-------------|-------|
-|  Mode        |Package     |Clock rate | Data rate | Termination | Reach |
-+--------------+------------+-----------+-----------+-------------+-------+
-| BoW Basic    | Laminate   | 1-2.5 GHz | 2-5 Gbps  | Source      | 10 mm |
-|              |            | 1-4 GHz   | 2-8 Gbps  |             | 5 mm  |
-+--------------+------------+-----------+-----------+-------------+-------+
-| BoW Fast     | Laminate   | 1-8 GHz   | 2-16 Gbps | Double      | 50 mm |
-|--------------|------------|-----------|-----------|-------------+-------|
-~
-
-
-
-## BoW Modes
-
-There are multiple BoW modes. All modes must be 
-interoperable with the minimum definition. All modes are source synchronous 
-parallel interfaces using a differential clock that may operate at multiple frequencies.
-The range of operating frequencies for a mode must be documented in a data sheet. 
-frequencies. Beyond the basic mode, adding termination provides higher performance 
-per mm of beachfront bandwidth but is more complex to design. It is also possible
-to get high performance by using 
-
-
-In each mode, a BoW interface can operate at multiple frequencies.
-The operating frequency and throughput per wire on a BoW interface mode will be affected by:
-
-* The choice of packaging technology
-* The physical distance between the chiplets being connected: Faster data rates may be easier 
-to realize with chiplets that are physically closer 
-* Bump spacing: Coarse bumps may allow for circuitry to enable faster data rates.
-
-
-
-### BoW Basic Mode 
-
-In BoW Basic, 
-data rates can go up to 5 or 8 Gbps, depending on the package technology and wire length.
-Wires are source-terminated (in the transmit circuit), but not terminated at the receiver.
-
-### BoW Fast Mode
-
-In BoW Fast, data rates can go up to 16 Gbps.
-Wires are both source-terminated and receiver-terminated to 
-minimize signal reflections to enable higher data rates and longer wires.
-
-### Modes and Data Rates
-
-
-
-With proper attention to design, 
-~ TableFigure {#tab-rates1; caption: "BoW Modes and Data Rates"; width:100%;  }
-|-----------|----------|-----------|-----------|-------------|-------|
-| Mode      |Package   |Recom      | Recom     | Recommended | Recom |
-|           |          |Clock rate | Data rate | Termination | Reach |
-+:---------:+:--------:+:----------+:----------+:------------+-------+
-| BoW Basic | All      | 4 GHz     | 8 Gbps    | No          | 1 mm  |
-|           |          |           |           |             |       |
-+-----------+----------+-----------+-----------+-------------+-------+
-| BoW Basic |Advanced  | 4 Ghz     | 8 Gbps    | Source      | 3 mm  |
-|           |          |           |           |             |       |
-|-----------|----------|-----------|-----------|-------------+-------|
-| BoW Basic | Laminate | 4 GHz     | 8 Gbps    | Source      | 10 mm |
-|           |          |           |           |             |       |
-+-----------+----------+-----------+-----------+-------------+-------+
-| BoW Fast  |Advanced  | 8 GHz     | 16 Gbps   | No          | 1 mm  |
-|-----------|----------|-----------|-----------|-------------+-------|
-| BoW Fast  | Laminate | 8 GHz     | 16 Gbps   | Double      | 50 mm |
-|-----------|----------|-----------|-----------|-------------+-------|
-~
-<Note this table appears in two places!!>
-
-All BoW links are DDR (double data rate). 
-DDR is defined as one data bit transmitted for each rising and each falling edge of the clock.
-
-Add an interop data rate columns of 2 Gbps/1 Ghz to the table.
-
-"Laminate" is intended to include organic laminate packages (a.k.a. buildup) and similar 
-technologies with approximately 25 um line and space rules.
-"Interposer" is intended to include silicon interposer and similar technologies 
-with approximately 1 um line and space rules.
-
-~ Framed {color: blue}
-Ken sez: I copied this table from the HotI 2020 paper, but what is our 
-supporting data for 8 Gbps and 50 mm cases?
-~
-
-All BoW implementations must support the minimum 1 GHz clock rate, 
-2 Gbps data rate using source-terminated I/O.
-For ease of interoperation, data rate multiples of 
-N Gbps should be supported for integer N>=2 to the max rate for that implementation.
-
-### BoW Mode Extensions
-
-System designers are allowed the flexbility to extend the two BoW modes defined above 
-provided, at a minimum, the 
-BoW Basic Mode (Section 2.3.1) is supported to guarantee interoperability with other 
-BoW PHY implementations.
-
+Adding termination increases the speed and/or reach, at the expense of greater design complexity.
 
 # BoW Physicals
 

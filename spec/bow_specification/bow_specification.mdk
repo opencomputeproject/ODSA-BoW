@@ -476,9 +476,18 @@ each slice may have both Tx and Rx capability which is configured at runtime.
 A bidirectional link is composed of some number of slices configured for Rx and some for Tx.
 
 FEC (Forward Error Correction) is an optional signal that allows using FEC to 
-improve the bit error rate (BER).  AUX is an optional signal that can be used for purposes
-such as Data Bus Inversion (DBI), flow control, redundancy, etc. 
-The link layers of Chiplets A and B will need to agree on the details on FEC and AUX usage.
+improve the bit error rate (BER). 
+By using an additional wire when FEC is enabled, the payload data rate is not affected
+and the wire data rate need not change.
+This allows F(PCLK) = F(TxClk) / 2^n with FEC off or on, 
+which simplifies the clock generation and serialization functions.
+If used, FEC is implemented in the Link layer, and the FEC bit is simply passed through the PHY.
+
+AUX is an optional signal that can be used for purposes
+such as Data Bus Inversion (DBI), flow control, redundancy for defect repair, etc.
+ 
+The Link layers of Chiplets A and B will need to agree on the details on FEC and AUX usage.
+An implementation may choose to support the FEC and AUX wires, or to omit both of them.
 
 Table [#tab-signals2] summarizes these signals.
 
@@ -496,6 +505,28 @@ Table [#tab-signals2] summarizes these signals.
 |Auxiliary     |1        |AUX         | Optional    |
 |--------------|---------|------------|-------------|
 ~
+
+### DBI on the AUX wire
+
+Data Bus Inversion (DBI) can be used to mitigate simultaneous switching
+output (SSO) noise of a BoW PHY by reducing the number of BoW data wires
+that switch between adjacent data transfer cycles. 
+DBI functionality is optional; it one of several possible uses of the AUX wire.
+DBI can be implemented in the PHY or in the Link layer.
+
+Within a slice's 16 data signals, the TX DBI logic calculates the DBI bit 
+based on the number of data signals changing from their previous state on the BoW slice wires. 
+
+DBIcurrent = ((data[15]current XOR data[15]prev) 
++ (data[14]current XOR data[14]prev) 
+... 
++ (data[1]current XOR data[1]prev) 
++ (data[0]current XOR data[0]prev)) > 8 ? 1 : 0); 
+
+If the DBI bit=1 then the Tx DBI logic inverts the Data bits.
+If DBI = 1 then the Rx DBI logic inverts the Data bits to recover the original data.
+
+
 
 ## Link Layer Interface - Clock and Data Signals
 
@@ -525,6 +556,9 @@ Note that these four figures are intended to illustrate
 the signals at the perimeter of the PHY slices.
 The details of the blocks internal to a slice is implementation-dependent.
 
+[ The following four figures need to be revised to show the MDIO interface to the Link layer
+instead of going direct to I2C. ]
+
 
 ~ Figure { #fig-bowspec_ll_tx_slice_FIFO; caption: "BoW Link Layer and Tx PHY Slice with FIFO in the PHY" }
 ![bowspec_ll_tx_slice_FIFO]
@@ -545,6 +579,32 @@ The details of the blocks internal to a slice is implementation-dependent.
 ![bowspec_ll_rx_slice_noFIFO]
 ~
 [bowspec_ll_rx_slice_noFIFO]: images/bowspec_LL_Rx_slice_noFIFO.png { width:auto; max-width:90% }
+
+
+
+
+### Link Layer Interface - Clock and Data Signal List
+
+The signals in Table [#tab-mac_interface] shall constitute the data interface between the link layer 
+and the PHY.
+
+~ TableFigure {#tab-mac_interface; caption: "Link Layer Interface Signals"; width:100%;  }
+|--------+--------+----------+----------+--------------------------------------------------------|
+| Signal | # Bits | Tx Slice | Rx Slice | Description                                            |
++--------+--------+----------+----------+--------------------------------------------------------+
+| Data   | 16*K   | In       | Out      | Data                                                   |
++--------+--------+----------+----------+--------------------------------------------------------+
+| FEC    | K      | In       | Out      | Forward Error Correction                               |
++--------+--------+----------+----------+--------------------------------------------------------+
+| AUX    | K      | In       | Out      | Auxiliary uses                                         |
++--------+--------+----------+----------+--------------------------------------------------------+
+| PCLK   | 1      | *        | *        | * Out if CDC is in Link Level, In if CDC is in the PHY |
++--------+--------+----------+----------+--------------------------------------------------------+
+| TxClk  | 1      | In       | NA       | Comes from a PLL or other clock source, not the Link layer.  |
+|        |        |          |          | The TxClk source is usually shared among many Tx slices.  |
++--------+--------+----------+----------+--------------------------------------------------------+
+~
+
 
 
 <XX   Ken says: This is redundant with section 3.1 and incorrect since it assumes Tx Rx pairs.
@@ -615,30 +675,6 @@ The BoW interface comprises either a transmit or receive slice with three signal
 +---------------------------+------------------------------------------------------------+
 ~
 XX>
-
-
-### Link Layer Interface - Signal List
-
-The signals in Table [#tab-mac_interface] shall constitute the interface to the link layer.
-
-~ TableFigure {#tab-mac_interface; caption: "Link Layer Interface Signals"; width:100%;  }
-|----------+--------+----------+----------+------------------------------------------------------------|
-| Signal   | # Bits | Tx Slice | Rx Slice | Description                                                |
-+----------+--------+----------+----------+------------------------------------------------------------+
-| Data     | 16*K   | In       | Out      | Data                                                       |
-+----------+--------+----------+----------+------------------------------------------------------------+
-| FEC      | K      | In       | Out      | Forward Error Correction                                   |
-+----------+--------+----------+----------+------------------------------------------------------------+
-| AUX      | K      | In       | Out      | Auxiliary uses                                             |
-+----------+--------+----------+----------+------------------------------------------------------------+
-| PCLK     | 1      | *        | *        | * Out if CDC is in Link Level, In if CDC is in the PHY     |
-+----------+--------+----------+----------+------------------------------------------------------------+
-| Reset    | 1      | In       | In       | Resets the BoW slice                                       |
-+----------+--------+----------+----------+------------------------------------------------------------+
-| PHYready | 1      | Out      | Out      | 1 indicates that the PHY is aligned (DCCs and DLLs locked) |
-+----------+--------+----------+----------+------------------------------------------------------------+
-| Other    |        |          |          | Additional implementation-specific signals                 |
-+----------+--------+----------+----------+------------------------------------------------------------+
 
 
 
@@ -716,8 +752,10 @@ The signals in Table [#tab-mac_interface] shall constitute the interface to the 
 |                         |             |                                           |                        |
 XX>
 
-~
 
+<XX  Ken sez: I have commented out this AIB-cloned control interface because
+  it assumes that the PHYs are communicating directly over the I2C interface
+  rather than relying on a controller.
 
 
 ## Control Signals
@@ -773,7 +811,6 @@ Calibration status signals shall be generated by internal state machines as desc
 
 ### Shift-Register Signals
 
-~ 
 
 ~ TableFigure {#tab-control_signals; caption: "Control Signals"; width:100%; }
 
@@ -872,39 +909,68 @@ Calibration status signals shall be generated by internal state machines as desc
 +---------------------+-----------------------------+--------------+---------------------+------------+---------+
 ~
 
-## AUX_DBI
+XX>
 
-Data Bus Inversion (DBI) is intended to mitigate simultaneous switching
- output (SSO) noise of a BoW PHY by limiting the number of BoW data bits
-  that can switch between immediate data transfer cycles. 
+## Link Layer Interface - PHY Control Signals
 
-DBI functionality is optional, but if implemented, DBI Mode shall 
-be enabled by setting register bit AUX_DBI = HI
+The signals in Table [#tab-mac_ctrl_interface] shall constitute the control interface from the link layer to the PHY.
 
-When DBI is on, DBI bits are part of the data bus [AUX_DBI + 16 bits] . 
-The example below shows a 16 bit TX slice. RX wires have DBI at the same bit locations. 
+~ TableFigure {#tab-mac_ctrl_interface; caption: "Link Layer Interface Control Signals"; width:100%;  }
+|----------+--------+----------+----------+------------------------------------------------------------------------------|
+| Signal   | # Bits | Tx Slice | Rx Slice | Description                                                                  |
++----------+--------+----------+----------+------------------------------------------------------------------------------+
+| PHYReset    | 1      | In       | In       | Resets the BoW slice                                                         |
++----------+--------+----------+----------+------------------------------------------------------------------------------+
+| PHYReady | 1      | NA       | Out      | 1 indicates that the clocks in the Rx PHY are aligned (DCCs and DLLs locked) |
++----------+--------+----------+----------+------------------------------------------------------------------------------+
+| MDC      | 1      | In       | In       | Clock for MDIO serial control interface                                      |
++----------+--------+----------+----------+------------------------------------------------------------------------------+
+| MDIO     |   1     | BiDi     |  BiDi    |  Data for MDIO serial control interface                                                                            |
++----------+--------+----------+----------+------------------------------------------------------------------------------+
+~
 
-### TX DBI with DBI Enabled 
-Within a group of 16 data signals, the TX DBI logic calculates the DBI bit 
-based on the number of data signals changing from their previous state on the BoW slice data bus. 
-The DBI logic below uses “+” to indicate arithmetic addition, “^” to indicate 
-exclusive OR, and “?” as a ternary IF. “Current” refers to the new data word 
-being prepared for sending on TX. “Prev” refers to the data immediately preceding 
-the current data, that is the data issued onto the BoW bus before the current data. 
+Additional implementation-dependent signals may exist.
 
-DBIcurrent = ((data[15]current ^ data[15]prev) 
-+ (data[14]current ^ data[14]prev) 
-... 
-+ (data[1]current ^ data[1]prev) 
-+ (data[0]current ^ data[0]prev)) > 8 ? 1 : 0); 
+### PHYReset
 
-Within a group of 16 data signals, if the DBI bit=1 then the
- TX DBI logic inverts the data signals. Each calculated DBI bit 
- replaces one data bit in TX as described previously. 
+The PHYReset pin is asserted by the Link layer to initialize the PHY.
+The PHYReset signal shall reset the internal registers to their HW default states, 
+which shall allow MDIO programming and internal self-alignment to take place.
 
-### RX DBI with DBI Enabled 
-Within a group of 16 RX signals, the RX DBI logic extracts the DBI bit.
- If DBI = 1 then the RX DBI logic inverts the other RX bits. 
+The reset states are otherwise implementation-dependent and shall be documented in the datasheet 
+of a particular implementation. 
+
+### MDIO Serial Programming Interface
+
+The MDC and MDIO pins control the programming and status readout of the PHY by the Link layer.
+Per the spec at https://en.wikipedia.org/wiki/Management_Data_Input/Output
+up to 32 slices may be connected to one bus and each slice may have up to 32 16-bit registers.
+
+The MDIO bus interface shall operate at up to 25 MHz.
+
+[ Need to add a real MDI spec reference. ]
+
+### PHYReady
+
+After the Rx slice clock self-alignments are complete, each Rx PHY slice shall assert its PHYReady pin.
+These may be AND'd together by the Link layer or treated separately.
+How an Rx PHY slice determines completion of the self-alignment is implementation-dependent. 
+For instance, it can be determined by observing the settling of the DLL or by a simple timer.
+
+### MDIO Register Map
+
+The registers accessed by the MDIO Serial Programming Interface are implementation dependent.
+The registers shall be fully documented in the datasheet of a particular implementation.
+
+These registers may control:
+
+* Configuration such as Tx vs. Rx, BoW Mode (TxClk rate), PCLK rate
+* Test features such as loopback modes 
+* External control of DCC, DLL
+* Readout of status such as DCC and DLL self-alignment settings
+
+
+
 
 
 # BoW Modes

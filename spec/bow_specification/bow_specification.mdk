@@ -490,9 +490,9 @@ such as Data Bus Inversion (DBI), flow control, redundancy for defect repair, et
 The Link layers of Chiplets A and B will need to agree on the details on FEC and AUX usage.
 An implementation may choose to support the FEC and AUX wires, or to omit both of them.
 
-Table [#tab-signals2] summarizes these signals.
+Table [#tab-signals-d2d] summarizes these signals.
 
-~ TableFigure {#tab-signals2; caption: "BoW Signals"; }
+~ TableFigure {#tab-signals-d2d; caption: "BoW Signals at the Die To Die Interface"; }
 |--------------|---------|------------|-------------|
 | Function     | # Wires | Signal Name| Notes       |
 +:-------------+:-------:+:-----------+:------------+
@@ -500,10 +500,10 @@ Table [#tab-signals2] summarizes these signals.
 |--------------|---------|------------|-------------|
 | Data         | 16      | D0-15      |             |
 |--------------|---------|------------|-------------|
-|Forward Error | 1       |FEC         | Optional    |
+|Forward Error | 0/1       |FEC         | Optional    |
 |Correction    |         |            |             |
 +--------------+---------+------------+-------------|
-|Auxiliary     |1        |AUX         | Optional    |
+|Auxiliary     | 0/1        |AUX         | Optional    |
 |--------------|---------|------------|-------------|
 ~
 
@@ -1030,7 +1030,7 @@ Termination is not expected to be necessary for implementations targeting Advanc
 ~
 Adding termination increases the speed and/or reach, at the expense of greater design complexity.
 
-# BoW Physicals
+# BoW Physical Configuration
 
 ## BoW Components
 
@@ -1041,16 +1041,17 @@ Adding termination increases the speed and/or reach, at the expense of greater d
 
 
 A BoW link between two chiplets is made up of
-wires, slices, and stacks. 
+wires, slices, and stacks as seen in Figure [#fig-components].
 
-* The basic unit is a slice with 18 or 20 signal bumps. 
-It must have 2 signals for the differential
-clock and 16 single-ended data. 
+* The signal traces in the package between chiplets are called **wires**.
+* The basic unit is a **slice** with 18 or 20 signal bumps. 
+It must have 2 bumps for the differential
+clock and 16 single-ended data bumps.
 It may also have the optional single-ended signals AUX and FEC. 
-In the reference bump map, the long edge of a slice is parallel to the chip edge.
-* Multiple slices may be placed in a stack. The slice positions are
+The long edge of a slice is parallel to the chip edge.
+* Multiple slices may be placed in a **stack**. The slice positions are
 designated A, B, C, etc, starting with the slice closest to the edge of the chip.
-* A link from one chiplet to another must be composed of one or more
+* A **link** from one chiplet to another must be composed of one or more
 stacks placed along the chip edge. A link may be
 configured with equal numbers of Rx and Tx slices,
 or it may be asymmetric or one-way.
@@ -1066,15 +1067,32 @@ The minimal bidirectional reference link is shown in Figure [#fig-min_link].
 
 In this example, each chiplet has one Tx slice and one Rx slice, 
 arranged in a single stack on each chiplet.
-The position-A slices (at the chips' edges) are connected together on the topmost routing 
+In a laminate package, the position-A slices (at the chips' edges) 
+are connected together on the topmost routing 
 layer used for signals and the position-B slices are connected together on the next 
 layer used for signals.
 
+## Die-to-Die Signals
+
+~ TableFigure {#tab-signals; caption: "BoW Die-to-Die Signals"; }
+|--------------|----------|------------|-------------|
+| Function     | # Signals| Signal Name| Notes       |
++:-------------+:--------:+:-----------+:------------+
+| Clock        | 2        | CLK+, CLK- | Differential|
+|--------------|----------|------------|-------------|
+| Data         | 16       | D[15:0]    |             |
+|--------------|----------|------------|-------------|
+|Forward Error | 0/1      |FEC         | Optional    |
+|Correction    |          |            |             |
++--------------+----------+------------+-------------|
+|Auxiliary     | 0/1      |AUX         | Optional    |
+|--------------|----------|------------|-------------|
+~
 
 Each BoW slice consists of a differential clock pair, 16 single-ended data wires, 
 and optional wires FEC and AUX. Each BoW slice is unidirectional when in operation.
-A chiplet may be designed with with Rx-only and Tx-only slices, or
-each slice may have both Tx and Rx capability, one of which is selected at runtime. 
+A PHY may be designed as Rx-only and Tx-only slices, or
+each slice may have both Tx and Rx capability, one of which is selected at configuration time. 
 A bidirectional link is composed of some number of slices configured for Rx and some for Tx.
 
 FEC (Forward Error Correction) is an optional signal that allows using FEC to 
@@ -1082,44 +1100,31 @@ improve the bit error rate (BER).  AUX is an optional signal that can be used fo
 such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
 the details on FEC and AUX usage, which is defined in the Link layer.
 
-This reference example uses hexagonal closest packing for the bumps: two rows for signal bumps and
+## Bump Arrangements
+
+The reference example in Figure [#fig-min_link]
+uses hexagonal closest packing for the bumps: two rows for signal bumps and
 one row for power and ground bumps. 
 In this pattern, the wire pitch is half the bump pitch.
-In order to maintain the closest bump packing, slices in rows B and D must have a different bump
+In order to maintain the closest bump packing, slices in rows B and D have a different bump
 pattern than slices A and C.
 But bump patterns are not specified by BoW; only the signal *ordering* at 
 the chip edge is specified for interoperability. 
 
 Alternate bump arrangements may include:
-90-degree rotation of the hexagonal packing direction to decrease the wire pitch 14%;
-square bump arrays instead of hexagonal for regularity of layout; 
-more than two rows of signal bumps to decrease the wire pitch;
-different ordering of power and ground bumps;
-multiple power and ground rows.
 
-~ TableFigure {#tab-signals; caption: "BoW Signals"; }
-|--------------|---------|------------|-------------|
-| Function     | # Signals| Signal Name| Notes      |
-+:-------------+:-------:+:-----------+:------------+
-| Clock        | 2       | CLK+, CLK- | Differential|
-|--------------|---------|------------|-------------|
-| Data         | 16      | D[15:0]    |             |
-|--------------|---------|------------|-------------|
-|Forward Error | 1       |FEC         | Optional    |
-|Correction    |         |            |             |
-+--------------+---------+------------+-------------|
-|Auxiliary    |1        |AUX          | Optional    |
-|--------------|---------|------------|-------------|
+* 90-degree rotation of the hexagonal packing direction to decrease the wire pitch 14%;
+* square bump arrays instead of hexagonal for regularity of layout; 
+* more than two rows of signal bumps to decrease the wire pitch;
+* different ordering of power and ground bumps;
+* multiple power and ground rows.
 
 An alternate slice arrangement may be to place the Tx and Rx slices side by side at the 
 chip edges. This would take up more chip edge, but allow all the signals to run on the same 
 package layer.
 
 Somewhat different wire and bump pitches between two chiplets can be accomodated with 
-fan-out in the chip-to-chip wires. This is limited in BoW Basic by the 10 mm max wire length 
-and the practical advantages of routing from chiplet to chiplet in just one package layer.
-(Note that even straight wires in slice position D are likely 5-6 mm long using 130-um bump pitch with 
-the reference bump map in an organic package.)
+fan-out in the chip-to-chip wires. This is limited by the max wire length.
 
 ## Cross Section
 
@@ -1132,28 +1137,27 @@ Figure [#fig-pkg_cross_section].
 ~
 
 In an organic laminate package, signal layers should be alternated with ground layers 
-in order to maintain a controlled impedance of 50 ohms. 
-In interposer or other high-density packaging, the use of layers may be different.
+in order to maintain a controlled impedance of 50 ohms. Each slice position (A, B, C, D) 
+should be associated with one signal layer and there is no mixing 
+of signals from multiple slices.
 
 In any technology, the position-A slice on chiplet A must be connected to the position-A 
 slice on chiplet B (one must be configured for Tx and one for Rx). 
 The position-B slices are connected together, and so on.
-
 
 There is no specified limit to the number of slices in a stack. 
 In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supports 4 slices. 
 Layers on the bottom side of the package typically cannot be used for BoW signals 
 due to low via density passing through the thick central core layer.
 
+In advanced packaging technologies, the shorter wire lengths allow the use of non-controlled-impedance wires
+and unterminated transmitters and receivers.
+The smaller wire and space dimensions may allow
+the wires for multiple slices to be interleaved on a single wiring layer.
 
 ## Signal Ordering 
 
-~ Framed {color: blue}
-Ken sez: I copied this table from the HotI 2020 paper, but what is our 
-supporting data for 8 Gbps cases?
-
 A BoW interface must conform to these wire and slice order rules at the edge of the chip:
-
 
 * The signals for a Tx slice are in the following order at the chip edge, 
 going clockwise around the chiplet: 
@@ -1168,21 +1172,14 @@ then stack to stack counterclockwise.
 These rules allow BoW chiplets to be connected without signal reordering regardless of chiplet rotations.
 
 
-In organic packages, each slice position should be associated with one signal layer and there is no mixing 
-of signals from multiple slices.
-In interposer or other dense routing technologies, signals from multiple slices in a stack 
-may be interleaved in a signal layer, but chiplet A's slice A is still 
-connected to chiplet B's slice A 
-and similarly for position B, C, etc.
-
 
 ## Checkerboard Slice Pattern
 
 For bidirectional links with more than one stack on each side, a checkerboard pattern of 
 Tx and Rx slices should be used (Figure [#fig-checkerboard]).
-This allows connection of chiplets with differing stack depths and 
-numbers of stacks to be as efficient as possible. 
-Figure [#fig-checkerboard] shows a bidirectional link with 4 stacks or 4 slices each, 
+This allows efficient connection of chiplets with differing stack depths and 
+numbers of stacks. 
+Figure [#fig-checkerboard] shows a bidirectional link with 4 stacks of 4 slices each, 
 for 8 Tx and 8 Rx slices on each chiplet.
 
 ~ Figure { #fig-checkerboard; caption: "Checkerboard Pattern of Tx and Rx Slices in a 1.25 Tb/s Link" }
@@ -1191,18 +1188,17 @@ for 8 Tx and 8 Rx slices on each chiplet.
 
 ~
 
-An alternate approach may be used: provision every slice to operate as either Rx or Tx. 
+An alternate approach may be used: design every slice to operate as either Rx or Tx to be configured
+after assembly or upon powerup. 
 This allows complete flexibility in interoperability and also provides an opportunity for
 wafer-test loopback testing.
 
 
-In BoW Base at 5 Gb/s, link in Figure [#fig-checkerboard] provides a total of 1.25 Tb/s.
-In an organic substrate using the hexagonal bump pattern of Figure [#fig-min_link], 
-if the bump pitch is 130 um, 
+In BoW-64 at 4 Gb/s/wire, the link in Figure [#fig-checkerboard] provides a total of 1.0 Tb/s.
+In an organic substrate using the hexagonal bump pattern of Figure [#fig-min_link]
+with a bump pitch is 130 um, 
 the total edge width is 4.16 mm without AUX and FEC, or 5.2 mm with; the depth from the edge is 1.35 mm.
 In an interposer, if the bump pitch is 40 um, the edge width is 1.28 or 1.60 mm and the depth is 0.42 mm.
-
-
 
 # Timing
 

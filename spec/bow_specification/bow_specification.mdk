@@ -323,41 +323,6 @@ are common rates.
 The data at the link layer interface is SDR (bit rate equal to PCLK frequency).
 
 
-~ Framed {color: blue}
-NEED THIS CONTENT, BUT SHOULD THIS GO LATER ?
-
-
-~
-
-~ Framed {color: blue}
-OLD - do we need any of this?
-
-A BoW slice consists of either a transmit (Tx)
-or a receive (Rx) component. The Tx and Rx paths
-each use a separate set of bumps at the die edge and wires between the connected die. 
-On die, the BoW datapath is a mixture of 
-analog and digital circuitry that transports. Each BoW slice consists of a
-bits from a link layer to the die edge. On one side, the on-die BoW datapath 
-terminates in bumps, at the edge of the die connected to wires on the substrate. Internally 
-the datapath is connected to a link layer. The datapath also expected to include serializer 
-(deserializer) logic on transmit (receive) that is not specified in this document.
-
-The BoW control path stores information to initialize and operate the datapath in status
-registers.  The control path outputs information to manage the
-datapath. The interface between the control and datapath is specific to an
-implementation. The BoW PHY may be implemented with the control and datapath physically 
-commingled. Implementing them separately allows the control logic to be
-implemented in a separate block for multi-slice macros. The 
-control path may also receive input from  an external digital control and management 
-bus such as I2C to coordinate interface operation with other components in the package.
-
-Any BoW implementation must receive a clock input from a PLL, which may be
-shared across multiple slices. A BoW Rx slice is  expected to forward the clock received 
-from the far side to the core logic. A BoW Tx slice is expected to forward its PLL clock
-to the die's core logic. This will place all clock domain transitions in the core logic.
-~
-
-
 ## BoW Wires
 Within the package, the BoW datapath is transported on physical passive wires between 
 the pair of connected die. The specifics of the wires, such as their density,
@@ -482,7 +447,8 @@ By using an additional wire when FEC is enabled, the payload data rate is not af
 and the wire data rate need not change.
 This allows F(PCLK) = F(TxClk) / 2^n with FEC off or on, 
 which simplifies the clock generation and serialization functions.
-If used, FEC is implemented in the Link layer, and the FEC bit is simply passed through the PHY.
+If used, FEC is implemented in the Link layer, and the PHY treats the FEC bit the same
+as the other data bits. 
 
 AUX is an optional signal that can be used for purposes
 such as Data Bus Inversion (DBI), flow control, redundancy for defect repair, etc.
@@ -555,8 +521,10 @@ Note that these four figures are intended to illustrate
 the signals at the perimeter of the PHY slices.
 The details of the blocks internal to a slice is implementation-dependent.
 
-[ The following four figures need to be revised to show the MDIO interface to the Link layer
-instead of going direct to I2C. ]
+~Framed {color=blue}
+The following four figures need to be revised to show the MDIO interface to the Link layer
+instead of going direct to I2C.
+~
 
 
 ~ Figure { #fig-bowspec_ll_tx_slice_FIFO; caption: "BoW Link Layer and Tx PHY Slice with FIFO in the PHY" }

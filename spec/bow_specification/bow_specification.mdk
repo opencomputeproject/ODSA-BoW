@@ -333,7 +333,7 @@ NEED THIS CONTENT, BUT SHOULD THIS GO LATER ?
 OLD - do we need any of this?
 
 A BoW slice consists of either a transmit (Tx)
-or a receive (Rx) component. In Figure [#fig-bow-components], the Tx and Rx paths
+or a receive (Rx) component. The Tx and Rx paths
 each use a separate set of bumps at the die edge and wires between the connected die. 
 On die, the BoW datapath is a mixture of 
 analog and digital circuitry that transports. Each BoW slice consists of a
@@ -551,8 +551,6 @@ Example datapath implementations of the FIFO
 inside the PHY are shown in Figs [#fig-bowspec_ll_tx_slice_fifo], [#fig-bowspec_ll_rx_slice_fifo].
 FIFO in the link level is shown in 
 Figs [#fig-bowspec_ll_tx_slice_nofifo], [#fig-bowspec_ll_rx_slice_nofifo]. 
-More details on the Link Layer interface
-signals can be found in Section [#sec-bow-to-link-layerll-interface].
 Note that these four figures are intended to illustrate
 the signals at the perimeter of the PHY slices.
 The details of the blocks internal to a slice is implementation-dependent.
@@ -1556,6 +1554,10 @@ XX>
 
 # Reset and Initialization
 
+~Framed {color: blue}
+## **EVERYTHING AFTER THIS POINT STILL NEEDS REVISION IN THE MAR 2021 REWRITE**
+~
+
 ##Control Options
 
 
@@ -1947,6 +1949,10 @@ Link training will be addressed in a future revision of the spec
 
 # Control-Signal Shift Register Mapping
 
+The MDIO interface registers shall be fully documented in the PHY datasheet.
+
+<XX .  Removed these definitions copied from AIB
+
 ## Transmit Control Register Definition
 
 ~ TableFigure {#tab-transmit_control; caption: "Transmit Control Signals"; width:100%; }
@@ -2184,6 +2190,8 @@ Link training will be addressed in a future revision of the spec
 +------------+------------------------+-------+---------+------------------------------------+
 
 ~
+
+XX>
 
 #Testability
 

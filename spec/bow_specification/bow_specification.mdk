@@ -1214,7 +1214,7 @@ Figure [#fig-clocking] shows the clock and data flow for a single Tx slice and a
 On the Tx side, data bits (and optional FEC and AUX bits) come in a wide word from the link layer, 
 and are serialized to the line rate. 
 At the Rx side, they are sampled with a common slicer clock in most BoW implementations.
-BoW Fast may optionally implement per-bit delay adjust or per-bit slicer clock adjust.
+BoW-256 may optionally implement per-bit delay adjust or per-bit slicer clock adjust.
 
 All BoW interfaces shall be DDR (Double Data Rate) at the chip-to-chip interface: 
 the data bit rate is twice the clock frequency, 
@@ -1255,24 +1255,17 @@ Alignment is started by signal AlignDll from the Rx Link Layer;
 the PHY provides a signal DllAligned to the Link Layer when it is complete.
 
 All BoW interfaces shall be source synchronous within a slice. 
-BoW Basic interfaces do not require per-wire alignment - the signals
+BoW-32 to BoW-128 interfaces do not require per-wire alignment - the signals
 within a slice are aligned sufficiently well by matching their paths.
-BoW Fast interfaces may need per-wire delay adjustment or per-slicer clock adjustment.
+BoW-256 interfaces may need per-wire delay adjustment or per-slicer clock adjustment.
 
 Clock skew between the slices in each direction of a link depends on the implementation of the
 TxClk distribution to all the Tx slices. 
 That is, for the data flow from Chiplet A to Chiplet B, 
 the TxClk distribution on Chiplet A sets the 
 the clock skew of the Tx slices on Chiplet A and the clock skew of the Rx slices on Chiplet B,
-and vice versa for flow from B to A. This skew must be no more than 3 ns.
+and vice versa for flow from B to A. This skew must be no more than 100 ps/stack along the chip edge.
 There is no specification of the skew between TxClk on Chiplet A vs TxClk on Chiplet B.
-
-~ Framed {color: blue}
-Ed: 3 ns is sufficient to cover Tx clock distribution skew across a 30 mm chip edge.
-Specifying a skew limit seems useful to clarify the requirements that will be imposed on 
-the bonding FIFO in the Rx Link layer.
-Do we want to weaken this to a Should?
-~
 
 On both the Tx and Rx sides, the Link layer must include a Clock Domain Crossing (CDC) to 
 align the data between CoreClk and PhyClk. 
@@ -1280,12 +1273,7 @@ These CDCs must also be able to absorb the slice-to-slice clock skew and
 core clock distribution skew across the whole link.
 
 If DCCs are included in the PHY and they need an alignment cycle, they shall include 
-control logic to perform self-alignment on a signal AlignDcc from the Link layer to the PHY
-and send a completion signal DccAligned back to the Link layer.
-
-~ Framed {color: blue}
-Ed: Need to use the same names for AlignDll, DllAligned, AlignDcc and DccAligned as in Logic Interface section.
-~
+control logic to perform self-alignment.
 
 
 ## Clock and Data Specifications
@@ -1528,7 +1516,7 @@ Doubly-terminated links should meet the following characteristics.
 
 To avoid the need for equalization, the channel should meet the limit in Figure [#fig-loss].
 
-~ Figure { #fig-loss; caption: "BoW Fast Wire Channel Loss Limit" }
+~ Figure { #fig-loss; caption: "BoW Doubly-Terminated Wire Channel Loss Limit" }
 ![loss]
 ~
 [loss]: images/bowspec_figure4.jpg { width:auto; max-width:60% }
@@ -1538,7 +1526,7 @@ To avoid the need for equalization, the channel should meet the limit in Figure 
 
 The crosstalk in the channel should meet the limit in Figure [#fig-xtalk].
 
-~ Figure { #fig-xtalk; caption: "BoW Fast Wire Crosstalk Limit" }
+~ Figure { #fig-xtalk; caption: "BoW Doubly-Terminated Wire Crosstalk Limit" }
 ![xtalk]
 ~
 [xtalk]: images/bowspec_figure6.jpg { width:auto; max-width:60% }

@@ -1,7 +1,7 @@
 # ODSA-BoW
 Repo for all activity related to the ODSA Bunch of Wires Specification. 
 
-The [current specification](https://opencomputeproject.github.io/ODSA-BoW/bow_specification.html)
+The [current draft specification](https://opencomputeproject.github.io/ODSA-BoW/bow_specification.html)
 
 A PDF for the latest dated draft is in the __DRAFTS__ folder
 

@@ -1,6 +1,6 @@
 Title         : Bunch of Wires PHY Specification
 Subtitle      : The Open Domain-Specific Architecture BoW Workstream
-Author        : Mark Kuemerle, Ramin Farjad,  Ken Poulton, Suresh Subramaniam, Bapi Vinnakota 
+Author        :  
 Logo          : True
 
 Heading depth: 5
@@ -20,7 +20,9 @@ title,titlenote,titlefooter,h1,h2,h3,h4,h5 {
 
 [TITLE]
 
-This document to be released under the following OCP copyright release:
+This document is a draft and not an approved specification. It is to be released under 
+the following OCP copyright release when completed and approved:
+
 { page-break-before: always }
 
 ~center

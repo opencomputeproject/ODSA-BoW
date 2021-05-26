@@ -538,9 +538,9 @@ and the PHY.
 +--------+--------+----------+----------+--------------------------------------------------------+
 | Data   | 16     | In       | Out      | Data                                                   |
 +--------+--------+----------+----------+--------------------------------------------------------+
-| FEC    | K      | In       | Out      | Forward Error Correction (optional)                               |
+| FEC    | 1      | In       | Out      | Forward Error Correction (optional)                               |
 +--------+--------+----------+----------+--------------------------------------------------------+
-| AUX    | K      | In       | Out      | Auxiliary uses (optional)                                        |
+| AUX    | 1      | In       | Out      | Auxiliary uses (optional)                                        |
 +--------+--------+----------+----------+--------------------------------------------------------+
 | PCLK   | 1      | *        | *        | * Out if CDC is in Link Level, In if CDC is in the PHY |
 +--------+--------+----------+----------+--------------------------------------------------------+
@@ -592,6 +592,13 @@ that any data received will be captured correctly.
 Coordinate
 Send good clock
 If patterns needed, additional registers communication - implementation choice
+
+1. Tx PHY brought out of reset
+2. Tx clock stabilizes and signals PHY ready
+3. Tx controller signals to Rx controller (out of band)
+4. Rx PHY brought out of reset
+5. Rx PHY aligns on clock, signals PHY ready
+6. Rx controller signals to Tx (out of band)
 
 # BoW Modes
 

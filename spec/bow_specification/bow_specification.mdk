@@ -245,23 +245,24 @@ Do we also need a discussion of interoperability?
 
 
 # BoW Overview
-Chiplet-based designs require physical and logical connectivity between the die in a
-single package. This section provides an overview of the BoW physical 
-interface (PHY), its use in a multi-chiplet design, and how with the Open Domain-Specific 
-Architecture stack it can be used as an underlay for popular transaction protocols.
+This section provides an overview of the BoW physical 
+interface (PHY) and its use in a multi-chiplet design.
 
 ## BoW Slice
 BoW is an energy-efficient, easy-to-use PHY
 interface between a pair of die inside a single package 
 as shown in Figure [#fig-bow_overview2].
+The BoW PHY is defined as a single unidirectional slice. 
+Multiple slices are combined to create links of the desired throughput.
+A link may be symmetric, asymmetric or unidirectional.
 The BoW PHYs between two die are physically
 connected through wires on a substrate or interposer. 
 A BoW PHY does not have enough drive strength for off-package interfaces,
 nor is it designed for buses that are entirely on die.
 
-The BoW PHY is defined as a single unidirectional slice. 
-Multiple slices are combined to create links of the desired throughput.
-A link may be symmetric, asymmetric or unidirectional.
+This document specifies the protocol for a BoW PHY slice. The aggregation
+of multiple PHYs into a link is beyond the scope of this document.
+
 
 ~ Figure { #fig-bow_overview2; caption: "BoW Overview" }
 ![bow_overview2]
@@ -276,16 +277,28 @@ A link may be symmetric, asymmetric or unidirectional.
 XX>
 
 A BoW PHY slice either transmits or receives 16 bits of data between die. 
-Since the BoW is a source-synchronous PHY, each transmitting
+The BoW is a source-synchronous PHY and each transmitting
 PHY slice transmits a complementary clock signal CLK+ and CLK- with the data.
 A BoW PHY optionally has two additional wires designated 
 FEC (for Forward Error Correction) and 
 AUX, for other optional functions such as Data Bus Inversion (DBI). 
 
+## BoW Wires
+Within the package, the BoW datapath is transported on physical passive wires between 
+the pair of connected die. The specifics of the wires, such as their density,
+maximum length, impedence characteristics and how they are realized vary with
+the packaging technology. In order to minimize power, unterminated and source-terminated
+links will have short reaches requiring chips to be adjacent.
+
 ## BoW Modes
 
-A BoW interface must conform to one of the Bow Modes seen in Table [#tab-levels].
-
+A BoW PHY must operate in one of the Bow Modes listed in ascending order in Table [#tab-levels].
+A BoW Mode defines the speed of clock and data of the PHY on the die-to-die wires.
+In all modes, the data must be clocked DDR: 
+the data wire bit rate is double the clock wire frequency.
+All BoW interfaces must be able to interoperate with all the lower modes.
+Supporting rates other than the defined four modes is an implementation choice.
+There is more detail on BoW Modes in section [#sec-bow-modes].
 ~ TableFigure {#tab-levels; caption: "BoW Levels"; }
 +----------+----------------+---------------+-------+
 |BoW Mode | Slice Bit Rate | Wire Bit Rate | TxClk |
@@ -297,12 +310,7 @@ A BoW interface must conform to one of the Bow Modes seen in Table [#tab-levels]
 | BoW-256  | 256            | 16            | 8     |
 +----------+----------------+---------------+-------+
 ~
-The BoW Mode defines the speed of clock and data of the PHY on the die-to-die wires.
-In all modes, the data must be clocked DDR: 
-the data wire bit rate is double the clock wire frequency.
-All BoW interfaces must be able to interoperate with all the lower modes.
-Supporting rates other than the defined four modes is an implementation choice.
-There is more detail on BoW Modes in section [#sec-bow-modes].
+
 
 ~ Figure {#fig-bowspec_tradeoff2; caption: "BoW Data Rate vs. Reach tradeoff"}
 ![bowspec_figtradeoff2]
@@ -318,119 +326,23 @@ A doubly-terminated link offers longer distances and higher rates, but
 requires a more complicated receiver design.
 
 ## PHY - Link Layer Interface
-
-The speed at the link layer interface (Figure [#fig-bow_overview2]) is implementation-dependent.
-Typically, PCLK will be the TxClk frequency divided by a power of 2, so 250, 500 and 1000 MHz
-are common rates.
-The data at the link layer interface is SDR (bit rate equal to PCLK frequency).
-
-
-## BoW Wires
-Within the package, the BoW datapath is transported on physical passive wires between 
-the pair of connected die. The specifics of the wires, such as their density,
-maximum length, impedence characteristics and how they are realized vary with
-the packaging technology. In order to minimize power, unterminated and source-terminated
-links will have short reaches requiring chips to be adjacent.
+Figure [#fig-bow-logicin] shows the interface between a BoW slice and the digital link
+layer logic in a chip. The speed at the link layer interface (Figure [#fig-bow_overview2]) 
+is implementation-dependent. Typically, PCLK will be the TxClk frequency divided by a 
+power of 2, so 250, 500 and 1000 MHz are common rates. The data at the link layer 
+interface is SDR (bit rate equal to PCLK frequency).
 
 
-## BoW for Common Transaction Protocols
-Two connected die in a multi-chiplet device need to exchange logical information. 
-The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
-Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
-integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
-interface. The logical component of the ODSA interface aims to 
-support protocols used for the two most common chiplet use cases, package 
-aggregation and die disaggregation across a wide range of open and proprietary D2D PHYs
-such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. 
-
-~ Figure {#fig-odsa-stack; caption: "The BoW PHY in the ODSA Stack"}
-![bowspec_figstack]
+~ Figure {#fig-bow-logicin; caption: "BoW slice logic interface"}
+![bowspec_figslicelogicint]
 ~
-[bowspec_figstack]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
+[bowspec_figslicelogicint]: images/fig-bowphylogicint.jpg {width:auto; max-width: 100%}
 
-The ODSA stack abstracts
-the PHY layer from the logical interface by using the well-defined abstraction interfaces
-PIPE and LPIF. 
-Any logic transaction controller, such as a PCIe controller, that
-supports a PIPE or LPIF interface can use any D2D PHY that also supports that
-interface as its physical layer.
-As shown in Figure [#fig-odsa-stack], the BoW interface may receive data
-through either the PIPE or LPIF interfaces to support common transaction protocols. 
-For this use case, some BoW-specific adapter logic will be needed to support the requirements of PIPE 
-or LPIF.
-The specifications for these adapters are outside the scope of this document. 
-Figure [#fig-bow-pcie] shows how the
-BoW with an PIPE adapter can be interfaced to a PCIe controller.
-
-~ Framed {color: blue}
-Bapi: please remove "serializer" and "deserializer" from the labels in Figure [#fig-bow-pcie]
- - these are part of the PHY.
-~
-
-~ Figure {#fig-bow-pcie; caption: "BoW with a PIPE adapter for PCIe transactions"}
-![bowspec_figcomponentspcie]
-~
-[bowspec_figcomponentspcie]: images/fig-bow_pcie.jpg {width:auto; max-width: 100%}
-
-<XX .        Obsolete
-
-## BoW Modes
-
-BoW has been developed and specified such that multiple modes of operation can
-be defined and supported. All modes must be 
-interoperable with the minimum definition. All modes are source synchronous 
-parallel interfaces using a differential clock that may operate at multiple.
-
-The range of operating frequencies for a mode must be documented in a data sheet. 
-frequencies. Beyond the basic mode, adding termination provides higher performance 
-per mm of beachfront bandwidth but is more complex to design. It may also be possible
-to get higher performance by using advanced packaging.
-
-The BoW specification provides for optional technology to increase the data rate per wire, 
-to enable a graceful cost-performance tradeoff. 
-It is also possible for basic BoW configuration implemented with advanced packaging or 
-between physically close chiplets to offer a higher data rate per wire than a terminated 
-BoW interface in some configurations. 
-A high level view of the BoW Interface Data-rate ranges is shown below:
-
-All modes must be 
-interoperable with the minimum definition. 
-The various BoW modes are specified such that they can be directly connected 
-to one another. ** When two interfaces are connected, data rate for the operating mode must be 
-configured such that both ends support the same configuration at the same data rate.** All 
-BoW implementations must support the minimum configuration of BoW (2Gbps datarate, 
-1 Ghz clock rate, un-terminated IO). 
-
-XX>
 
 # Signal Definitions
 
-<XX  Ken says: This section is a nearly a table of contents.  Do we need any of this?
-
-Figures. [#fig-bowspec_ll_tx_slice_FIFO] and [#fig-bowspec_ll_tx_slice_noFIFO] provide 
-a high level overview of the typical components that make up
-a Tx slice. Figures. [#fig-bowspec_ll_rx_slice_FIFO] and [#fig-bowspec_ll_rx_slice_noFIFO] 
-do the same for the Rx slice. The scope of this specification
-is limited to the inputs and outputs, as well as the components shown in the light blue box. 
-In this section, we cover the signal definitions for the
-external [#sec-external-facing-signals] and link layer [#sec-link-layer-interface-signals] 
-facing interfaces. In Sections [#sec-reset-and-initialization],[#sec-configuration],[#sec-calibration], the details pertaining
-to reset, initialization, configuration, and the calibration state machine are specified. 
-In Section [#sec-control-signal-shift-register-mapping], a
-complete register definition for control and status signals is provided. 
-Section [#sec-loopback-test] has details on testability. In 
-Figures. [#fig-bowspec_ll_tx_slice_FIFO] - [#fig-bowspec_ll_rx_slice_noFIFO], 
-the datapath shown is only for illustrative purposes, specific 
-implementations are left to the designer. 
-The BoW PHY can accommodate FIFO implementations that are internal or external to the PHY. 
-Examples for the
-Tx slice are shown in Figures [#fig-bowspec_ll_tx_slice_FIFO] - [#fig-bowspec_ll_tx_slice_noFIFO] 
-and for Rx slice in 
-Figures [#fig-bowspec_ll_rx_slice_FIFO] - [#fig-bowspec_ll_rx_slice_noFIFO]. 
-However, the serialized/Deserializer fucntions with the 
-appropriate gear ratios shall be implemented in the BoW PHY.
-
-XX>
+This section specifies the control data signals into and out of device logic and package
+for BoW Rx and Tx slices. 
 
 ## Die-to-die Signals (Wires)
 
@@ -495,37 +407,14 @@ DBIcurrent = ((data[15]current XOR data[15]prev)
 If the DBI bit=1 then the Tx DBI logic inverts the Data bits.
 If DBI = 1 then the Rx DBI logic inverts the Data bits to recover the original data.
 
-## Link Layer Interface - Clock and Data Signals
+## Slice Logic Interface
 
-Figure [#fig-link_interface] shows the data and control signals in the interfaces to 
+Figure [#fig-bow-logicin] shows the data and control signals in the interfaces to 
 the logic in the die in each BoW transmit and receive slice. The data at the slice 
 logic interface must be DDR (bit rate equal to twice the PCLK frequency). The BoW PHY is 
 expected to be used with a link controller. The transmission of logical information 
 across a slice and the control and management of a slice are the responsibility of the 
 link controller. 
-
-~ Figure { #fig-link_interface; caption: "BoW slice logic interfaces" }
-![link_interface]
-[link_interface]: images/bowspec_bowslice_logicinterface.jpg { width:auto; max-width:100% }
-~
-
-Each Tx or Rx slice may require an interface, distinct from the slice logic
-interface in Figure [#fig-link_interface]  to a link layer controller with a datapath 
-width of 32, 64, 128, 256 or 512 bits. The corresponding PCLK (Tx, or Rx)
-shall have a frequency (datawidth\*PCLK) that matches the overall 
-throughput on the output wires of the slice (16\*data_rate). 
-This allows supporting a range of core logic speeds. 
-
-BoW slice implementations may need an adapter between the link layer interface and 
-slice logic interface. The adapter may contain the serialization or 
-deserialization needed to go between the data rates at the link level interface 
-and the wire interface. A clock domain crossing (CDC FIFO) may be needed between the 
-chip core and the PHY's internal clocks; this can be either in the adapter or the link layer.
-The CDC receives clocks from both the core and the PHY internal clocks, 
-so PCLK flows towards the CDC as seen in the following four figures. 
-
-The details of the adapter are outside the scope of this specification. The
-adapter may be merged with the link controller.
 
 ### Slice Logic Interface: Data Signals
 
@@ -551,15 +440,10 @@ and the PHY.
 
 ### Slice Logic Interface: Control Signals
 
-An BoW interface shall provide control and status bits for calibration and communication of 
-control and status information between a slice and its link controller.
-Control signals fall into one of the following categories:
+A BoW interface must provide the following control and status signals:
 
 * PHY Ready
 * Selective reset
-
-The bits for any unused signals shall be maintained with default values for correct shift- register length.
-The control signals are summarized in Table 11 and are detailed in Table 51.
 
 The signals in Table [#tab-mac_ctrl_interface] shall constitute the control interface from the link layer to the PHY.
 
@@ -581,11 +465,18 @@ states are otherwise implementation-dependent and shall be documented in the
 datasheet of a particular implementation. 
 
 #### PHY Ready
-After the Rx slice clock self-alignments are complete, each Rx PHY slice shall assert its PHYReady pin.
-How an Rx PHY slice determines completion of the self-alignment is implementation-dependent. 
-For instance, it can be determined by observing the settling of the DLL or by a simple timer.
-On Tx, PHY ready indicates PHY is transmitting good clock and ready to transmit data
-On Rx, PHY ready assumes clock received is good when PHY reset is deasserted and indicates
+PHY Ready is asserted by the PHY to indicate to the controller that it is ready to
+transmit/receive data.
+
+#### PHY Ready Tx
+On Tx, PHY ready asserter indicates PHY is transmitting good clock and ready to transmit data
+
+#### PHY Ready Rx
+On Rx PHY ready assumes clock received is good when PHY reset is deasserted. 
+After the Rx slice clock self-alignments are complete, each Rx PHY slice shall assert its 
+PHYReady pin. How an Rx PHY slice determines completion of the self-alignment is 
+implementation-dependent. For instance, it can be determined by observing the 
+settling of the DLL or by a simple timer. PHY Ready asserted indicates
 that any data received will be captured correctly.
 
 ### Link Initialization
@@ -602,38 +493,19 @@ If patterns needed, additional registers communication - implementation choice
 
 # BoW Modes
 
-## BoW Modes
-
-A BoW interface must conform to one of the Bow Modes seen in Table [#tab-bow-modes].
-
-~ TableFigure {#tab-bow-modes; caption: "BoW Modes"; }
-+----------+----------------+---------------+-------+
-|BoW Mode | Slice Bit Rate | Wire Bit Rate | TxClk |
-|          | Gb/s           | Gb/s/wire     | GHz   |
-+----------+----------------+---------------+-------+
-| BoW-32   | 32             | 2             | 1     |
-| BoW-64   | 64             | 4             | 2     |
-| BoW-128  | 128            | 8             | 4     |
-| BoW-256  | 256            | 16            | 8     |
-+----------+----------------+---------------+-------+
-~
-The BoW Mode defines the speed of clock and data of the PHY on the die-to-die wires.
-In all modes, the data must be clocked DDR: 
-the data wire bit rate is double the clock wire frequency.
-All BoW interfaces must be able to interoperate with all the lower modes.
-Supporting rates other than the defined four modes is an implementation choice.
-
+A BoW interface must conform to one of the Bow Modes seen in Table [#tab-levels].
 The recommended maximum wire reach for different packaging types and terminations is 
 seen in Table [#tab-reaches].
 Exceeding these reach values degrades the voltage margins at the receiver.
 "Laminate" is intended to include organic laminate packages (a.k.a. "buildup) and similar 
 technologies with approximately 25 um line and space rules.
 "Advanced" is intended to include silicon interposer and similar technologies.  
+
 These have much finer line and space dimensions, but traces are usually much
 more resistive than in organic laminate packages and must operate with reduced trace lengths. 
 Termination is not expected to be necessary for implementations targeting Advanced packaging.
 
-~ TableFigure {#tab-reaches; caption: "BoW Wire Reaches"; width:100%;  }
+~ TableFigure {#tab-reaches; caption: "Recommended BoW Wire Reaches"; width:100%;  }
 
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
 |          |               |       | Laminate     | Laminate          | Laminate          | Advanced     |
@@ -1182,6 +1054,52 @@ What is the origin of the Xtalk Limit equation?  Is there a paper reference?
 ~
 XX>
 
+# BoW in an ODSA Design
+Chiplet-based designs require logical connectivity between the die in a
+single package, in addition to physical connectivity. This section provides an overview of 
+how with the Open Domain-Specific Architecture stack it can be used as an underlay for 
+popular transaction protocols.
+
+## BoW for Common Transaction Protocols
+Two connected die in a multi-chiplet device need to exchange logical information. 
+The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
+Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
+integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
+interface. The logical component of the ODSA interface aims to 
+support protocols used for the two most common chiplet use cases, package 
+aggregation and die disaggregation across a wide range of open and proprietary D2D PHYs
+such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. 
+
+~ Figure {#fig-odsa-stack; caption: "The BoW PHY in the ODSA Stack"}
+![bowspec_figstack]
+~
+[bowspec_figstack]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
+
+The ODSA stack abstracts
+the PHY layer from the logical interface by using the well-defined abstraction interfaces
+PIPE and LPIF. 
+Any logic transaction controller, such as a PCIe controller, that
+supports a PIPE or LPIF interface can use any D2D PHY that also supports that
+interface as its physical layer.
+As shown in Figure [#fig-odsa-stack], the BoW interface may receive data
+through either the PIPE or LPIF interfaces to support common transaction protocols. 
+For this use case, some BoW-specific adapter logic will be needed to support the requirements of PIPE 
+or LPIF.
+The specifications for these adapters are outside the scope of this document. 
+Figure [#fig-bow-pcie] shows how the
+BoW with an PIPE adapter can be interfaced to a PCIe controller.
+
+~ Framed {color: blue}
+Bapi: please remove "serializer" and "deserializer" from the labels in Figure [#fig-bow-pcie]
+ - these are part of the PHY.
+~
+
+
+
+~ Figure {#fig-bow-pcie; caption: "BoW with a PIPE adapter for PCIe transactions"}
+![bowspec_figcomponentspcie]
+~
+[bowspec_figcomponentspcie]: images/fig-bow_pcie.jpg {width:auto; max-width: 100%}
 
 
 # Reset and Initialization

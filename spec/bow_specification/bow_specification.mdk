@@ -469,7 +469,7 @@ PHY Ready is asserted by the PHY to indicate to the controller that it is ready 
 transmit/receive data.
 
 #### PHY Ready Tx
-On Tx, PHY ready asserter indicates PHY is transmitting good clock and ready to transmit data
+On Tx, PHY ready asserted indicates PHY is transmitting good clock and ready to transmit data
 
 #### PHY Ready Rx
 On Rx PHY ready assumes clock received is good when PHY reset is deasserted. 
@@ -480,16 +480,26 @@ settling of the DLL or by a simple timer. PHY Ready asserted indicates
 that any data received will be captured correctly.
 
 ### Link Initialization
-Coordinate
-Send good clock
-If patterns needed, additional registers communication - implementation choice
+This specification assumes there exist: (a) an out-of-band control path between the
+two ends of a BoW link; (b) a link controller that manages and operates the link.
+The transport mechanism for the control interface is outside the scope of this 
+document
 
-1. Tx PHY brought out of reset
-2. Tx clock stabilizes and signals PHY ready
-3. Tx controller signals to Rx controller (out of band)
-4. Rx PHY brought out of reset
-5. Rx PHY aligns on clock, signals PHY ready
-6. Rx controller signals to Tx (out of band)
+A Tx-Rx link pair must be brought up as follows:
+
+1. The Tx link controller (LC) brings the Tx PHY slice out of reset
+2. Once its Tx clock stabilizes, the Tx PHY slice signals PHY ready to the Tx LC
+3. The Tx LC must signal Tx Ready to the Rx LC out of band only when all the 
+component Tx slices on a link are ready 
+4. The Rx LC brings the Rx PHY slice out of reset
+5. The Rx PHY slice locks on the Tx clock and signals PHY ready to the Rx LC
+6. The Rx LC must signal link ready to the Tx LC out of band only when all the
+component Rx slices on the link are ready.
+
+Any registers required at the slice logic interface to implement this process
+are an implementation choice. The Tx link layer must be able to repetitively
+transmit an arbitrary 128-bit pattern required by the Rx slice for clock 
+alignment as specified in the datasheet for the Rx PHi.
 
 # BoW Modes
 

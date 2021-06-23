@@ -1028,17 +1028,15 @@ or it may be asymmetric or one-way.
 
 The minimal bidirectional reference link is shown in Figure [#fig-min_link].
 
+
+
 ~ Figure { #fig-min_link; caption: "BoW Minimal Bidirectional Reference Link" }
-![min_link]
-[min_link]: images/bowspec_figure_min_link.PNG { width:auto; max-width:70% }
+![bowspec_figure_min_link2]
 ~
+[bowspec_figure_min_link2]: images/bowspec_figure_min_link2.png "bowspec_figure_min_link2" { width:auto; max-width:90% }
 
 In this example, each chiplet has one Tx slice and one Rx slice, 
-arranged in a single stack on each chiplet.
-In a laminate package, the position-A slices (at the chips' edges) 
-are connected together on the topmost routing 
-layer used for signals and the position-B slices are connected together on the next 
-layer used for signals.
+arranged in two one-slice stacks on each chiplet.
 
 ## Die-to-Die Signals
 
@@ -1138,8 +1136,6 @@ then from stack to stack clockwise.
 then stack to stack counterclockwise.
 
 These rules allow BoW chiplets to be connected without signal reordering regardless of chiplet rotations.
-
-
 
 ## Checkerboard Slice Pattern
 

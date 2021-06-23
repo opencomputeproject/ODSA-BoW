@@ -245,23 +245,24 @@ Do we also need a discussion of interoperability?
 
 
 # BoW Overview
-Chiplet-based designs require physical and logical connectivity between the die in a
-single package. This section provides an overview of the BoW physical 
-interface (PHY), its use in a multi-chiplet design, and how with the Open Domain-Specific 
-Architecture stack it can be used as an underlay for popular transaction protocols.
+This section provides an overview of the BoW physical 
+interface (PHY) and its use in a multi-chiplet design.
 
 ## BoW Slice
 BoW is an energy-efficient, easy-to-use PHY
 interface between a pair of die inside a single package 
 as shown in Figure [#fig-bow_overview2].
+The BoW PHY is defined as a single unidirectional slice. 
+Multiple slices are combined to create links of the desired throughput.
+A link may be symmetric, asymmetric or unidirectional.
 The BoW PHYs between two die are physically
 connected through wires on a substrate or interposer. 
 A BoW PHY does not have enough drive strength for off-package interfaces,
 nor is it designed for buses that are entirely on die.
 
-The BoW PHY is defined as a single unidirectional slice. 
-Multiple slices are combined to create links of the desired throughput.
-A link may be symmetric, asymmetric or unidirectional.
+This document specifies the protocol for a BoW PHY slice. The aggregation
+of multiple PHYs into a link is beyond the scope of this document.
+
 
 ~ Figure { #fig-bow_overview2; caption: "BoW Overview" }
 ![bow_overview2]
@@ -276,16 +277,28 @@ A link may be symmetric, asymmetric or unidirectional.
 XX>
 
 A BoW PHY slice either transmits or receives 16 bits of data between die. 
-Since the BoW is a source-synchronous PHY, each transmitting
+The BoW is a source-synchronous PHY and each transmitting
 PHY slice transmits a complementary clock signal CLK+ and CLK- with the data.
 A BoW PHY optionally has two additional wires designated 
 FEC (for Forward Error Correction) and 
 AUX, for other optional functions such as Data Bus Inversion (DBI). 
 
+## BoW Wires
+Within the package, the BoW datapath is transported on physical passive wires between 
+the pair of connected die. The specifics of the wires, such as their density,
+maximum length, impedence characteristics and how they are realized vary with
+the packaging technology. In order to minimize power, unterminated and source-terminated
+links will have short reaches requiring chips to be adjacent.
+
 ## BoW Modes
 
-A BoW interface must conform to one of the Bow Modes seen in Table [#tab-levels].
-
+A BoW PHY must operate in one of the Bow Modes listed in ascending order in Table [#tab-levels].
+A BoW Mode defines the speed of clock and data of the PHY on the die-to-die wires.
+In all modes, the data must be clocked DDR: 
+the data wire bit rate is double the clock wire frequency.
+All BoW interfaces must be able to interoperate with all the lower modes.
+Supporting rates other than the defined four modes is an implementation choice.
+There is more detail on BoW Modes in section [#sec-bow-modes].
 ~ TableFigure {#tab-levels; caption: "BoW Levels"; }
 +----------+----------------+---------------+-------+
 |BoW Mode | Slice Bit Rate | Wire Bit Rate | TxClk |
@@ -297,12 +310,7 @@ A BoW interface must conform to one of the Bow Modes seen in Table [#tab-levels]
 | BoW-256  | 256            | 16            | 8     |
 +----------+----------------+---------------+-------+
 ~
-The BoW Mode defines the speed of clock and data of the PHY on the die-to-die wires.
-In all modes, the data must be clocked DDR: 
-the data wire bit rate is double the clock wire frequency.
-All BoW interfaces must be able to interoperate with all the lower modes.
-Supporting rates other than the defined four modes is an implementation choice.
-There is more detail on BoW Modes in section [#sec-bow-modes].
+
 
 ~ Figure {#fig-bowspec_tradeoff2; caption: "BoW Data Rate vs. Reach tradeoff"}
 ![bowspec_figtradeoff2]
@@ -318,119 +326,23 @@ A doubly-terminated link offers longer distances and higher rates, but
 requires a more complicated receiver design.
 
 ## PHY - Link Layer Interface
-
-The speed at the link layer interface (Figure [#fig-bow_overview2]) is implementation-dependent.
-Typically, PCLK will be the TxClk frequency divided by a power of 2, so 250, 500 and 1000 MHz
-are common rates.
-The data at the link layer interface is SDR (bit rate equal to PCLK frequency).
-
-
-## BoW Wires
-Within the package, the BoW datapath is transported on physical passive wires between 
-the pair of connected die. The specifics of the wires, such as their density,
-maximum length, impedence characteristics and how they are realized vary with
-the packaging technology. In order to minimize power, unterminated and source-terminated
-links will have short reaches requiring chips to be adjacent.
+Figure [#fig-bow-logicin] shows the interface between a BoW slice and the digital link
+layer logic in a chip. The speed at the link layer interface (Figure [#fig-bow_overview2]) 
+is implementation-dependent. Typically, PCLK will be the TxClk frequency divided by a 
+power of 2, so 250, 500 and 1000 MHz are common rates. The data at the link layer 
+interface is SDR (bit rate equal to PCLK frequency).
 
 
-## BoW for Common Transaction Protocols
-Two connected die in a multi-chiplet device need to exchange logical information. 
-The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
-Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
-integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
-interface. The logical component of the ODSA interface aims to 
-support protocols used for the two most common chiplet use cases, package 
-aggregation and die disaggregation across a wide range of open and proprietary D2D PHYs
-such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. 
-
-~ Figure {#fig-odsa-stack; caption: "The BoW PHY in the ODSA Stack"}
-![bowspec_figstack]
+~ Figure {#fig-bow-logicin; caption: "BoW slice logic interface"}
+![bowspec_figslicelogicint]
 ~
-[bowspec_figstack]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
+[bowspec_figslicelogicint]: images/fig-bowphylogicint.jpg {width:auto; max-width: 100%}
 
-The ODSA stack abstracts
-the PHY layer from the logical interface by using the well-defined abstraction interfaces
-PIPE and LPIF. 
-Any logic transaction controller, such as a PCIe controller, that
-supports a PIPE or LPIF interface can use any D2D PHY that also supports that
-interface as its physical layer.
-As shown in Figure [#fig-odsa-stack], the BoW interface may receive data
-through either the PIPE or LPIF interfaces to support common transaction protocols. 
-For this use case, some BoW-specific adapter logic will be needed to support the requirements of PIPE 
-or LPIF.
-The specifications for these adapters are outside the scope of this document. 
-Figure [#fig-bow-pcie] shows how the
-BoW with an PIPE adapter can be interfaced to a PCIe controller.
-
-~ Framed {color: blue}
-Bapi: please remove "serializer" and "deserializer" from the labels in Figure [#fig-bow-pcie]
- - these are part of the PHY.
-~
-
-~ Figure {#fig-bow-pcie; caption: "BoW with a PIPE adapter for PCIe transactions"}
-![bowspec_figcomponentspcie]
-~
-[bowspec_figcomponentspcie]: images/fig-bow_pcie.jpg {width:auto; max-width: 100%}
-
-<XX .        Obsolete
-
-## BoW Modes
-
-BoW has been developed and specified such that multiple modes of operation can
-be defined and supported. All modes must be 
-interoperable with the minimum definition. All modes are source synchronous 
-parallel interfaces using a differential clock that may operate at multiple.
-
-The range of operating frequencies for a mode must be documented in a data sheet. 
-frequencies. Beyond the basic mode, adding termination provides higher performance 
-per mm of beachfront bandwidth but is more complex to design. It may also be possible
-to get higher performance by using advanced packaging.
-
-The BoW specification provides for optional technology to increase the data rate per wire, 
-to enable a graceful cost-performance tradeoff. 
-It is also possible for basic BoW configuration implemented with advanced packaging or 
-between physically close chiplets to offer a higher data rate per wire than a terminated 
-BoW interface in some configurations. 
-A high level view of the BoW Interface Data-rate ranges is shown below:
-
-All modes must be 
-interoperable with the minimum definition. 
-The various BoW modes are specified such that they can be directly connected 
-to one another. ** When two interfaces are connected, data rate for the operating mode must be 
-configured such that both ends support the same configuration at the same data rate.** All 
-BoW implementations must support the minimum configuration of BoW (2Gbps datarate, 
-1 Ghz clock rate, un-terminated IO). 
-
-XX>
 
 # Signal Definitions
 
-<XX  Ken says: This section is a nearly a table of contents.  Do we need any of this?
-
-Figures. [#fig-bowspec_ll_tx_slice_FIFO] and [#fig-bowspec_ll_tx_slice_noFIFO] provide 
-a high level overview of the typical components that make up
-a Tx slice. Figures. [#fig-bowspec_ll_rx_slice_FIFO] and [#fig-bowspec_ll_rx_slice_noFIFO] 
-do the same for the Rx slice. The scope of this specification
-is limited to the inputs and outputs, as well as the components shown in the light blue box. 
-In this section, we cover the signal definitions for the
-external [#sec-external-facing-signals] and link layer [#sec-link-layer-interface-signals] 
-facing interfaces. In Sections [#sec-reset-and-initialization],[#sec-configuration],[#sec-calibration], the details pertaining
-to reset, initialization, configuration, and the calibration state machine are specified. 
-In Section [#sec-control-signal-shift-register-mapping], a
-complete register definition for control and status signals is provided. 
-Section [#sec-loopback-test] has details on testability. In 
-Figures. [#fig-bowspec_ll_tx_slice_FIFO] - [#fig-bowspec_ll_rx_slice_noFIFO], 
-the datapath shown is only for illustrative purposes, specific 
-implementations are left to the designer. 
-The BoW PHY can accommodate FIFO implementations that are internal or external to the PHY. 
-Examples for the
-Tx slice are shown in Figures [#fig-bowspec_ll_tx_slice_FIFO] - [#fig-bowspec_ll_tx_slice_noFIFO] 
-and for Rx slice in 
-Figures [#fig-bowspec_ll_rx_slice_FIFO] - [#fig-bowspec_ll_rx_slice_noFIFO]. 
-However, the serialized/Deserializer fucntions with the 
-appropriate gear ratios shall be implemented in the BoW PHY.
-
-XX>
+This section specifies the control data signals into and out of device logic and package
+for BoW Rx and Tx slices. 
 
 ## Die-to-die Signals (Wires)
 
@@ -495,64 +407,16 @@ DBIcurrent = ((data[15]current XOR data[15]prev)
 If the DBI bit=1 then the Tx DBI logic inverts the Data bits.
 If DBI = 1 then the Rx DBI logic inverts the Data bits to recover the original data.
 
+## Slice Logic Interface
 
+Figure [#fig-bow-logicin] shows the data and control signals in the interfaces to 
+the logic in the die in each BoW transmit and receive slice. The data at the slice 
+logic interface must be DDR (bit rate equal to twice the PCLK frequency). The BoW PHY is 
+expected to be used with a link controller. The transmission of logical information 
+across a slice and the control and management of a slice are the responsibility of the 
+link controller. 
 
-## Link Layer Interface - Clock and Data Signals
-
-The data at the link layer interface must be SDR (bit rate equal to PCLK frequency).
-Each Tx or Rx slice shall interface to the link layer with a datapath width of 32, 64, 128,
-256 or 512 bits. 
-The corresponding PCLK (Tx, or Rx)
-shall have a frequency (datawidth\*PCLK) that matches the overall 
-throughput on the output wires of the slice (16\*data_rate). 
-This allows supporting a range of core logic speeds. 
-
-The BoW PHY must contain the serialization or deserialization needed to 
-go between the data rates at the link level interface and the wire interface.
-
-A clock domain crossing (CDC FIFO) is required between the chip core and the PHY's
-internal clocks; this can be either in the PHY or the link layer.
-The CDC receives clocks from both the core and the PHY internal clocks, 
-so PCLK flows towards the CDC as seen in the following four figures.
-
-Example datapath implementations of the FIFO 
-inside the PHY are shown in Figs [#fig-bowspec_ll_tx_slice_fifo], [#fig-bowspec_ll_rx_slice_fifo].
-FIFO in the link level is shown in 
-Figs [#fig-bowspec_ll_tx_slice_nofifo], [#fig-bowspec_ll_rx_slice_nofifo]. 
-Note that these four figures are intended to illustrate
-the signals at the perimeter of the PHY slices.
-The details of the blocks internal to a slice is implementation-dependent.
-
-~Framed {color=blue}
-The following four figures need to be revised to show the MDIO interface to the Link layer
-instead of going direct to I2C.
-~
-
-
-~ Figure { #fig-bowspec_ll_tx_slice_FIFO; caption: "BoW Link Layer and Tx PHY Slice with FIFO in the PHY" }
-![bowspec_ll_tx_slice_FIFO]
-~
-[bowspec_ll_tx_slice_FIFO]: images/bowspec_LL_Tx_slice_FIFO.png { width:auto; max-width:90% }
-
-~ Figure { #fig-bowspec_ll_tx_slice_noFIFO; caption: "BoW Link Layer and Tx Slice with FIFO in the link layer" }
-![bowspec_ll_tx_slice_noFIFO]
-~
-[bowspec_ll_tx_slice_noFIFO]: images/bowspec_LL_Tx_slice_noFIFO.png { width:auto; max-width:90% }
-
-~ Figure { #fig-bowspec_ll_rx_slice_FIFO; caption: "BoW Link Layer and Rx PHY Slice with FIFO in the PHY" }
-![bowspec_ll_rx_slice_FIFO]
-~
-[bowspec_ll_rx_slice_FIFO]: images/bowspec_LL_Rx_slice_FIFO.png { width:auto; max-width:90% }
-
-~ Figure { #fig-bowspec_ll_rx_slice_noFIFO; caption: "BoW Link Layer and Rx Slice with FIFO in the link level" }
-![bowspec_ll_rx_slice_noFIFO]
-~
-[bowspec_ll_rx_slice_noFIFO]: images/bowspec_LL_Rx_slice_noFIFO.png { width:auto; max-width:90% }
-
-
-
-
-### Link Layer Interface - Clock and Data Signal List
+### Slice Logic Interface: Data Signals
 
 The signals in Table [#tab-mac_interface] shall constitute the data interface between the link layer 
 and the PHY.
@@ -561,11 +425,11 @@ and the PHY.
 |--------+--------+----------+----------+--------------------------------------------------------|
 | Signal | # Bits | Tx Slice | Rx Slice | Description                                            |
 +--------+--------+----------+----------+--------------------------------------------------------+
-| Data   | 16*K   | In       | Out      | Data                                                   |
+| Data   | 16     | In       | Out      | Data                                                   |
 +--------+--------+----------+----------+--------------------------------------------------------+
-| FEC    | K      | In       | Out      | Forward Error Correction                               |
+| FEC    | 1      | In       | Out      | Forward Error Correction (optional)                               |
 +--------+--------+----------+----------+--------------------------------------------------------+
-| AUX    | K      | In       | Out      | Auxiliary uses                                         |
+| AUX    | 1      | In       | Out      | Auxiliary uses (optional)                                        |
 +--------+--------+----------+----------+--------------------------------------------------------+
 | PCLK   | 1      | *        | *        | * Out if CDC is in Link Level, In if CDC is in the PHY |
 +--------+--------+----------+----------+--------------------------------------------------------+
@@ -574,313 +438,12 @@ and the PHY.
 +--------+--------+----------+----------+--------------------------------------------------------+
 ~
 
+### Slice Logic Interface: Control Signals
 
+A BoW interface must provide the following control and status signals:
 
-<XX   Ken says: This is redundant with section 3.1 and incorrect since it assumes Tx Rx pairs.
-  
-## Bow Physical Interface
-
-The BoW interface comprises either a transmit or receive slice with three signal types:
-
-* Data signals
-  * Inputs (RX): data input signals to the interface
-  * Outputs (TX): data output signals from the interface
-* Optional signals 
-  * AUX/Data bus inversion out (tx_AUX_DBI), sent from the interface
-  * Forward Error Correction out (tx_FEC), sent from the interface
-  * AUX/Data bus inversion in (rx_AUX_DBI), input to the interface
-  * Forward Error Correction in (rx_FEC), input to the interface
-* Clocks
-  * Data clock out (tx_fwd_clk), sent from the interface
-  * Data clock in (rx_fwd_clk), input to the interface
-
-
-~ Figure { #fig-bow_signals; caption: "BoW Signal Types" }
-![bow_signals]
-~
-[bow_signals]: images/bow_signals_types.png { width:auto; max-width:70% }
-
-~ TableFigure {#tab-bow_interface; caption: "BoW Interface Signals"; width:100%;  }
-+---------------------------+------------------------------------------------------------+
-|          Signal           |                         Description                        |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-|           TX              |            Synchronous data transmitted from the           |
-|                           |               interface.                                   |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-|           RX              |             Synchronous data received from the             |
-|                           |                interface.                                  |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-| tx_fwd_clk/tx_fwd_clkb    |           Transmit transfer clock, forwarded from          |
-|                           |           the transmitter to its link partner for          |
-|                           |        capturing received data.                            |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-| rx_fwd_clk/rx_fwd_clkb    |          Receive transfer clock, forwarded to the          |
-|                           |        receiver from its link partner for capturing        |
-|                           |             received data.                                 |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-|       tx_AUX_DBI          |         Optional signal from the transmitter to its        |
-|                           |           link partner to indicate bus inversion           |
-|                           |     status. If not used as DBI, this signal can also be    |
-|                           |            used as Mode bit                                |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-|       rx_AUX_DBI          |            Optional input signal to receive bus            |
-|                           |    inversion status. If not used as DBI, this signal can   |
-|                           |        also be used as Mode bit                            |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-|         tx_FEC            |                Optional signal to carry FEC                |
-|                           |          information from transmitter to its link          |
-|                           |                partner.                                    |
-+---------------------------+------------------------------------------------------------+
-|                           |                                                            |
-|         rx_FEC            |            Optional input signal to receive FEC            |
-|                           |             information.                                   |
-+---------------------------+------------------------------------------------------------+
-~
-XX>
-
-
-
-<XX .  Obsolete - assumes paired Tx+Rx
-+-------------------------+-------------+----------------------------------------------------------------+
-| Signals                 | Tx slice    |Description             |
-+-------------------------+-------------+----------------------------------------------------------------+
-| data                    | In            | 32 to 256 bits         |
-+-------------------------+-------------+--                                      |                        |
-|                         |             |                                           |                        |
-|                         |             |                                           |                        |
-| PCLK .                  | towards CDC | towards CDC                               | Parallel Clock between |
-|                         |             |                                           | LL and PHY slice       |
-+-------------------------+-------------+---+                                       |                        |
-|                         |             |                                           |                        |
-| rx_pclk                 | In/Out      | Parallel Clock between                    |                        |
-|                         |             | LL and Rx slice                           |                        |
-|                         |             | In (if FIFO in Slice), Out(if FIFO in LL) |                        |
-|                         |             |                                           |                        |
-+-------------------------+-------------+---+                                       |                        |
-|                         |             |                                           |                        |
-| tx_mac_rdy              | In          | For resetting Transmit data               |                        |
-|                         |             | transfers and communicating               |                        |
-|                         |             | LL readiness for calibration to           |                        |
-|                         |             | the link partner                          |                        |
-+-------------------------+-------------+---+                                       |                        |
-|                         |             |                                           |                        |
-| rx_mac_rdy              | Out         | Indicates that the Receive LL is          |                        |
-|                         |             | ready to transmit data                    |                        |
-+-------------------------+-------------+---+                                       |                        |
-|                         |             |                                           |                        |
-| tx_adapter_rstn         | In          | Resets the BoW Adapter                    |                        |
-+-------------------------+-------------+---+                                       |                        |
-|                         |             |                                           |                        |
-| tx_dcc_dll_lock_req     | In          | Initiates calibration of transmit         |                        |
-|                         |             | slice and its link partner (receive       |                        |
-|                         |             | slice) for a BoW interface                |                        |
-|                         |             |                                           |                        |
-+-------------------------+-------------+---+                                       |                        |
-|                         |             |                                           |                        |
-| rx_dcc_dll_lock_req     | In          | Initiates calibration of receive          |                        |
-|                         |             | slice and its link partner (transmit      |                        |
-|                         |             | slice) for a BoW interface                |                        |
-|                         |             |                                           |                        |
-+-------------------------+-------------+---+                                       |                        |
-|                         |             |                                           |                        |
-| tx_transfer_en          | Out         | Indicate that calibration on the          |                        |
-|                         |             | Transmit is complete for transmit         |                        |
-|                         |             | and receive paths                         |                        |
-+-------------------------+-------------+---+                                       |                        |
-|                         |             |                                           |                        |
-| rx_transfer_en          | Out         | Indicate that calibration on the          |                        |
-|                         |             | Receive is complete for transmit          |                        |
-|                         |             | and receive paths                         |                        |
-+-------------------------+-------------+---+                                       |                        |
-|                         |             |                                           |                        |
-| Signals indicating any  | Out         | Sent to LL for possible                   |                        |
-| conditions that may     |             | data- transfer ready de-assertion         |                        |
-| cause de-assertion of   |             | by LL                                     |                        |
-| data-transfer ready     |             |                                           |                        |
-+-------------------------+-------------+---+                                       |                        |
-|                         |             |                                           |                        |
-| Signals indicating any  | Out         | Sent to LL for possible                   |                        |
-| conditions that may     |             | adapter reset by LL                       |                        |
-| cause BoW Adapter       |             |                                           |                        |
-| reset and recalibration |             |                                           |                        |
-+-------------------------+-------------+---+                                       |                        |
-|                         |             |                                           |                        |
-| User-defined shift-     | In          | For transmitting application-             |                        |
-| register bits           |             | defined bits to the link partner          |                        |
-|                         |             |                                           |                        |
-|                         |             |                                           |                        |
-+-------------------------+-------------+---+                                       |                        |
-|                         |             |                                           |                        |
-|                         |             |                                           |                        |
-XX>
-
-
-<XX  Ken sez: I have commented out this AIB-cloned control interface because
-  it assumes that the PHYs are communicating directly over the I2C interface
-  rather than relying on a controller.
-
-
-## Control Signals
-
-
-An BoW interface shall provide control and status bits for calibration and communication of 
-control and status information between the transmitter(receiver) and receiver(transmitter) chiplets. 
-These status bits shall be implemented as documented in Section XX.xxx.xx.
-
-
-### Transmit Slice Shift Register
-
-A Transmit slice shall include two shift registers: one for holding Transmit control and status 
-signals to its link partner (the Transmit shift register), and one for receiving control 
-and status signals from its interface partner (the Receive-copy shift register). 
-The Transmit shift register shall contain 81 bits. The Receive-copy shift register 
-shall contain 73 bits. All bits shall be implemented regardless of whether optional 
-signals are implemented. Any signals not implemented shall permanently maintain their 
-default values as defined in Table 50.
-
-
-### Receive Slice Shift Register
-
-A Receive slice shall include two shift registers: one for holding Receive control and status
- signals to its interface partner (the Receive register), and one for receiving  control 
- and status signals from its link partner (the Transmit-copy shift register). 
- The Receive shift register shall contain 73 bits. The Transmit-copy shift register 
- shall contain 81 bits. All bits shall be implemented regardless of whether optional
-  signals are implemented. Any signals not implemented shall permanently maintain their
-   default values as defined in Table 51
-
-### Control Signals
- Control signals fall into one of the following categories:
-
-* Calibration handshake
+* PHY Ready
 * Selective reset
-* User-defined
-* Reserved
-
-The bits for any unused signals shall be maintained with default values for correct shift- register length.
-The control signals are summarized in Table 11 and are detailed in Table 51.
-
-### Calibration Status Signals
-
-Calibration status signals shall be generated by internal state machines as described in Section 3.2.3.
-
-### User-Defined Signals 
-
-    User-defined signals are available for application use. 
-    Since both sides need to understand the function of user-defined signals, 
-    using these signals may limit chiplet interoperability. If implemented in an application, 
-    user-defined signals should be described in the chiplet data sheet.
-
-### Shift-Register Signals
-
-
-~ TableFigure {#tab-control_signals; caption: "Control Signals"; width:100%; }
-
-+---------------------+-----------------------------+--------------+---------------------+----------------------+         
-|                     |                             |              | Signal  Origin      |    Bit Number        |
-|                     |                             |              |                     |                      |
-+---------------------+-----------------------------+              +                     +------------+---------+
-|                     |                             |              |                     |            |         |
-| Signal Name         | Signal Function             | Bits         | (Slice or LL)       | Transmit   | Receive |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-| Calibration         |                             |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| tx_dcc_cal_done     | TX DCC calibration complete | 1            | LINK PARTNER        | 68         | 31      |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| rx_transfer_en      | RX calibration complete     | 1            | LINK PARTNER        | 75         | 70      |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| rx_dcc_dll_lock_req | Start RX calibration        | 1            | LL                  | NA         | 69      |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| rx_dll_lock         | RX DLL locked               | 1            | LINK PARTNER        | 74         | 68      |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| tx_transfer_en      | TX calibration complete     | 1            | LINK PARTNER        | 78         | 64      |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| tx_dcc_dll_lock_req | Start TX calibration        | 1            | LL                  | NA         | 63      |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| Device_ID           | Chiplet ID                  | 4            | Transmit            | 8-11       | 32-35   |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| Link_ID             | Chiplet Link ID             | 4            | Transmit            | 12-15      | 36-39   |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| Slice_ID            | Chiplet Slice ID            | 5            | Transmit            | 16-20      | 40-43   |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| Power_on_reset      | PoR complete                | 1            | Receive             | 21         | 44      |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| tx_mac_rdy          | For resetting               | 1            | LL                  | 22         | 45      |
-|                     | Transmit data               |              |                     |            |         |
-|                     | transfers and               |              |                     |            |         |
-|                     | communicating LL            |              |                     |            |         |
-|                     | readiness for               |              |                     |            |         |
-|                     | calibration to the link     |              |                     |            |         |
-|                     | partner                     |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| rx_mac_rdy          | For resetting               | 1            | LL                  | 23         | 46      |
-|                     | Receive data                |              |                     |            |         |
-|                     | transfers and               |              |                     |            |         |
-|                     | communicating LL            |              |                     |            |         |
-|                     | readiness for               |              |                     |            |         |
-|                     | calibration to the link     |              |                     |            |         |
-|                     | partner                     |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| tx_adapter_rstn     | Reset BoW adapter           | 1            |LL                   | 24         | 47      |
-|                     | signal from Transmit        |              |                     |            |         |
-|                     | slice to Link Partner       |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| rx_adapter_rstn     | Reset BoW adapter           | 1            | Receive             | 25         | 48      |
-|                     | signal from Transmit        |              |                     |            |         |
-|                     | slice to Link Partner       |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| AUX_DBI             | Select DBI mode (1)         | 1            | LL                  | 26         | 49      |
-|                     | or AUX mode (0)             |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-| User-defined        |                             |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| external_cntl[]     | Defined by protocol         | fo: 30       | LL or LINK PARTNER | 0-4        | 49-57   |
-|                     | and/or application          |              |                     |            |         |
-|                     |                             | le: 63       |                     | 26-65      | 28-30   |
-|                     |                             |              |                     |            |         |
-|                     |                             |              |                     |            | 0-26    |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-| Other               |                             |              |                     |            |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-|                     |                             |              |                     |            |         |
-| Reserved            |                             |              | NA                  | 79         | 71      |
-|                     |                             |              |                     |            |         |
-|                     |                             |              |                     | 76-77      | 65-67   |
-|                     |                             |              |                     |            |         |
-|                     |                             |              |                     | 69-73      | 58-62   |
-|                     |                             |              |                     |            |         |
-|                     |                             |              |                     | 66-67      | 27      |
-|                     |                             |              |                     |            |         |
-|                     |                             |              |                     | 5-7        |         |
-+---------------------+-----------------------------+--------------+---------------------+------------+---------+
-~
-
-XX>
-
-## Link Layer Interface - PHY Control Signals
 
 The signals in Table [#tab-mac_ctrl_interface] shall constitute the control interface from the link layer to the PHY.
 
@@ -888,94 +451,71 @@ The signals in Table [#tab-mac_ctrl_interface] shall constitute the control inte
 |----------+--------+----------+----------+------------------------------------------------------------------------------|
 | Signal   | # Bits | Tx Slice | Rx Slice | Description                                                                  |
 +----------+--------+----------+----------+------------------------------------------------------------------------------+
-| PHYReset    | 1      | In       | In       | Resets the BoW slice                                                         |
+| PHYReset | 1      | In       | In       | Resets the BoW slice                                                         |
 +----------+--------+----------+----------+------------------------------------------------------------------------------+
-| PHYReady | 1      | NA       | Out      | 1 indicates that the clocks in the Rx PHY are aligned (DCCs and DLLs locked) |
+| PHYReady | 1      | Out      | Out      | 1 indicates that the PHY is ready to transmit/receive mission mode data |
 +----------+--------+----------+----------+------------------------------------------------------------------------------+
-| MDC      | 1      | In       | In       | Clock for MDIO serial control interface                                      |
-+----------+--------+----------+----------+------------------------------------------------------------------------------+
-| MDIO     |   1     | BiDi     |  BiDi    |  Data for MDIO serial control interface                                                                            |
-+----------+--------+----------+----------+------------------------------------------------------------------------------+
+
 ~
 
-Additional implementation-dependent signals may exist.
+#### PHY Reset
+The PHYReset pin is asserted by the link controller to initialize the PHY.
+The PHYReset signal shall allow internal self-alignment to take place. The reset 
+states are otherwise implementation-dependent and shall be documented in the 
+datasheet of a particular implementation. 
 
-### PHYReset
+#### PHY Ready
+PHY Ready is asserted by the PHY to indicate to the controller that it is ready to
+transmit/receive data.
 
-The PHYReset pin is asserted by the Link layer to initialize the PHY.
-The PHYReset signal shall reset the internal registers to their HW default states, 
-which shall allow MDIO programming and internal self-alignment to take place.
+#### PHY Ready Tx
+On Tx, PHY ready asserted indicates PHY is transmitting good clock and ready to transmit data
 
-The reset states are otherwise implementation-dependent and shall be documented in the datasheet 
-of a particular implementation. 
+#### PHY Ready Rx
+On Rx PHY ready assumes clock received is good when PHY reset is deasserted. 
+After the Rx slice clock self-alignments are complete, each Rx PHY slice shall assert its 
+PHYReady pin. How an Rx PHY slice determines completion of the self-alignment is 
+implementation-dependent. For instance, it can be determined by observing the 
+settling of the DLL or by a simple timer. PHY Ready asserted indicates
+that any data received will be captured correctly.
 
-### MDIO Serial Programming Interface
+### Link Initialization
+This specification assumes there exist: (a) an out-of-band control path between the
+two ends of a BoW link; (b) a link controller that manages and operates the link.
+The transport mechanism for the control interface is outside the scope of this 
+document
 
-The MDC and MDIO pins control the programming and status readout of the PHY by the Link layer.
-Per the spec at https://en.wikipedia.org/wiki/Management_Data_Input/Output
-up to 32 slices may be connected to one bus and each slice may have up to 32 16-bit registers.
+A Tx-Rx link pair must be brought up as follows:
 
-The MDIO bus interface shall operate at up to 25 MHz.
+1. The Tx link controller (LC) brings the Tx PHY slice out of reset
+2. Once its Tx clock stabilizes, the Tx PHY slice signals PHY ready to the Tx LC
+3. The Tx LC must signal Tx Ready to the Rx LC out of band only when all the 
+component Tx slices on a link are ready 
+4. The Rx LC brings the Rx PHY slice out of reset
+5. The Rx PHY slice locks on the Tx clock and signals PHY ready to the Rx LC
+6. The Rx LC must signal link ready to the Tx LC out of band only when all the
+component Rx slices on the link are ready.
 
-[ Need to add a real MDI spec reference. ]
-
-### PHYReady
-
-After the Rx slice clock self-alignments are complete, each Rx PHY slice shall assert its PHYReady pin.
-These may be AND'd together by the Link layer or treated separately.
-How an Rx PHY slice determines completion of the self-alignment is implementation-dependent. 
-For instance, it can be determined by observing the settling of the DLL or by a simple timer.
-
-### MDIO Register Map
-
-The registers accessed by the MDIO Serial Programming Interface are implementation dependent.
-The registers shall be fully documented in the datasheet of a particular implementation.
-
-These registers may control:
-
-* Configuration such as Tx vs. Rx, BoW Mode (TxClk rate), PCLK rate
-* Test features such as loopback modes 
-* External control of DCC, DLL
-* Readout of status such as DCC and DLL self-alignment settings
-
-
-
-
+Any registers required at the slice logic interface to implement this process
+are an implementation choice. The Tx link layer must be able to repetitively
+transmit an arbitrary 128-bit pattern required by the Rx slice for clock 
+alignment as specified in the datasheet for the Rx PHi.
 
 # BoW Modes
 
-## BoW Modes
-
-A BoW interface must conform to one of the Bow Modes seen in Table [#tab-bow-modes].
-
-~ TableFigure {#tab-bow-modes; caption: "BoW Modes"; }
-+----------+----------------+---------------+-------+
-|BoW Mode | Slice Bit Rate | Wire Bit Rate | TxClk |
-|          | Gb/s           | Gb/s/wire     | GHz   |
-+----------+----------------+---------------+-------+
-| BoW-32   | 32             | 2             | 1     |
-| BoW-64   | 64             | 4             | 2     |
-| BoW-128  | 128            | 8             | 4     |
-| BoW-256  | 256            | 16            | 8     |
-+----------+----------------+---------------+-------+
-~
-The BoW Mode defines the speed of clock and data of the PHY on the die-to-die wires.
-In all modes, the data must be clocked DDR: 
-the data wire bit rate is double the clock wire frequency.
-All BoW interfaces must be able to interoperate with all the lower modes.
-Supporting rates other than the defined four modes is an implementation choice.
-
+A BoW interface must conform to one of the Bow Modes seen in Table [#tab-levels].
 The recommended maximum wire reach for different packaging types and terminations is 
 seen in Table [#tab-reaches].
 Exceeding these reach values degrades the voltage margins at the receiver.
 "Laminate" is intended to include organic laminate packages (a.k.a. "buildup) and similar 
 technologies with approximately 25 um line and space rules.
 "Advanced" is intended to include silicon interposer and similar technologies.  
+
 These have much finer line and space dimensions, but traces are usually much
 more resistive than in organic laminate packages and must operate with reduced trace lengths. 
 Termination is not expected to be necessary for implementations targeting Advanced packaging.
 
-~ TableFigure {#tab-reaches; caption: "BoW Wire Reaches"; width:100%;  }
+~ TableFigure {#tab-reaches; caption: "Recommended BoW Wire Reaches"; width:100%;  }
 
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
 |          |               |       | Laminate     | Laminate          | Laminate          | Advanced     |
@@ -1520,6 +1060,52 @@ What is the origin of the Xtalk Limit equation?  Is there a paper reference?
 ~
 XX>
 
+# BoW in an ODSA Design
+Chiplet-based designs require logical connectivity between the die in a
+single package, in addition to physical connectivity. This section provides an overview of 
+how with the Open Domain-Specific Architecture stack it can be used as an underlay for 
+popular transaction protocols.
+
+## BoW for Common Transaction Protocols
+Two connected die in a multi-chiplet device need to exchange logical information. 
+The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
+Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
+integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
+interface. The logical component of the ODSA interface aims to 
+support protocols used for the two most common chiplet use cases, package 
+aggregation and die disaggregation across a wide range of open and proprietary D2D PHYs
+such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. 
+
+~ Figure {#fig-odsa-stack; caption: "The BoW PHY in the ODSA Stack"}
+![bowspec_figstack]
+~
+[bowspec_figstack]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
+
+The ODSA stack abstracts
+the PHY layer from the logical interface by using the well-defined abstraction interfaces
+PIPE and LPIF. 
+Any logic transaction controller, such as a PCIe controller, that
+supports a PIPE or LPIF interface can use any D2D PHY that also supports that
+interface as its physical layer.
+As shown in Figure [#fig-odsa-stack], the BoW interface may receive data
+through either the PIPE or LPIF interfaces to support common transaction protocols. 
+For this use case, some BoW-specific adapter logic will be needed to support the requirements of PIPE 
+or LPIF.
+The specifications for these adapters are outside the scope of this document. 
+Figure [#fig-bow-pcie] shows how the
+BoW with an PIPE adapter can be interfaced to a PCIe controller.
+
+~ Framed {color: blue}
+Bapi: please remove "serializer" and "deserializer" from the labels in Figure [#fig-bow-pcie]
+ - these are part of the PHY.
+~
+
+
+
+~ Figure {#fig-bow-pcie; caption: "BoW with a PIPE adapter for PCIe transactions"}
+![bowspec_figcomponentspcie]
+~
+[bowspec_figcomponentspcie]: images/fig-bow_pcie.jpg {width:auto; max-width: 100%}
 
 
 # Reset and Initialization

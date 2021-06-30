@@ -606,31 +606,40 @@ improve the bit error rate (BER).  AUX is an optional signal that can be used fo
 such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
 the details on FEC and AUX usage, which is defined in the Link layer.
 
+## Signal Ordering 
+
+A BoW interface must conform to these wire order rules at the edge of the chip:
+
+* The signals for a Tx slice are in the following order at the chip edge, 
+going clockwise around the chiplet: 
+AUX, D0, D1, D2, D3, D4, D5, D6, D7, CLK+, CLK-, D8, D9, D10, D11, D12, D13, D14, D15, FEC
+* The signals for an Rx slice are in the reversed order (ascending goes counter-clockwise)
+* The same clockwise/counter-clockwise ordering is used on all four sides of a chiplet
+* The AUX and FEC signals may be omitted
+
+
 ## Bump Arrangements
+
+Note that bump patterns are not specified by BoW; only the signal *ordering* at 
+the chip edge is specified for interoperability. 
 
 The reference example in Figure [#fig-min_link]
 uses hexagonal closest packing for the bumps: two rows for signal bumps and
 one row for power and ground bumps. 
 In this pattern, the wire pitch is half the bump pitch.
-In order to maintain the closest bump packing, slices in rows B and D have a different bump
-pattern than slices A and C.
-But bump patterns are not specified by BoW; only the signal *ordering* at 
-the chip edge is specified for interoperability. 
+
+### Alternate Bump Arrangements
 
 Alternate bump arrangements may include:
 
-* 90-degree rotation of the hexagonal packing direction to decrease the wire pitch 14%;
-* square bump arrays instead of hexagonal for regularity of layout; 
-* more than two rows of signal bumps to decrease the wire pitch;
-* different ordering of power and ground bumps;
-* multiple power and ground rows.
+* 90-degree rotation of the hexagonal packing direction (to decrease the wire pitch 14%)
+* square bump arrays instead of hexagonal (for regularity of layout)
+* more than two rows of signal bumps (to decrease the wire pitch without changing the bump pitch)
+* different ordering of power and ground bumps
+* multiple power and ground rows
 
-An alternate slice arrangement may be to place the Tx and Rx slices side by side at the 
-chip edges. This would take up more chip edge, but allow all the signals to run on the same 
-package layer.
-
-Somewhat different wire and bump pitches between two chiplets can be accomodated with 
-fan-out in the chip-to-chip wires. This is limited by the max wire length.
+Somewhat different wire pitches between two chiplets can be accommodated with 
+fan-out in the chip-to-chip wires. This is limited by the maximum wire length.
 
 ## Cross Section
 
@@ -652,57 +661,77 @@ slice on chiplet B (one must be configured for Tx and one for Rx).
 The position-B slices are connected together, and so on.
 
 There is no specified limit to the number of slices in a stack. 
-In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supports 4 slices. 
+In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supports 4 slices 
+(a 7-2-7 laminate can support 4 slices but with reduced signal integrity).
 Layers on the bottom side of the package typically cannot be used for BoW signals 
 due to low via density passing through the thick central core layer.
 
-In advanced packaging technologies, the shorter wire lengths allow the use of non-controlled-impedance wires
-and unterminated transmitters and receivers.
+In advanced packaging technologies, the shorter wire lengths allow the use of 
+non-controlled-impedance wires and unterminated transmitters and receivers.
 The smaller wire and space dimensions may allow
 the wires for multiple slices to be interleaved on a single wiring layer.
+The wire order within each slice must be maintained, even if interleaving with 
+other slices is used.
 
-## Signal Ordering 
 
-A BoW interface must conform to these wire and slice order rules at the edge of the chip:
+## Staggered Slices
 
-* The signals for a Tx slice are in the following order at the chip edge, 
-going clockwise around the chiplet: 
-AUX, D0, D1, D2, D3, D4, D5, D6, D7, CLK+, CLK-, D8, D9, D10, D11, D12, D13, D14, D15, FEC
-* The signals for an Rx slice are in the reversed order (ascending goes counter-clockwise)
+To optimize the density of hexagonal bump arrays, slices in positions B and D may be offset 
+horizontally by one half the bump pitch as seen in Figure [#fig-4x2stack]. 
+This necessitates a one-bump-pitch horizontal jog
+in the wires for slices B and D.  The practical effect of this 130-um jog across a 2.5+ mm 
+wire between chiplets is very small.
+
+~ Figure { #fig-4x2stack; caption: "Staggered slices for the densest bump packing" }
+![bowspec_4x2stack]
+[bowspec_4x2stack]: images/bowspec_4x2stack.png "bowspec_4x2stack" { width:auto; max-width:90% }
+~
+
+An alternative arrangement is to keep the slices aligned vertically. 
+This requires adding a small extra vertical space between the slices, for an overall increase of 4%
+of the slice area.
+
+## Slice Numbering
+
+A BoW interface must conform to these slice numbering rules:
+
 * The Tx slices in a link are numbered from 0 at the upper left edge of the link 
 (facing from the chip center to the edge) and ascending through the Tx slices in a stack, 
 then from stack to stack clockwise.
 * The Rx slices in a link are numbered from 0 at the upper right, through the Rx slices in a stack,
 then stack to stack counterclockwise.
 
-These rules allow BoW chiplets to be connected without signal reordering regardless of chiplet rotations.
+An example of this numbering is shown in Figure [#fig-alt_slices].
 
-## Checkerboard Slice Pattern
+The signal ordering and slice numbering rules allow BoW chiplets to be connected without 
+signal reordering regardless of chiplet rotations.
 
-For bidirectional links with more than one stack on each side, a checkerboard pattern of 
-Tx and Rx slices should be used (Figure [#fig-checkerboard]).
-This allows efficient connection of chiplets with differing stack depths and 
-numbers of stacks. 
-Figure [#fig-checkerboard] shows a bidirectional link with 4 stacks of 4 slices each, 
+## Slice Stacking Pattern for Symmetric Links
+
+For bidirectional links, a pattern of alternating Tx and Rx stacks should be used. 
+Figure [#fig-alt_slices] shows a bidirectional link with 4 stacks of 4 slices each, 
 for 8 Tx and 8 Rx slices on each chiplet.
 
-~ Figure { #fig-checkerboard; caption: "Checkerboard Pattern of Tx and Rx Slices in a 1.25 Tb/s Link" }
-![checkerboard]
-[checkerboard]: images/bowspec_figure_checkerboard.PNG { width:auto; max-width:70% }
-
+~ Figure { #fig-alt_slices; caption: "Alternating-Stacks Pattern of Tx and Rx Slices in a Link" }
+![alt_slices]
+[alt_slices]: images/bowspec_figure_alt_columns_4x4_link.png { width:auto; max-width:80% }
 ~
 
-An alternate approach may be used: design every slice to operate as either Rx or Tx to be configured
-after assembly or upon powerup. 
-This allows complete flexibility in interoperability and also provides an opportunity for
-wafer-test loopback testing.
+Asymmetric and unidirectional links may use any slice pattern, but the slice numbering rules 
+must be observed. 
 
+An alternate approach with more flexibility is to design every slice to operate as either 
+Rx or Tx, to be configured after assembly or upon powerup. 
+This allows complete flexibility in link configuration and interoperability and 
+also provides an opportunity for wafer-test loopback testing. 
+In this case, number the slices as if they are all Tx slices.
 
-In BoW-64 at 4 Gb/s/wire, the link in Figure [#fig-checkerboard] provides a total of 1.0 Tb/s.
+In BoW-256 at 16 Gb/s/wire, the link in Figure [#fig-alt_slices] provides a total of 2.0 Tb/s 
+in each direction.
 In an organic substrate using the hexagonal bump pattern of Figure [#fig-min_link]
 with a bump pitch is 130 um, 
-the total edge width is 4.16 mm without AUX and FEC, or 5.2 mm with; the depth from the edge is 1.35 mm.
-In an interposer, if the bump pitch is 40 um, the edge width is 1.28 or 1.60 mm and the depth is 0.42 mm.
+the total edge width is 5.2 mm (4.16 mm without AUX and FEC); the depth from the edge is 1.35 mm.
+In an interposer, if the bump pitch is 40 um, the edge width is 1.60 mm (or 1.28 mm) and the depth is 0.42 mm.
 
 # Timing
 

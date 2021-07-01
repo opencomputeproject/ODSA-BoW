@@ -826,31 +826,34 @@ The CLK and data signals at the receiving slice bumps must meet the conditions i
 ~ TableFigure {#tab-integrity; caption: "BoW Signal Integrity Requirements"; width:100%; }
 <This table generated with https://www.tablesgenerator.com/markdown_tables# >
 
-+---------+----------------------------+-----------------------------------+-------------------+
-| Symbol  | Spec                       | Unterminated or Source Terminated | Doubly Terminated |
-+---------+----------------------------+-----------------------------------+-------------------+
-| V~hi~   | High signal voltage        | 750 mV                            | 562 mV            |
-+---------+----------------------------+-----------------------------------+-------------------+
-| V~lo~   | Low signal voltage         | 0 mV                              | 188 mV            |
-+---------+----------------------------+-----------------------------------+-------------------+
-| V~tol~  | Tolerance of Vhi, Vlo (5%) | \+- 37 mV                         | \+- 19 mV         |
-+---------+----------------------------+-----------------------------------+-------------------+
-| t~eye~  | Data eye width             | 50% UI                            | 50% UI            |
-+---------+----------------------------+-----------------------------------+-------------------+
-| V~eye~  | Data eye height            | 40%(V~hi~-V~lo~)                  | 20%(V~hi~-V~lo~)  |
-|         |                            | (300 mV)                          | (75 mV)           |
-+---------+----------------------------+-----------------------------------+-------------------+
-| V~ov~   | Data and CLK overshoot     | 25%(V~hi~-V~lo~)                  | 50%(V~hi~-V~lo~)  |
-|         |                            | (188 mV)                          | (188 mV)          |
-+---------+----------------------------+-----------------------------------+-------------------+
-| t~skew~ | Slice to slice CLK skew    | 100 ps/stack                      | 100 ps/stack      |
-+---------+----------------------------+-----------------------------------+-------------------+
-
++----------+----------------------------+-----------------------------------+-------------------+
+| Symbol   | Spec                       | Unterminated or Source Terminated | Doubly Terminated |
++----------+----------------------------+-----------------------------------+-------------------+
+| V~hi~    | High signal voltage        | 750 mV                            |                   |
++----------+----------------------------+-----------------------------------+-------------------+
+| V~lo~    | Low signal voltage         | 0 mV                              |                   |
++----------+----------------------------+-----------------------------------+-------------------+
+| V~swing~ | Signal Swing               | 750 mV                            | 375 mV            |
++----------+----------------------------+-----------------------------------+-------------------+
+| V~tol~   | Tolerance of Vhi, Vlo (5%) | \+- 37 mV                         | \+- 19 mV         |
++----------+----------------------------+-----------------------------------+-------------------+
+| t~eye~   | Data eye width             | 50% UI                            | 50% UI            |
++----------+----------------------------+-----------------------------------+-------------------+
+| V~eye~   | Data eye height            | 40%(V~hi~-V~lo~)                  | 20%(V~hi~-V~lo~)  |
+|          |                            | (300 mV)                          | (75 mV)           |
++----------+----------------------------+-----------------------------------+-------------------+
+| V~ov~    | Data and CLK overshoot     | 25%(V~hi~-V~lo~)                  | 50%(V~hi~-V~lo~)  |
+|          |                            | (188 mV)                          | (188 mV)          |
++----------+----------------------------+-----------------------------------+-------------------+
+| t~skew~  | Slice to slice CLK skew    | 100 ps/stack                      | 100 ps/stack      |
++----------+----------------------------+-----------------------------------+-------------------+
 
 ~
 
-V~hi~ of 0.75 V must be supported by all BoW implementations, but other values
-may be supported.
+V~swing~ of 750 mV must be supported by all unterminated or source-terminated BoW implementations, 
+but other values may be supported.
+V~swing~ of 375 mV must be supported by doubly-terminated implementations.
+BoW transmitters which support double termination must support termination to 750, 375 or 0 mV.
 
 t~eye~ must be evaluated for each of the bits in a slice
 relative to the differential CLK+ - CLK- signal for that slice.
@@ -951,8 +954,7 @@ XX>
 
 ## Voltages
 
-BoW implementations must support electrical specifications corresponding to 
-rail to rail signaling based on a 0.75 V +/- 5% power supply as in as in Table [#tab-integrity] 
+BoW implementations must support signal swings as specified in Table [#tab-integrity].
 BoW interfaces may also upport higher or lower signaling 
 voltages but must support 0.75 V based signaling to ensure interoperability.
 BoW does not specify the VDD power rail voltage. 
@@ -966,26 +968,22 @@ similar to other die-to-die interface standards.
 ## Termination and Return Loss
 
 See Table [#tab-reaches] for the recommended termination vs. reach and mode.
-In most cases, on laminate or similar packages, 
+For lower rates on laminate or similar packages, 
 BoW transmitters should be source-terminated to 50 +/-8 ohms and BoW receivers unterminated.
 
-For reach over 10 mm, BoW receivers should also be terminated in 50 +/- 8 ohms and designed 
-for the smaller signal swings this delivers.
+For rates of 16 Gb/s or reach over 10 mm, BoW receivers should also be terminated in 50 +/- 8 ohms 
+and designed for the smaller signal swings this delivers.
 
 A terminated BoW transmitter or receiver (both data and clock) 
 shall have 16 dB return loss (-16 dB S11 or S22) from 0 to F(CLK) and -4 dB loss
 at 2*F(CLK) when outputting a logic 0, 1 or at the midscale voltage. 
-See the trace "BoW Fast" in Figure [#fig-s11] for the BoW-128 case.
-
-~framed {color:blue}
-Need to update Figure [#fig-s11].
-~
+See Figure [#fig-s11].
 
 
 ~ Figure { #fig-S11; caption: "BoW Termination Return Loss S11 and S22" }
 ![S11]
 ~
-[S11]: images/bowspec_figure_S11.PNG { width:auto; max-width:60% }
+[S11]: images/bowspec_figure_S11.PNG { width:auto; max-width:80% }
 
 A Source-Series-Terminated (SST) transmitter can generally meet the the transmitter specification.
 

@@ -479,27 +479,29 @@ implementation-dependent. For instance, it can be determined by observing the
 settling of the DLL or by a simple timer. PHY Ready asserted indicates
 that any data received will be captured correctly.
 
-### Link Initialization
-This specification assumes there exist: (a) an out-of-band control path between the
-two ends of a BoW link; (b) a link controller that manages and operates the link.
-The transport mechanism for the control interface is outside the scope of this 
-document
+### Programming
 
-A Tx-Rx link pair must be brought up as follows:
+There shall be a programming interface to control internal registers for control 
+and status readout of the PHY.
 
-1. The Tx link controller (LC) brings the Tx PHY slice out of reset
-2. Once its Tx clock stabilizes, the Tx PHY slice signals PHY ready to the Tx LC
-3. The Tx LC must signal Tx Ready to the Rx LC out of band only when all the 
-component Tx slices on a link are ready 
-4. The Rx LC brings the Rx PHY slice out of reset
-5. The Rx PHY slice locks on the Tx clock and signals PHY ready to the Rx LC
-6. The Rx LC must signal link ready to the Tx LC out of band only when all the
-component Rx slices on the link are ready.
+The programming interface is not specified at this time.  MDIO and AMBA APB are candidates.
 
-Any registers required at the slice logic interface to implement this process
-are an implementation choice. The Tx link layer must be able to repetitively
-transmit an arbitrary 128-bit pattern required by the Rx slice for clock 
-alignment as specified in the datasheet for the Rx PHi.
+The internal registers are implementation-dependent. 
+The internal registers shall be full documented in the PHY datasheet.
+
+### Link Controller
+
+There shall be a Link Controller (LC) outside the PHY.
+This will manage initialization of the Link.
+It may reside on one of the chiplets of the Link, in a third chiplet in the package
+or outside the package.
+
+Communication from the Link Controller to the PHY slices shall be by a transport
+mechanism outside the BoW link. 
+This could be a serial link like SPI or I2C, but this is not specified at this time.
+
+Link initialization is described in Section [#sec-reset-and-initialization].
+
 
 # BoW Modes
 
@@ -1137,6 +1139,43 @@ Bapi: please remove "serializer" and "deserializer" from the labels in Figure [#
 
 # Reset and Initialization
 
+## Link Initialization
+
+There must be these facilities outside the PHY:
+
+* a Link Controller (LC) which
+will manage initialization of the Link.
+It may reside on one of the chiplets of the Link, in a third chiplet in the package
+or outside the package.
+* A communication path from the Link Controller to the PHY slices outside the BoW link. 
+This could be a serial link like SPI or I2C, but this is not specified at this time.
+* A source of training pattern data outside the PHY, assumed to be the Link Layer here.
+This must be able to repetitively
+transmit an arbitrary 288-bit pattern (16 bits per wire) required by the Rx slice for clock 
+alignment as specified in the datasheet for the Rx PHY.
+
+An example topology is shown in Figure [#fig-bow_system].
+
+A Tx-Rx Link shall be brought up as follows:
+
+1. The Link Controller (LC) de-asserts Reset to the Tx PHY slices
+1. Once its Tx clock stabilizes, each Tx PHY slice asserts Ready to the LC
+1. When all Tx PHY slices are ready, the LC signals the Tx Link Layer to 
+send the clock training pattern specified by the Rx PHY
+1. The LC de-asserts Reset to the Rx PHY slices 
+1. Each Rx PHY slice performs clock and data alignment and signals Ready to the LC when done
+1. When all Rx PHY slices are ready, the LC signals the Tx and Rx 
+Link Layers that they can proceed with channel bonding
+
+Not specified:
+
+* Whether the up and down links are initialized one at a time or in parallel
+* How the signals from the the LC get from the I2C to the PHY Ready and Reset pins
+* How the Link Layer performs channel bonding or start of data transmission
+* Any PHY registers required to implement this process - these
+are an implementation choice. 
+
+
 ~Framed {color: blue}
 ## **EVERYTHING AFTER THIS POINT STILL NEEDS REVISION IN THE MAR 2021 REWRITE**
 ~
@@ -1532,7 +1571,7 @@ Link training will be addressed in a future revision of the spec
 
 # Control-Signal Shift Register Mapping
 
-The MDIO interface registers shall be fully documented in the PHY datasheet.
+The interface registers shall be fully documented in the PHY datasheet.
 
 <XX .  Removed these definitions copied from AIB
 

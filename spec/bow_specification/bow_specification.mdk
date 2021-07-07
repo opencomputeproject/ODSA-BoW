@@ -481,13 +481,11 @@ that any data received will be captured correctly.
 
 ### Programming
 
-There shall be a programming interface to control internal registers for control 
+There shall be an AMBA APB programming interface to control internal registers for control 
 and status readout of the PHY.
 
-The programming interface is not specified at this time.  MDIO and AMBA APB are candidates.
-
 The internal registers are implementation-dependent. 
-The internal registers shall be full documented in the PHY datasheet.
+The internal registers shall be fully documented in the PHY datasheet.
 
 ### Link Controller
 

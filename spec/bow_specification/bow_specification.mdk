@@ -479,27 +479,29 @@ implementation-dependent. For instance, it can be determined by observing the
 settling of the DLL or by a simple timer. PHY Ready asserted indicates
 that any data received will be captured correctly.
 
-### Link Initialization
-This specification assumes there exist: (a) an out-of-band control path between the
-two ends of a BoW link; (b) a link controller that manages and operates the link.
-The transport mechanism for the control interface is outside the scope of this 
-document
+### Programming
 
-A Tx-Rx link pair must be brought up as follows:
+There shall be a programming interface to control internal registers for control 
+and status readout of the PHY.
 
-1. The Tx link controller (LC) brings the Tx PHY slice out of reset
-2. Once its Tx clock stabilizes, the Tx PHY slice signals PHY ready to the Tx LC
-3. The Tx LC must signal Tx Ready to the Rx LC out of band only when all the 
-component Tx slices on a link are ready 
-4. The Rx LC brings the Rx PHY slice out of reset
-5. The Rx PHY slice locks on the Tx clock and signals PHY ready to the Rx LC
-6. The Rx LC must signal link ready to the Tx LC out of band only when all the
-component Rx slices on the link are ready.
+The programming interface is not specified at this time.  MDIO and AMBA APB are candidates.
 
-Any registers required at the slice logic interface to implement this process
-are an implementation choice. The Tx link layer must be able to repetitively
-transmit an arbitrary 128-bit pattern required by the Rx slice for clock 
-alignment as specified in the datasheet for the Rx PHi.
+The internal registers are implementation-dependent. 
+The internal registers shall be full documented in the PHY datasheet.
+
+### Link Controller
+
+There shall be a Link Controller (LC) outside the PHY.
+This will manage initialization of the Link.
+It may reside on one of the chiplets of the Link, in a third chiplet in the package
+or outside the package.
+
+Communication from the Link Controller to the PHY slices shall be by a transport
+mechanism outside the BoW link. 
+This could be a serial link like SPI or I2C, but this is not specified at this time.
+
+Link initialization is described in Section [#sec-reset-and-initialization].
+
 
 # BoW Modes
 
@@ -606,31 +608,40 @@ improve the bit error rate (BER).  AUX is an optional signal that can be used fo
 such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
 the details on FEC and AUX usage, which is defined in the Link layer.
 
+## Signal Ordering 
+
+A BoW interface must conform to these wire order rules at the edge of the chip:
+
+* The signals for a Tx slice are in the following order at the chip edge, 
+going clockwise around the chiplet: 
+AUX, D0, D1, D2, D3, D4, D5, D6, D7, CLK+, CLK-, D8, D9, D10, D11, D12, D13, D14, D15, FEC
+* The signals for an Rx slice are in the reversed order (ascending goes counter-clockwise)
+* The same clockwise/counter-clockwise ordering is used on all four sides of a chiplet
+* The AUX and FEC signals may be omitted
+
+
 ## Bump Arrangements
+
+Note that bump patterns are not specified by BoW; only the signal *ordering* at 
+the chip edge is specified for interoperability. 
 
 The reference example in Figure [#fig-min_link]
 uses hexagonal closest packing for the bumps: two rows for signal bumps and
 one row for power and ground bumps. 
 In this pattern, the wire pitch is half the bump pitch.
-In order to maintain the closest bump packing, slices in rows B and D have a different bump
-pattern than slices A and C.
-But bump patterns are not specified by BoW; only the signal *ordering* at 
-the chip edge is specified for interoperability. 
+
+### Alternate Bump Arrangements
 
 Alternate bump arrangements may include:
 
-* 90-degree rotation of the hexagonal packing direction to decrease the wire pitch 14%;
-* square bump arrays instead of hexagonal for regularity of layout; 
-* more than two rows of signal bumps to decrease the wire pitch;
-* different ordering of power and ground bumps;
-* multiple power and ground rows.
+* 90-degree rotation of the hexagonal packing direction (to decrease the wire pitch 14%)
+* square bump arrays instead of hexagonal (for regularity of layout)
+* more than two rows of signal bumps (to decrease the wire pitch without changing the bump pitch)
+* different ordering of power and ground bumps
+* multiple power and ground rows
 
-An alternate slice arrangement may be to place the Tx and Rx slices side by side at the 
-chip edges. This would take up more chip edge, but allow all the signals to run on the same 
-package layer.
-
-Somewhat different wire and bump pitches between two chiplets can be accomodated with 
-fan-out in the chip-to-chip wires. This is limited by the max wire length.
+Somewhat different wire pitches between two chiplets can be accommodated with 
+fan-out in the chip-to-chip wires. This is limited by the maximum wire length.
 
 ## Cross Section
 
@@ -652,57 +663,77 @@ slice on chiplet B (one must be configured for Tx and one for Rx).
 The position-B slices are connected together, and so on.
 
 There is no specified limit to the number of slices in a stack. 
-In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supports 4 slices. 
+In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supports 4 slices 
+(a 7-2-7 laminate can support 4 slices but with reduced signal integrity).
 Layers on the bottom side of the package typically cannot be used for BoW signals 
 due to low via density passing through the thick central core layer.
 
-In advanced packaging technologies, the shorter wire lengths allow the use of non-controlled-impedance wires
-and unterminated transmitters and receivers.
+In advanced packaging technologies, the shorter wire lengths allow the use of 
+non-controlled-impedance wires and unterminated transmitters and receivers.
 The smaller wire and space dimensions may allow
 the wires for multiple slices to be interleaved on a single wiring layer.
+The wire order within each slice must be maintained, even if interleaving with 
+other slices is used.
 
-## Signal Ordering 
 
-A BoW interface must conform to these wire and slice order rules at the edge of the chip:
+## Staggered Slices
 
-* The signals for a Tx slice are in the following order at the chip edge, 
-going clockwise around the chiplet: 
-AUX, D0, D1, D2, D3, D4, D5, D6, D7, CLK+, CLK-, D8, D9, D10, D11, D12, D13, D14, D15, FEC
-* The signals for an Rx slice are in the reversed order (ascending goes counter-clockwise)
+To optimize the density of hexagonal bump arrays, slices in positions B and D may be offset 
+horizontally by one half the bump pitch as seen in Figure [#fig-4x2stack]. 
+This necessitates a one-bump-pitch horizontal jog
+in the wires for slices B and D.  The practical effect of this 130-um jog across a 2.5+ mm 
+wire between chiplets is very small.
+
+~ Figure { #fig-4x2stack; caption: "Staggered slices for the densest bump packing" }
+![bowspec_4x2stack]
+[bowspec_4x2stack]: images/bowspec_4x2stack.png "bowspec_4x2stack" { width:auto; max-width:90% }
+~
+
+An alternative arrangement is to keep the slices aligned vertically. 
+This requires adding a small extra vertical space between the slices, for an overall increase of 4%
+of the slice area.
+
+## Slice Numbering
+
+A BoW interface must conform to these slice numbering rules:
+
 * The Tx slices in a link are numbered from 0 at the upper left edge of the link 
 (facing from the chip center to the edge) and ascending through the Tx slices in a stack, 
 then from stack to stack clockwise.
 * The Rx slices in a link are numbered from 0 at the upper right, through the Rx slices in a stack,
 then stack to stack counterclockwise.
 
-These rules allow BoW chiplets to be connected without signal reordering regardless of chiplet rotations.
+An example of this numbering is shown in Figure [#fig-alt_slices].
 
-## Checkerboard Slice Pattern
+The signal ordering and slice numbering rules allow BoW chiplets to be connected without 
+signal reordering regardless of chiplet rotations.
 
-For bidirectional links with more than one stack on each side, a checkerboard pattern of 
-Tx and Rx slices should be used (Figure [#fig-checkerboard]).
-This allows efficient connection of chiplets with differing stack depths and 
-numbers of stacks. 
-Figure [#fig-checkerboard] shows a bidirectional link with 4 stacks of 4 slices each, 
+## Slice Stacking Pattern for Symmetric Links
+
+For bidirectional links, a pattern of alternating Tx and Rx stacks should be used. 
+Figure [#fig-alt_slices] shows a bidirectional link with 4 stacks of 4 slices each, 
 for 8 Tx and 8 Rx slices on each chiplet.
 
-~ Figure { #fig-checkerboard; caption: "Checkerboard Pattern of Tx and Rx Slices in a 1.25 Tb/s Link" }
-![checkerboard]
-[checkerboard]: images/bowspec_figure_checkerboard.PNG { width:auto; max-width:70% }
-
+~ Figure { #fig-alt_slices; caption: "Alternating-Stacks Pattern of Tx and Rx Slices in a Link" }
+![alt_slices]
+[alt_slices]: images/bowspec_figure_alt_columns_4x4_link.png { width:auto; max-width:80% }
 ~
 
-An alternate approach may be used: design every slice to operate as either Rx or Tx to be configured
-after assembly or upon powerup. 
-This allows complete flexibility in interoperability and also provides an opportunity for
-wafer-test loopback testing.
+Asymmetric and unidirectional links may use any slice pattern, but the slice numbering rules 
+must be observed. 
 
+An alternate approach with more flexibility is to design every slice to operate as either 
+Rx or Tx, to be configured after assembly or upon powerup. 
+This allows complete flexibility in link configuration and interoperability and 
+also provides an opportunity for wafer-test loopback testing. 
+In this case, number the slices as if they are all Tx slices.
 
-In BoW-64 at 4 Gb/s/wire, the link in Figure [#fig-checkerboard] provides a total of 1.0 Tb/s.
+In BoW-256 at 16 Gb/s/wire, the link in Figure [#fig-alt_slices] provides a total of 2.0 Tb/s 
+in each direction.
 In an organic substrate using the hexagonal bump pattern of Figure [#fig-min_link]
 with a bump pitch is 130 um, 
-the total edge width is 4.16 mm without AUX and FEC, or 5.2 mm with; the depth from the edge is 1.35 mm.
-In an interposer, if the bump pitch is 40 um, the edge width is 1.28 or 1.60 mm and the depth is 0.42 mm.
+the total edge width is 5.2 mm (4.16 mm without AUX and FEC); the depth from the edge is 1.35 mm.
+In an interposer, if the bump pitch is 40 um, the edge width is 1.60 mm (or 1.28 mm) and the depth is 0.42 mm.
 
 # Timing
 
@@ -797,31 +828,34 @@ The CLK and data signals at the receiving slice bumps must meet the conditions i
 ~ TableFigure {#tab-integrity; caption: "BoW Signal Integrity Requirements"; width:100%; }
 <This table generated with https://www.tablesgenerator.com/markdown_tables# >
 
-+---------+----------------------------+-----------------------------------+-------------------+
-| Symbol  | Spec                       | Unterminated or Source Terminated | Doubly Terminated |
-+---------+----------------------------+-----------------------------------+-------------------+
-| V~hi~   | High signal voltage        | 750 mV                            | 562 mV            |
-+---------+----------------------------+-----------------------------------+-------------------+
-| V~lo~   | Low signal voltage         | 0 mV                              | 188 mV            |
-+---------+----------------------------+-----------------------------------+-------------------+
-| V~tol~  | Tolerance of Vhi, Vlo (5%) | \+- 37 mV                         | \+- 19 mV         |
-+---------+----------------------------+-----------------------------------+-------------------+
-| t~eye~  | Data eye width             | 50% UI                            | 50% UI            |
-+---------+----------------------------+-----------------------------------+-------------------+
-| V~eye~  | Data eye height            | 40%(V~hi~-V~lo~)                  | 20%(V~hi~-V~lo~)  |
-|         |                            | (300 mV)                          | (75 mV)           |
-+---------+----------------------------+-----------------------------------+-------------------+
-| V~ov~   | Data and CLK overshoot     | 25%(V~hi~-V~lo~)                  | 50%(V~hi~-V~lo~)  |
-|         |                            | (188 mV)                          | (188 mV)          |
-+---------+----------------------------+-----------------------------------+-------------------+
-| t~skew~ | Slice to slice CLK skew    | 100 ps/stack                      | 100 ps/stack      |
-+---------+----------------------------+-----------------------------------+-------------------+
-
++----------+----------------------------+-----------------------------------+-------------------+
+| Symbol   | Spec                       | Unterminated or Source Terminated | Doubly Terminated |
++----------+----------------------------+-----------------------------------+-------------------+
+| V~hi~    | High signal voltage        | 750 mV                            |                   |
++----------+----------------------------+-----------------------------------+-------------------+
+| V~lo~    | Low signal voltage         | 0 mV                              |                   |
++----------+----------------------------+-----------------------------------+-------------------+
+| V~swing~ | Signal Swing               | 750 mV                            | 375 mV            |
++----------+----------------------------+-----------------------------------+-------------------+
+| V~tol~   | Tolerance of Vhi, Vlo (5%) | \+- 37 mV                         | \+- 19 mV         |
++----------+----------------------------+-----------------------------------+-------------------+
+| t~eye~   | Data eye width             | 50% UI                            | 50% UI            |
++----------+----------------------------+-----------------------------------+-------------------+
+| V~eye~   | Data eye height            | 40%(V~hi~-V~lo~)                  | 20%(V~hi~-V~lo~)  |
+|          |                            | (300 mV)                          | (75 mV)           |
++----------+----------------------------+-----------------------------------+-------------------+
+| V~ov~    | Data and CLK overshoot     | 25%(V~hi~-V~lo~)                  | 50%(V~hi~-V~lo~)  |
+|          |                            | (188 mV)                          | (188 mV)          |
++----------+----------------------------+-----------------------------------+-------------------+
+| t~skew~  | Slice to slice CLK skew    | 100 ps/stack                      | 100 ps/stack      |
++----------+----------------------------+-----------------------------------+-------------------+
 
 ~
 
-V~hi~ of 0.75 V must be supported by all BoW implementations, but other values
-may be supported.
+V~swing~ of 750 mV must be supported by all unterminated or source-terminated BoW implementations, 
+but other values may be supported.
+V~swing~ of 375 mV must be supported by doubly-terminated implementations.
+BoW transmitters which support double termination must support termination to 750, 375 or 0 mV.
 
 t~eye~ must be evaluated for each of the bits in a slice
 relative to the differential CLK+ - CLK- signal for that slice.
@@ -922,8 +956,7 @@ XX>
 
 ## Voltages
 
-BoW implementations must support electrical specifications corresponding to 
-rail to rail signaling based on a 0.75 V +/- 5% power supply as in as in Table [#tab-integrity] 
+BoW implementations must support signal swings as specified in Table [#tab-integrity].
 BoW interfaces may also upport higher or lower signaling 
 voltages but must support 0.75 V based signaling to ensure interoperability.
 BoW does not specify the VDD power rail voltage. 
@@ -937,26 +970,22 @@ similar to other die-to-die interface standards.
 ## Termination and Return Loss
 
 See Table [#tab-reaches] for the recommended termination vs. reach and mode.
-In most cases, on laminate or similar packages, 
+For lower rates on laminate or similar packages, 
 BoW transmitters should be source-terminated to 50 +/-8 ohms and BoW receivers unterminated.
 
-For reach over 10 mm, BoW receivers should also be terminated in 50 +/- 8 ohms and designed 
-for the smaller signal swings this delivers.
+For rates of 16 Gb/s or reach over 10 mm, BoW receivers should also be terminated in 50 +/- 8 ohms 
+and designed for the smaller signal swings this delivers.
 
 A terminated BoW transmitter or receiver (both data and clock) 
 shall have 16 dB return loss (-16 dB S11 or S22) from 0 to F(CLK) and -4 dB loss
 at 2*F(CLK) when outputting a logic 0, 1 or at the midscale voltage. 
-See the trace "BoW Fast" in Figure [#fig-s11] for the BoW-128 case.
-
-~framed {color:blue}
-Need to update Figure [#fig-s11].
-~
+See Figure [#fig-s11].
 
 
 ~ Figure { #fig-S11; caption: "BoW Termination Return Loss S11 and S22" }
 ![S11]
 ~
-[S11]: images/bowspec_figure_S11.PNG { width:auto; max-width:60% }
+[S11]: images/bowspec_figure_S11.PNG { width:auto; max-width:80% }
 
 A Source-Series-Terminated (SST) transmitter can generally meet the the transmitter specification.
 
@@ -1109,6 +1138,43 @@ Bapi: please remove "serializer" and "deserializer" from the labels in Figure [#
 
 
 # Reset and Initialization
+
+## Link Initialization
+
+There must be these facilities outside the PHY:
+
+* a Link Controller (LC) which
+will manage initialization of the Link.
+It may reside on one of the chiplets of the Link, in a third chiplet in the package
+or outside the package.
+* A communication path from the Link Controller to the PHY slices outside the BoW link. 
+This could be a serial link like SPI or I2C, but this is not specified at this time.
+* A source of training pattern data outside the PHY, assumed to be the Link Layer here.
+This must be able to repetitively
+transmit an arbitrary 288-bit pattern (16 bits per wire) required by the Rx slice for clock 
+alignment as specified in the datasheet for the Rx PHY.
+
+An example topology is shown in Figure [#fig-bow_system].
+
+A Tx-Rx Link shall be brought up as follows:
+
+1. The Link Controller (LC) de-asserts Reset to the Tx PHY slices
+1. Once its Tx clock stabilizes, each Tx PHY slice asserts Ready to the LC
+1. When all Tx PHY slices are ready, the LC signals the Tx Link Layer to 
+send the clock training pattern specified by the Rx PHY
+1. The LC de-asserts Reset to the Rx PHY slices 
+1. Each Rx PHY slice performs clock and data alignment and signals Ready to the LC when done
+1. When all Rx PHY slices are ready, the LC signals the Tx and Rx 
+Link Layers that they can proceed with channel bonding
+
+Not specified:
+
+* Whether the up and down links are initialized one at a time or in parallel
+* How the signals from the the LC get from the I2C to the PHY Ready and Reset pins
+* How the Link Layer performs channel bonding or start of data transmission
+* Any PHY registers required to implement this process - these
+are an implementation choice. 
+
 
 ~Framed {color: blue}
 ## **EVERYTHING AFTER THIS POINT STILL NEEDS REVISION IN THE MAR 2021 REWRITE**
@@ -1505,7 +1571,7 @@ Link training will be addressed in a future revision of the spec
 
 # Control-Signal Shift Register Mapping
 
-The MDIO interface registers shall be fully documented in the PHY datasheet.
+The interface registers shall be fully documented in the PHY datasheet.
 
 <XX .  Removed these definitions copied from AIB
 

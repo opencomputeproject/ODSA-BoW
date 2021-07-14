@@ -481,13 +481,11 @@ that any data received will be captured correctly.
 
 ### Programming
 
-There shall be a programming interface to control internal registers for control 
+There shall be an AMBA APB programming interface to control internal registers for control 
 and status readout of the PHY.
 
-The programming interface is not specified at this time.  MDIO and AMBA APB are candidates.
-
 The internal registers are implementation-dependent. 
-The internal registers shall be full documented in the PHY datasheet.
+The internal registers shall be fully documented in the PHY datasheet.
 
 ### Link Controller
 
@@ -1139,9 +1137,9 @@ Bapi: please remove "serializer" and "deserializer" from the labels in Figure [#
 
 # Reset and Initialization
 
-## Link Initialization
+## External Facilities
 
-There must be these facilities outside the PHY:
+These facilities must be provided outside the PHY:
 
 * a Link Controller (LC) which
 will manage initialization of the Link.
@@ -1153,12 +1151,24 @@ This could be a serial link like SPI or I2C, but this is not specified at this t
 This must be able to repetitively
 transmit an arbitrary 288-bit pattern (16 bits per wire) required by the Rx slice for clock 
 alignment as specified in the datasheet for the Rx PHY.
+* The Reset input to each PHY shall be asserted upon powerup. 
+It may also be asserted by commands from the LC.
 
 An example topology is shown in Figure [#fig-bow_system].
 
+
+~ Figure { #fig-bow_system; caption: "Example BoW System Configuration" }
+![bow_system]
+~
+[bow_system]: images/bow_system.png { width:auto; max-width:70% }
+
+## Initialization Sequence
+
 A Tx-Rx Link shall be brought up as follows:
 
-1. The Link Controller (LC) de-asserts Reset to the Tx PHY slices
+1. The Link Controller (LC) performs any needed configuration of the PHY 
+slices via the APB interface. This is implementation dependent
+1. The LC de-asserts Reset to the Tx PHY slices
 1. Once its Tx clock stabilizes, each Tx PHY slice asserts Ready to the LC
 1. When all Tx PHY slices are ready, the LC signals the Tx Link Layer to 
 send the clock training pattern specified by the Rx PHY
@@ -1170,397 +1180,38 @@ Link Layers that they can proceed with channel bonding
 Not specified:
 
 * Whether the up and down links are initialized one at a time or in parallel
-* How the signals from the the LC get from the I2C to the PHY Ready and Reset pins
+* How the signals from the the LC get from the I2C to the PHY Ready and Reset pins of the PHY
 * How the Link Layer performs channel bonding or start of data transmission
 * Any PHY registers required to implement this process - these
 are an implementation choice. 
+
+
+## Other Unspecified Areas
+
+* There is no low-power standby mode defined.
+* There is no specification for when a PHY should de-assert its Ready pin. 
+PLL or DLL losing lock are possible causes.
+* There is no definition of what occurs if the PHY does de-assert Ready
+* There is no definition of what should be done with unused PHYs 
+(that are on the chip but have no partner on another chiplet)
+* There is no definition of addressing chiplets, Links or slices
+
 
 
 ~Framed {color: blue}
 ## **EVERYTHING AFTER THIS POINT STILL NEEDS REVISION IN THE MAR 2021 REWRITE**
 ~
 
-## Control Options
 
+# Configuration
 
-In a system with one or more BoW interfaces, each interface pair
- (defined as one Tx slice on a first chiplet and one Rx slice on a second chiplet)
- in the system shall achieve interface ready status in each of its component slices. 
- Once done, the interface shall signal readiness to the rest of the system. 
- If any BoW link or slice is down (either at the link layeror the PHY level), 
- it shall communicate this information to the appropriate interface partner as well as to the rest of the system.
+PHY configuration is implementation dependent. It may include:
 
-Calibration and training will require the two endpoints of an interface to exchange status and control information.
- There is no dedicated sideband control interface defined. Instead, this exchange shall be facilitated 
- using an independent I2C (I3C) interface, assumed to exist outside of the BoW interface, on each chiplet.
-  I2C(I3C) was chosen as the preferred interface for the following reasons:
+* Tx vs Rx for configurable slices
+* PLL, DLL, DCC or similar circuit configuration
 
-* It is a two wire interface 
-*	It is multi-point
-* It supports multi-leader and multi-follower topology
-*	The protocol for data reads and writes is standardized
-*	It is widely used as a configuration/status monitoring interface 
-*	It does not require additional control signals such as chip select (SPI, one per follower) or BSDL files (JTAG) to access register information
 
-However, the system designer is free to choose any suitable method for their application.
 
-
-An example BoW system configuration is shown in Figure 3. 
-Any of the chiplets shown can act as an I2C (I3C) leader or follower. 
-Alternatively, a central system controller (shown in dotted lines in the figure) 
-shall behave as the leader and the BoW chiplets shall be followers.
-
-To facilitate device identification and target communications at the proper device, 
-link, and slice, each BoW Interface shall have a unique Device_ID, Link_ID, and Slice_ID. 
-A BoW interface mapping table [connection topology] should also be     
-provided by the system designer to facilitate proper assignment of link and 
-slice states on each of the interface partners during initialization, calibration, or 
-other sideband activity. The specifics of how this is topology information is propagated to 
-each chiplet is left to the system designer.
-
-
-~ Figure { #fig-bow_system; caption: "Example BoW System Configuration" }
-![bow_system]
-~
-[bow_system]: images/bow_system.png { width:auto; max-width:70% }
-
-
-##	Data-Transfer Ready
-A data-transfer ready signal shall be made available for control by the link layer. 
-The data-transfer ready signal may be de-asserted due to application-driven changes, including but not limited to:
-
-* An intentional change in clock frequency
-* Receipt of bad data
-
-De-asserting the data-transfer ready signal may also be necessary due to conditions within the BoW interface, which may include but are not limited to:
-
-* Completion of configuration during power-up
-* Initiation of reset by the link partner
-* Loss of DLL lock
-
-Internal BoW conditions indicating the need for de-assertion of the data-transfer ready signal 
-shall be sent to the link layerso that the link layercan de-assert the data-transfer ready signal.
-Once data-transfer ready has been re-asserted after having been de-asserted, the 
-BoW Adapter shall be re-calibrated (Section 11). The reverse is not true: 
-calibration may be initiated without de-asserting data-transfer ready first.
-
-##Standby Mode
-
-A signal shall be placed into standby mode by one of the following means:
-
-* Driving the signal LO
-* Putting the signal into tristate and enabling the weak pull-down. During initialization, 
-data outputs shall be placed into standby mode.
-
-##	Data-Transfer Ready Signals
-
-Each slice shall have a tx_mac_rdy signal that is controlled by the Transmit MAC. 
-When the tx_mac_rdy signal is asserted HI by the MAC, it shall indicate that the 
-transmit slice is ready for calibration and data transfer. De-assertion of 
-tx_mac_rdy shall affect only its own slice; other slices may continue transmitting data.
-
-    The tx_mac_rdy signal shall be forwarded to the link partner, and appropriate status 
-    and control register shall be updated, in order to inform the Receive link layer
-    that the Transmit link layeris or is not ready for calibration.
-
-##	The Effects of De-asserting Data-Transfer Ready
-
-While the tx_mac_rdy signal is de-asserted:
-
-~framed {color:Blue}
-[Note: because this is not a hardwired signal, there
- is a latency in response depending on the polling frequency of the I2C sideband interface. 
- Need to investigate whether there is a mechanism where each chiplet can become a 
- Leader dynamically and broadcast changes in status to its link partner]
-~
-
-* Data transmission shall halt
-* Data outputs shall be placed into standby mode (Section 9.3)
-* The clock output tx_fwd_clk shall go into standby mode.
-* The reset signal tx_mac_rdy shall be sent to the interface partner in order to communicate that data transmission has halted and to allow for the interface partner to be reset.
-
-The contents of any retiming registers in the data path shall be undefined following 
-de- assertion of data-transfer ready.
-De-assertion of the data-transfer ready signal shall not affect the
- free-running clock signals or the -control signals.
- 
-##	Initialization
-
-Initialization will consist of three steps in sequence:
-
-* Power-on reset synchronization
-* Configuration
-* Calibration 
-
-
-~ Figure { #fig-bow_init; caption: "BoW Initialization " }
-![bow_init]
-~
-[bow_init]: images/bow_init.png { width:auto; max-width:90% }
-
-If there are multiple BoW interfaces on a single chiplet, 
-they shall all come out of configuration at the same time, 
-but they may complete adapter reset and calibration at different times depending on implementation.
-
-## Power-on Reset Synchronization
-Power-on reset, being the first step in initialization, shall not require 
-any features enabled by configuration, since configuration will not occur until after power-on reset.
-
-##	Power-on Reset Signals
-One signal (register bit) shall participate in power-on reset: power_on_reset.
-
-##	Power-on Reset Sequence
-During power-on reset, all input and output signals shall be placed 
-into standby mode (Section 9.3). The power-on reset sequence shall proceed as follows:
-
-1.	If no paired device_ID signal is detected by the Receive, then the Receive may act both to ensure that it and its chiplet are in a safe state and to alert the MAC.
-2.	If no paired device_ID signal is detected by the Transmit, then the Transmit may act both to ensure that it and its chiplet are in a safe state and to alert the MAC
-3.	Each chiplet shall implement its own power-on reset routine. At the beginning of the routine, Receive interfaces shall assert their power_on_reset signals HI.
-4.	When a chiplet completes its power-on reset sequence:
-  a.	Transmit interfaces shall begin the configuration stage.
-  b.	Receive interfaces shall de-assert their power_on_reset signals LO and begin the configuration stage.
-
-##	Unused Interfaces
-In order to ensure correct operation for chiplets with unused Transmit interfaces, the
-power_on_reset  register bits for those unused interfaces shall be set HI.
-In order to ensure correct operation for chiplets with unused Receive interfaces, the
-Device_ID register bits for those unused interfaces shall be set  to 0x0000.
-
-##	Test Provision
-
-~framed {color:Green}
-In order to test the power-on reset sequence at the wafer level, 
-two signals shall be provided for use by automated test equipment to 
-override the power_on_reset and device_detect signals when there 
-is no Transmit/Receive pair available. por_ovrd overrides the power_on_reset signal, 
-and device_detect_ovrd overrides the device_detect signal.
-~
-
-#Configuration
-
-Configuration may include:
-
-* Host chiplet configuration (in the case of an FPGA or similar chiplet)
-* BoW interface configuration
-* BoW redundancy activation
-
-The tx_mac_rdy signal shall be de-asserted LO during configuration and shall be asserted HI when configuration completes and the chiplet is ready for calibration and data transfer. The clock input from the link layershall be stable prior to assertion of tx_mac_rdy.
-
-##	Output State During Configuration
-
-All outputs, including data outputs, shall be in standby mode (Section 9.3) during configuration. 
-
-##	Chiplet Configuration
-
-Configuration of any non-BoW aspects of the chiplet is outside the scope of this specification.
-
-##	BoW Interface Configuration
-
-All intended BoW features shall be configured at power-up.
-
-## JTAG Configuration
-
-The chiplet data sheet should document the configuration requirements that allow for successfully implementation of JTAG EXTEST and INTEST operations.
-
-Control Shift Register Readiness
-
-The control shift register shall be operational once configuration is complete.
-
-##	Configuration Completion Signals
-
-~framed {color:Green}
-[Instead of conf_done, can we use this mechanism as a global interrupt to allow the side-band to 
-respond with more immediacy or retain its conf_done status prior to calibration. 
-Post link initialization, reuse it as a global interrupt signal. I think this can be 
-done cleanly based on the status of a number of other signals participating in the initialization process]
-~
-Each chiplet shall have a conf_done signal. conf_done shall be an open-drain output. 
-It shall be asserted LO when configuring, and it shall be released when configuration of 
-all interfaces on the chiplet is complete, the analog circuits are stable, and the free-running 
-clock is stable. conf_done shall indicate only that BoW configuration is complete. 
-No other configuration completion (MAC, FPGA, etc.) shall be included in the generation of
-the conf_done signal.
-
-All conf_done signals from all chiplets of a module should be connected in a wired-AND 
-configuration to generate a module-level CONF_DONE signal that shall be HI
- when all chiplets on the module have completed BoW configuration. The pull-up resistor 
- used to implement the wired-AND function may reside on the module containing the chiplets 
- with BoW interfaces, or it may reside off the module. The CONF_DONE signal should be 
- provided as an output of the module regardless of the resistor placement.
-
-
-~ Figure { #fig-bow_config_complete; caption: "Configuration Complete Signals" }
-![bow_config_complete]
-~
-[bow_config_complete]: images/bow_config_done.png { width:auto; max-width:70% }
-
-Data outputs shall remain in standby mode (Section 9.3) until CONF_DONE is asserted,
-including in the case where CONF_DONE is pulled low some time after being asserted high.
-
-The resistance and VDD values should comply with
-
-~ TableFigure {#tab-pull-up; caption: "Wired-AND Pull-up Specifications"; width:100%; }
-
-+--------------------+-------+
-| Parameter          | Value |
-+--------------------+-------+
-| Pull-up resistance | 1kOhm |
-+--------------------+-------+
-| Pull-up Vdd        | 0.9V  |
-+--------------------+-------+
-~
-
-#	Calibration 
-
-The calibration sequence shall proceed as follows:
-
-* Adapter reset
-* Data path calibration
-
-A BoW interface shall have an tx_adapter_rstn signal that is asserted by the MAC. 
-It shall be forwarded to the link partner of the interface through the register interface.
-
-
-When either the Transmit (tx_adapter_rstn) or Receive (rx_adapter_rstn) adapter 
-reset signal is asserted LO, the adapter shall reset the calibration state machines. 
-If adapter reset follows de-assertion of data- transfer ready, tx(rx)_mac_rdy 
-must be asserted HI before tx(rx)_adapter_rstn is asserted HI.
-
-##	Data-Path Calibration
-
-Data-path calibration shall be implemented via state machines on the Transmit
- and Receive sides of the interface that intercommunicate via the  control signals.
-
-
-~ Figure { #fig-data_path_calibration; caption: "Data-Path Calibration Architecture" }
-![data_path_calibration]
-~
-[data_path_calibration]: images/data_path_calibration.png { width:auto; max-width:90% }
-
-Following the de-assertion of the adapter-reset signal(s), a calibration request
- shall be made by asserting a calibration request signal. Either the transmit or receive slice
- can initiate data path calibration.
-
-Datapath calibration shall comply with Figure [#fig-data_path_state_machine]. The numbers in black indicate the sequence of steps
-
-
-
-~ Figure { #fig-data_path_state_machine; caption: "Datapath Calibration State Machine" }
-![data_path_state_machine]
-~
-[data_path_state_machine]: images/data_path_state_machine.png { width:auto; max-width:100% }
-
-Signals used in the datapath calibration sequence are listed in Table [#tab-calib_signals].
-
-~ TableFigure {#tab-calib_signals; caption: "Datapath Calibration Signals"; width:100%; }
-
-+------------------------+----------------------------------------------------------+
-|         Signals        |                        Description                       |
-+------------------------+----------------------------------------------------------+
-|                        |                                                          |
-| rx_dcc_dll_lock_req    |        Request from Receive to start calibration.        |
-|                        |       Once asserted,shall remain asserted until a        |
-|                        |             new calibration is requested.                |
-+------------------------+----------------------------------------------------------+
-|                        |                                                          |
-| tx_dcc_dll_lock_req    |        Request from Transmit to start calibration.       |
-|                        |       Once asserted, shall remain asserted until a       |
-|                        |             new calibration is requested.                |
-+------------------------+----------------------------------------------------------+
-|                        |                                                          |
-|   tx_dcc_cal_done      |      Indicates that Transmit has completed its DCC       |
-|                        |     calibration. Once asserted, shall remain asserted    |
-|                        |         until a new calibration is requested.            |
-+------------------------+----------------------------------------------------------+
-|                        |                                                          |
-|     rx_dll_lock        |       Indicates that Receive has completed its DLL       |
-|                        |   lock procedure. Once asserted, shall remain asserted   |
-|                        |         until a new calibration is requested.            |
-+------------------------+----------------------------------------------------------+
-|                        |                                                          |
-|    rx_transfer_en      |     Indicates that Receive has completed its RX path     |
-|                        | calibration and is ready to receive data. Once asserted, |
-|                        |  shall remain asserted until calibration is complete.    |
-+------------------------+----------------------------------------------------------+
-|                        |                                                          |
-|    tx_transfer_en      |     Indicates that Transmit has completed its TX path    |
-|                        |       calibration and is ready to receive data.          |
-+------------------------+----------------------------------------------------------+
-~
-
-
-## Adapter Reset
-
-Data-path calibration shall be initiated when the link layerlayer asserts the 
-tx_adapter_rstn signal LO. If the data-transfer ready signal was de-asserted prior 
-to the start of calibration, then the tx_mac_rdy signal must be asserted HI prior 
-to asserting the adapter-reset signals HI
-The link layermust de-assert the adapter-reset signal prior to requesting calibration start.
-
-## Calibration Request
-
-Calibration can be requested by either the Transmit or the Receive slice 
-using the tx_dcc_dll_lock_req signal or the rx_dcc_dll_lock_req signal, respectively.
-
-~ TableFigure {#tab-calib_init; caption: "Calibration Initiation Signals"; width:100%; }
-
-+-----------------------+---------------------+---------------------+
-| Calibration Initiator | Dataflow direction  | Initiation signal   |
-+-----------------------+---------------------+---------------------+
-|                       |                     |                     |
-| Transmit              | Transmit to Receive | tx_dcc_dll_lock_req |
-+-----------------------+---------------------+---------------------+
-|                       |                     |                     |
-| Receive               | Receive to Transmit | rx_dcc_dll_lock_req |
-+-----------------------+---------------------+---------------------+
-~
-
-
-Calibration for a dataflow direction shall commence when either Transmit 
-and Receive side has asserted its calibration request signal for 
-that dataflow direction. Calibration request signals shall remain asserted 
-until a new calibration is requested.
-
-## DCC Calibration
-
-Upon receipt of an xx_dcc_dll_lock_req signal, the DCC shall be calibrated. 
-The means of calibration is not specified and is left to the designer. 
-If the optional DCC is not present, then the state machine in Section 11.1
- shall remain the same, with the DCC calibration state serving only to provide a 
- signal indicating DCC calibration completion.
-
-## DLL Calibration
-Following DCC calibration, the receiving DLL shall be calibrated. 
-The means of calibrating the DLL is not specified and is left to the designer.
-If the optional DLL is not present, then the state machine in Section 11.1
- shall remain the same, with the DLL lock state serving only to provide a signal indicating DLL lock completion.
-
-## Calibration Completion
-
-Calibration completion shall be indicated by the following signals.
- Full completion shall be indicated when all four signals are asserted HI. 
- All four signals, once asserted, shall remain asserted until a new calibration sequence is requested.
-
-~ TableFigure {#tab-calib_complete; caption: "Calibration Completion Signals"; width:100%; }
-+------------------------+-------------------------------+
-| Calibration Completion | Meaning                       |
-| Signal                 |                               |
-+------------------------+-------------------------------+
-|                        |                               |
-| tx_transfer_en         | Transmit transmit block       |
-|                        | has completed calibration.    |
-+------------------------+-------------------------------+
-|                        |                               |
-| rx_transfer_en         | Receive receive block         |
-|                        | has completed calibration     |
-+------------------------+-------------------------------+
-~
-
-
-
-##	BoW Link Ready
-
-When both tx_transfer_en and rx_transfer_en are true, then the link shall be ready to transmit data.
 
 ~framed {color:Green}
 

@@ -1198,12 +1198,6 @@ PLL or DLL losing lock are possible causes.
 * There is no definition of addressing chiplets, Links or slices
 
 
-
-~Framed {color: blue}
-## **EVERYTHING AFTER THIS POINT STILL NEEDS REVISION IN THE MAR 2021 REWRITE**
-~
-
-
 # Configuration
 
 PHY configuration is implementation dependent. It may include:

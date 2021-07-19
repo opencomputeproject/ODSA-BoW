@@ -422,20 +422,20 @@ The signals in Table [#tab-mac_interface] shall constitute the data interface be
 and the PHY.
 
 ~ TableFigure {#tab-mac_interface; caption: "Link Layer Interface Signals"; width:100%;  }
-|--------+--------+----------+----------+--------------------------------------------------------|
-| Signal | # Bits | Tx Slice | Rx Slice | Description                                            |
-+--------+--------+----------+----------+--------------------------------------------------------+
-| Data   | 16     | In       | Out      | Data                                                   |
-+--------+--------+----------+----------+--------------------------------------------------------+
-| FEC    | 1      | In       | Out      | Forward Error Correction (optional)                               |
-+--------+--------+----------+----------+--------------------------------------------------------+
-| AUX    | 1      | In       | Out      | Auxiliary uses (optional)                                        |
-+--------+--------+----------+----------+--------------------------------------------------------+
-| PCLK   | 1      | *        | *        | * Out if CDC is in Link Level, In if CDC is in the PHY |
-+--------+--------+----------+----------+--------------------------------------------------------+
-| TxClk  | 1      | In       | NA       | Comes from a PLL or other clock source, not the Link layer.  |
-|        |        |          |          | The TxClk source is usually shared among many Tx slices.  |
-+--------+--------+----------+----------+--------------------------------------------------------+
+|--------+--------+----------+----------+-------------------------------------------------------------|
+| Signal | # Bits | Tx Slice | Rx Slice | Description                                                 |
++--------+--------+----------+----------+-------------------------------------------------------------+
+| Data   | 16     | In       | Out      | Data                                                        |
++--------+--------+----------+----------+-------------------------------------------------------------+
+| FEC    | 1      | In       | Out      | Forward Error Correction (optional)                         |
++--------+--------+----------+----------+-------------------------------------------------------------+
+| AUX    | 1      | In       | Out      | Auxiliary uses (optional)                                   |
++--------+--------+----------+----------+-------------------------------------------------------------+
+| PCLK   | 1      | *        | *        | * Out if CDC is in Link Level, In if CDC is in the PHY      |
++--------+--------+----------+----------+-------------------------------------------------------------+
+| TxClk  | 1      | In       | NA       | Comes from a PLL or other clock source, not the Link layer. |
+|        |        |          |          | The TxClk source is usually shared among many Tx slices.    |
++--------+--------+----------+----------+-------------------------------------------------------------+
 ~
 
 ### Slice Logic Interface: Control Signals
@@ -445,7 +445,8 @@ A BoW interface must provide the following control and status signals:
 * PHY Ready
 * Selective reset
 
-The signals in Table [#tab-mac_ctrl_interface] shall constitute the control interface from the link layer to the PHY.
+The signals in Table [#tab-mac_ctrl_interface] shall constitute the control interface 
+from the link layer to the PHY.
 
 ~ TableFigure {#tab-mac_ctrl_interface; caption: "Link Layer Interface Control Signals"; width:100%;  }
 |----------+--------+----------+----------+------------------------------------------------------------------------------|
@@ -1210,6 +1211,8 @@ PHY configuration is implementation dependent. It may include:
 * Tx vs Rx for configurable slices
 * PLL, DLL, DCC or similar circuit configuration
 
+PHY configuration may be hardwired in the chiplet implementation, or it may be programmable.
+
 
 
 
@@ -1220,266 +1223,34 @@ PHY configuration is implementation dependent. It may include:
 Link training will be addressed in a future revision of the spec
 ~
 
-# Control-Signal Shift Register Mapping
+# Control Register Mapping
 
-The interface registers shall be fully documented in the PHY datasheet.
+The interface control registers are implementation dependent.
+The registers shall be fully documented in the PHY datasheet.
 
-<XX .  Removed these definitions copied from AIB
 
-## Transmit Control Register Definition
+# Testability
 
-~ TableFigure {#tab-transmit_control; caption: "Transmit Control Signals"; width:100%; }
-+------------+--------------------+-------+---------+----------------------------------+
-| Bit        | Control Signals    | Bit   | Default | Description                      |
-| Order      | from Transmit to   | Width | Value   |                                  |
-|            | Receive            |       |         |                                  |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [79]       | Reserved           | 1     | 1       | Reserved                         |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [78]       | tx_transfer_en     | 1     | 1       | Transmit output to Receive to    |
-|            |                    |       |         | indicate that Transmit           |
-|            |                    |       |         | transfer has been                |
-|            |                    |       |         | enabled.                         |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [77]       | Reserved           | 1     | 1       | Reserved                         |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [76]       | Reserved           | 1     | 1       | Reserved                         |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [75]       | rx_transfer_en     | 1     | 1       | Receive output to Transmit       |
-|            |                    |       |         | to indicate that Receive         |
-|            |                    |       |         | is ready for data transfer.      |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [74]       | rx_dll_lock        | 1     | 1       | Receive output to Transmit       |
-|            |                    |       |         | to indicate that RX DLL          |
-|            |                    |       |         | achieves lock.                   |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [73:71]    | Reserved           | 1     | 1       | Reserved                         |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [70:69]    | Reserved           | 1     | 1       | Reserved                         |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         | Transmit output to Receive       |
-| [68]       | tx_dcc_cal_done    | 1     | 1       | to indicate that                 |
-|            |                    |       |         | DCC calibration is done          |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [67]       | Reserved           | 1     | 0       | Reserved                         |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [66]       | Reserved           | 1     | 1       | Reserved                         |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [65:27]    | User defined       | 1     | 0       | For application use              |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [26]       | AUX_DBI            | 1     | 0       | AUX-0, DBI -1                    |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [25]       | rx_adapter_rstn    | 1     | 0       | Adapter                          |
-|            |                    |       |         | reset signal from                |
-|            |                    |       |         | Transmit to Receive              |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [24]       | tx_adapter_rstn    | 1     | 0       | Adapter                          |
-|            |                    |       |         | reset signal from                |
-|            |                    |       |         | Receive to Transmit              |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [23]       | rx_mac_rdy         | 1     | 0       | Data transfer ready signal       |
-|            |                    |       |         | from the Receive to              |
-|            |                    |       |         |  the Transmit                   |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [22]       | tx_mac_rdy         | 1     | 0       | Data Transfer                    |
-|            |                    |       |         | ready signal from                |
-|            |                    |       |         | Transmit to                      |
-|            |                    |       |         | Receive                          |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [21]       | Power_on_reset     | 1     | 0       | Receive output to Transmit to    |
-|            |                    |       |         | indicate power on                |
-|            |                    |       |         | reset completion                 |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [16-20]    | Slice_ID           | 5     | x00     | Transmit Output to               |
-|            |                    |       |         | Receive                          |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [12-15]    | Link_ID            | 4     | x0      | Transmit Output to               |
-|            |                    |       |         | Receive                          |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [8-11]     | Device_ID          | 4     | x0      | Transmit Output to               |
-|            |                    |       |         | Receive                          |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [7]        | Reserved           | 1     | 1       | Reserved                         |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [6]        | Reserved           | 1     | 0       | Reserved                         |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [5]        | Reserved           | 1     | 1       | Reserved                         |
-+------------+--------------------+-------+---------+----------------------------------+
-|            |                    |       |         |                                  |
-| [4:0]      | User defined       | 1     | 0       | For application use              |
-+------------+--------------------+-------+---------+----------------------------------+
+## Test Patterns
 
+~framed {color:blue}
+* Should we make any or all of these test patterns mandatory to facilitate interoperability?
+* Syncing a receiver to a PRBS-31 pattern is slow without an agreed start time. 
+How do other specs do this?
 ~
 
-## Receive Control Register Definition
+Test patterns should be programmable to repeat indefiniately.
 
-~ TableFigure {#tab-receive_control; caption: "Receive Control Signals"; width:100%; }
-
-+------------+------------------------+-------+---------+------------------------------------+
-| Bit        | Control Signals        | Bit   | Default | Descripition                       |
-| Order      | from Receive to        | Width | Value   |                                    |
-|            | Transmit               |       |         |                                    |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [71]       | Reserved               | 1     | 0       | Reserved                           |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [70]       | rx_transfer_en         | 1     | 1       | Receive output to Transmit         |
-|            |                        |       |         | to indicate Receive Rx             |
-|            |                        |       |         | is ready to receive data           |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [69]       | rx_dcc_dll_lock_req    | 1     | 1       | DLL/DCC calibration request from   |
-|            |                        |       |         | Receive RX to Transmit TX BoW to   |
-|            |                        |       |         | start full DLL/DCC calibration.    |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [68]       | rx_dll_lock            | 1     | 1       | Receive output to Transmit         |
-|            |                        |       |         | (adapterand PHY) to indicate       |
-|            |                        |       |         | Receive DLL has achieved lock.     |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [67:65]    | Reserved               | 1     | 0       | Reserved                           |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [64]       | tx_transfer_en         | 1     | 1       | Transmit sends to Receive (adapter |
-|            |                        |       |         | and PHY) that it is ready          |
-|            |                        |       |         | for Trasnmit data transfer.              |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [63]       | tx_dcc_dll_lock_req    | 1     | 1       | PHY DLL/DCC calibration            |
-|            |                        |       |         | request from Receive TX to         |
-|            |                        |       |         | Transmit RX BoW to start full      |
-|            |                        |       |         | DLL/DCC calibration.               |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [62]       | Reserved               | 1     | 0       | Reserved                           |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [61]       | Reserved               | 1     | 0       | Reserved                           |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [60]       | Reserved               | 1     | 1       | Reserved                           |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [59]       | Reserved               | 1     | 0       | Reserved                           |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [58]       | Reserved               | 1     | 1       | Reserved                           |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [57:50]    | User defined           | 1     | 0       | For application use                |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [49]       | AUX_DBI                | 1     | 0       | AUX-0, DBI -1                      |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [48]       | rx_adapter_rstn        | 1     | 0       | Adapter reset                      |
-|            |                        |       |         | signal from the Transmit           |
-|            |                        |       |         | to Receive                         |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [47]       | tx_adapter_rstn        | 1     | 0       | Asynchronous adapter reset         |
-|            |                        |       |         | signal from the Receive            |
-|            |                        |       |         | to Transmit                        |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [46]       | rx_mac_rdy             | 1     | 0       | Data transfer ready signal         |
-|            |                        |       |         | from the Receive to Transmit       |
-|            |                        |       |         |                                    |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [45]       | tx_mac_rdy             | 1     | 0       | Data Transfer ready signal         |
-|            |                        |       |         | from the Transmit to               |
-|            |                        |       |         | the Receive                        |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [44]       | Power_on_reset         | 1     | 0       | Receive output to Transmit         |
-|            |                        |       |         | to indicate PoR completion         |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [40-43]    | Slice_ID               | 5     | x00     | Receive Output                     |
-|            |                        |       |         | to Transmit                        |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [36-39]    | Link_ID                | 4     | x0      | Receive Output                     |
-|            |                        |       |         | to Transmit                        |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [32-35]    | Device_ID              | 4     | x0      | Receive Output                     |
-|            |                        |       |         | to Transmit                        |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [31]       | rx_dcc_cal_done        | 6     | 1       | Receive to notify Transmit         |
-|            |                        |       |         | that DCC calibration is            |
-|            |                        |       |         | complete.                          |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [30:28]    | User defined           | 1     | 0       | For application use                |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [27]       | Reserved               | 1     | 0       | Reserved                           |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [26:17]    | User defined           | 1     | 0       | For application use                |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [16]       | User defined           | 1     | 0       | For application use                |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [15]       | User defined           | 1     | 0       | For application use                |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [14]       | User defined           | 1     | 0       | For application use                |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [13]       | User defined           | 1     | 0       | For application use                |
-+------------+------------------------+-------+---------+------------------------------------+
-|            |                        |       |         |                                    |
-| [12:0]     | User defined           | 1     | 0       | For application use                |
-+------------+------------------------+-------+---------+------------------------------------+
-
-~
-
-XX>
-
-#Testability
-
-## Test Pattern
 Suggested test patterns are:
 
 * PRBS-9 Pattern, defined  by polynomial of X^9^+ X^5^ +1
 
 * PRBS-31 Pattern, defined by polynomial of X^31^ + X^28^ +1
 
-Furthermore, to cover the DC wandering and single  bit response, the following suggested pattern should be added to the beginning of the preferred 
-PRBS pattern.
+* Isolated 1 and 0 pattern to test DC wander and single  bit response:
 
-['0'] X 10 + '1' + ['0'] X 10 + ['1'] X 10 + '0' + ['1'] X 10 + ['0'] X 10
-
+ *  ['0'] X 10 + '1' + ['0'] X 10 + ['1'] X 10 + '0' + ['1'] X 10 + ['0'] X 10
+ * This can be prepended to a PRBS pattern:
 
 
 ~ Figure { #fig-Pattern; caption: "Stress Test Pattern" }
@@ -1494,46 +1265,57 @@ PRBS pattern.
 
 ## Loopback Test
 
-A BoW interface will be used for loopback testing in two use cases: 
-at wafer-sort time for chiplet test for full-system bring-up, and debug validation. 
-  
-  
-  Wafer sort tests are currently only practical for the BoW interface with regular bump pitches (~130um), where ATE (automatic testing equipment) probe boards with matching pin pitches are available. Microbump probes will require additional effort.
+A BoW interface may implement loopback testing for several use cases: 
+at chiplet wafer-sort test, post-assembly package test, and debug/validation. 
 
-Unidirectional links will need open-loop testing. 
-In Tx-Open-Loop testing, shown in Figure [#fig_test_tx], Chiplet-A transmits a known test pattern (PRBS9 or PRBS31) to a golden reference receiver through the ATE load board. 
+Wafer sort tests are currently only practical for the BoW interface with 
+regular bump pitches (~130um), where ATE (automatic testing equipment) probe 
+boards with matching pin pitches are available. 
+Microbump probes will require additional effort.
+
+Unidirectional links need open-loop testing. 
+In Tx open loop testing, shown in Figure [#fig_test_tx], Chiplet-A transmits a 
+known test pattern (PRBS9 or PRBS31) to a golden reference receiver through the ATE load board. 
 The received pattern is verified in the ATE load board.
 
-Rx-Open-Loop testing, shown in Figure [#fig_test_rx], is used for a link where the DUT is only a receiver. 
-A golden reference Tx transmits a known pattern (PRBS9 or PRBS31) through the channel to the chiplet. The received pattern will be analyzed for quality and functional tests. 
+Rx open loop testing, shown in Figure [#fig_test_rx], is used for a link 
+where the DUT is only a receiver. 
+A golden reference Tx transmits a known pattern (PRBS9 or PRBS31) through the channel to the chiplet. 
+The received pattern will be analyzed for quality and functional tests. 
+
+The logic for generating and testing the PRBS sequences is outside the PHY, e.g., in the Link Layer.
 
 
-
-~ Figure { #fig_test_tx; caption: "Open loop Tx chiplet testing" }
+~ Figure { #fig_test_tx; caption: "Open loop Tx wafer test" }
 ![fig_test_tx]
 [fig_test_tx]: images/LB_Spec/Slide2a.png { width:auto; max-width:100% }
 ~
 
-~ Figure { #fig_test_rx; caption: "Open loop Rx chiplet testing" }
+~ Figure { #fig_test_rx; caption: "Open loop Rx wafer test" }
 ![fig_test_rx]
 [fig_test_rx]: images/LB_Spec/Slide3a.png { width:auto; max-width:100% }
 ~
 
-In bidirectional links, loopback tests can be implemented in two modes:
+In bidirectional links, loopback tests can be implemented in several modes:
 
- * slice-to-slice short loopback mode: Data is looped back within the chip
+ * slice-to-slice short loopback 
+  * Data is looped back within the chip
  from a Tx slice to an Rx slice using on-chip switching (shown in Figure [#fig_test_sl]). 
- The short loopback path is configured by the ATE. 
- * intra-slice short loopback mode: A single slice containing both Rx and Tx paths sharing the same bumps
+ The short loopback path is configured by the ATE using implementation-dependent registers.
+  * Loopback can be implemented before the PHY serializer, between the serializer and the output buffer, 
+  and/or at the bumps. 
+ * intra-slice short loopback
+  * A single slice containing both Rx and Tx paths sharing the same bumps
  can perform on-chip loopback testing simply by turning on both the Rx and Tx paths at once.
  This has more on-chip circuitry, but allows loopback testing with no switches or extra 
  lines connected to the bumps other than the Tx driver tristate switches. 
  Figure [#fig_test_sl] applies, except there is only one shared set of bumps for a Tx/Rx slice.
- * long loopback mode: 
- the PRBS pattern is generated by chiplet-A, sent over the replica channel on the ATE load board which loops it back 
+ * long loopback 
+  * the PRBS pattern is generated by chiplet-A, sent over the replica channel on the ATE 
+  load board which loops it back 
  (shown in Figure [#fig_test_ll]). 
- The received pattern will be passed to a bit error rate tester (BERT) to analyze the performance of the link with off-chip data and clock wires.
-
+ The received pattern will be passed to a bit error rate tester (BERT) to analyze the 
+ performance of the link with off-chip data and clock wires.
 
 
 ~ Figure { #fig_test_sl; caption: "Short loopback testing" }
@@ -1546,18 +1328,17 @@ In bidirectional links, loopback tests can be implemented in two modes:
 [fig_test_ll]: images/LB_Spec/Slide1a.png { width:auto; max-width:60% }
 ~
 
-
- 
-
-
-
 Both loopback modes can potentially be used for in-field validation bring-up and test. 
 Cooperation across chiplets will be required to execute these tests in the field. 
-Open-loop testing requires the use of a fixed test pattern recognized by both ends and is the only option for unidirectional links. 
-Long loopback mode can be implemented on interposer or organic laminate for validation/verification purposes. 
+Open-loop testing requires the use of a fixed test pattern recognized by both ends and 
+is the only option for unidirectional links. 
+Long loopback mode can be implemented on interposer or organic laminate for 
+validation/verification purposes. 
 
-Figure [#fig_test_cll] shows how a long loopback mode is executed across two chiplets for in-field validation and test 
-where Tx and Rx are in different chiplets. Furthermore, this configuration can be expanded to loop back the data from the transmitter of chiplet-A to the receiver of chiplet-A. 
+Figure [#fig_test_cll] shows how a long loopback mode is executed across two chiplets 
+for in-field validation and test 
+where Tx and Rx are in different chiplets. Furthermore, this configuration can be expanded 
+to loop back the data from the transmitter of chiplet-A to the receiver of chiplet-A. 
 
 
 ~ Figure { #fig_test_cll; caption: "Chiplet-to-chiplet long loopback" }

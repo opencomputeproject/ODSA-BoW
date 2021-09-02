@@ -707,8 +707,8 @@ of the slice area.
 A BoW interface must conform to these slice numbering rules:
 
 * The Tx slices in a link are numbered from 0 at the upper left edge of the link 
-(facing from the chip center to the edge) and ascending through the Tx slices in a stack, 
-then from stack to stack clockwise.
+(facing from the chip center to the edge in a dead-bug view) 
+and ascending through the Tx slices in a stack, then from stack to stack clockwise.
 * The Rx slices in a link are numbered from 0 at the upper right, through the Rx slices in a stack,
 then stack to stack counterclockwise.
 

@@ -541,6 +541,15 @@ Adding termination increases the speed and/or reach, at the expense of greater d
 
 # BoW Physical Configuration
 
+## Dead-Bug Views
+
+The physical diagrams in this document are oriented looking down at the top layer of the 
+unpackaged chiplets.
+Since these are flip-chip packages, these views are equivalent to looking through the 
+bottom of the package with the balls up (dead bug view).
+For the view as seen looking down on a package as mounted on a PCB (live bug view), 
+these views must be mirrored.
+
 ## BoW Components
 
 ~ Figure { #fig-components; caption: "BoW Link Components" }
@@ -578,6 +587,7 @@ The minimal bidirectional reference link is shown in Figure [#fig-min_link].
 
 In this example, each chiplet has one Tx slice and one Rx slice, 
 arranged in two one-slice stacks on each chiplet.
+This is a dead-bug view.
 
 ## Die-to-Die Signals
 
@@ -612,7 +622,7 @@ the details on FEC and AUX usage, which is defined in the Link layer.
 A BoW interface must conform to these wire order rules at the edge of the chip:
 
 * The signals for a Tx slice are in the following order at the chip edge, 
-going clockwise around the chiplet: 
+going clockwise around the chiplet in a dead-bug view: 
 AUX, D0, D1, D2, D3, D4, D5, D6, D7, CLK+, CLK-, D8, D9, D10, D11, D12, D13, D14, D15, FEC
 * The signals for an Rx slice are in the reversed order (ascending goes counter-clockwise)
 * The same clockwise/counter-clockwise ordering is used on all four sides of a chiplet
@@ -697,8 +707,8 @@ of the slice area.
 A BoW interface must conform to these slice numbering rules:
 
 * The Tx slices in a link are numbered from 0 at the upper left edge of the link 
-(facing from the chip center to the edge) and ascending through the Tx slices in a stack, 
-then from stack to stack clockwise.
+(facing from the chip center to the edge in a dead-bug view) 
+and ascending through the Tx slices in a stack, then from stack to stack clockwise.
 * The Rx slices in a link are numbered from 0 at the upper right, through the Rx slices in a stack,
 then stack to stack counterclockwise.
 

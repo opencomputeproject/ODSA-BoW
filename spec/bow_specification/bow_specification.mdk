@@ -295,7 +295,7 @@ links will have short reaches requiring chips to be adjacent.
 A BoW PHY must operate in one of the Bow Modes listed in ascending order in Table [#tab-levels].
 A BoW Mode defines the speed of clock and data of the PHY on the die-to-die wires.
 In all modes, the data must be clocked DDR: 
-the data wire bit rate is double the clock wire frequency.
+the chip-to-chip data wire bit rate is double the clock wire frequency.
 All BoW interfaces must be able to interoperate with all the lower modes.
 Supporting rates other than the defined four modes is an implementation choice.
 There is more detail on BoW Modes in section [#sec-bow-modes].
@@ -359,7 +359,7 @@ FEC (Forward Error Correction) is an optional signal that allows using FEC to
 improve the bit error rate (BER). 
 By using an additional wire when FEC is enabled, the payload data rate is not affected
 and the wire data rate need not change.
-This allows F(PCLK) = F(TxClk) / 2^n with FEC off or on, 
+This allows F(PCLK) = F(TxClk) / 2^n^ with FEC off or on, 
 which simplifies the clock generation and serialization functions.
 If used, FEC is implemented in the Link layer, and the PHY treats the FEC bit the same
 as the other data bits. 
@@ -369,6 +369,8 @@ such as Data Bus Inversion (DBI), flow control, redundancy for defect repair, et
  
 The Link layers of Chiplets A and B will need to agree on the details on FEC and AUX usage.
 An implementation may choose to support the FEC and AUX wires, or to omit both of them.
+<xx If FEC and AUX are included in a PHY implementation, the PHY carries them in the same 
+way as the data bits without acting on the content. >
 
 Table [#tab-signals-d2d] summarizes these signals.
 
@@ -411,27 +413,29 @@ If DBI = 1 then the Rx DBI logic inverts the Data bits to recover the original d
 
 Figure [#fig-bow-logicin] shows the data and control signals in the interfaces to 
 the logic in the die in each BoW transmit and receive slice. The data at the slice 
-logic interface must be DDR (bit rate equal to twice the PCLK frequency). The BoW PHY is 
+logic interface must be SDR (Single Data Rate - bit rate equal to the PCLK frequency). 
+The BoW PHY is 
 expected to be used with a link controller. The transmission of logical information 
-across a slice and the control and management of a slice are the responsibility of the 
+through a slice and the control and management of a slice are the responsibility of the 
 link controller. 
 
 ### Slice Logic Interface: Data Signals
 
 The signals in Table [#tab-mac_interface] shall constitute the data interface between the link layer 
-and the PHY.
+and the PHY. 
+N is the ratio of the chip-to-chip per-wire data rate to the logic interface per-wire data rate.
 
 ~ TableFigure {#tab-mac_interface; caption: "Link Layer Interface Signals"; width:100%;  }
 |--------+--------+----------+----------+-------------------------------------------------------------|
 | Signal | # Bits | Tx Slice | Rx Slice | Description                                                 |
 +--------+--------+----------+----------+-------------------------------------------------------------+
-| Data   | 16     | In       | Out      | Data                                                        |
+| Data   | 16*N   | In       | Out      | Data                                                        |
 +--------+--------+----------+----------+-------------------------------------------------------------+
-| FEC    | 1      | In       | Out      | Forward Error Correction (optional)                         |
+| FEC    | N/0    | In       | Out      | Forward Error Correction (optional)                         |
 +--------+--------+----------+----------+-------------------------------------------------------------+
-| AUX    | 1      | In       | Out      | Auxiliary uses (optional)                                   |
+| AUX    | N/0    | In       | Out      | Auxiliary uses (optional)                                   |
 +--------+--------+----------+----------+-------------------------------------------------------------+
-| PCLK   | 1      | *        | *        | * Out if CDC is in Link Level, In if CDC is in the PHY      |
+| PCLK   | 1      | Out      | Out      |                                                             |
 +--------+--------+----------+----------+-------------------------------------------------------------+
 | TxClk  | 1      | In       | NA       | Comes from a PLL or other clock source, not the Link layer. |
 |        |        |          |          | The TxClk source is usually shared among many Tx slices.    |
@@ -459,25 +463,24 @@ from the link layer to the PHY.
 
 ~
 
-#### PHY Reset
+#### PHYReset Tx and Rx
 The PHYReset pin is asserted by the link controller to initialize the PHY.
-The PHYReset signal shall allow internal self-alignment to take place. The reset 
+While PHYReset signal is asserted, the PHY stays in its reset state.
+When the PHYReset signal is de-asserted, the PHY performs
+any necessary self-alignment. 
+The reset 
 states are otherwise implementation-dependent and shall be documented in the 
 datasheet of a particular implementation. 
 
-#### PHY Ready
-PHY Ready is asserted by the PHY to indicate to the controller that it is ready to
-transmit/receive data.
+#### PHYReady Tx
+On a Tx slice, PHYReady asserted indicates PHY is transmitting good clock and ready to transmit data.
 
-#### PHY Ready Tx
-On Tx, PHY ready asserted indicates PHY is transmitting good clock and ready to transmit data
-
-#### PHY Ready Rx
-On Rx PHY ready assumes clock received is good when PHY reset is deasserted. 
+#### PHYReady Rx
+On a Rx slice, the PHY assumes clock received is good when PHYReset is deasserted. 
 After the Rx slice clock self-alignments are complete, each Rx PHY slice shall assert its 
 PHYReady pin. How an Rx PHY slice determines completion of the self-alignment is 
 implementation-dependent. For instance, it can be determined by observing the 
-settling of the DLL or by a simple timer. PHY Ready asserted indicates
+settling of the DLL or by a simple timer. PHYReady asserted indicates
 that any data received will be captured correctly.
 
 ### Programming
@@ -504,16 +507,16 @@ Link initialization is described in Section [#sec-reset-and-initialization].
 
 # BoW Modes
 
-A BoW interface must conform to one of the Bow Modes seen in Table [#tab-levels].
+A BoW interface must conform to at least one of the Bow Modes seen in Table [#tab-levels].
 The recommended maximum wire reach for different packaging types and terminations is 
 seen in Table [#tab-reaches].
 Exceeding these reach values degrades the voltage margins at the receiver.
 "Laminate" is intended to include organic laminate packages (a.k.a. "buildup) and similar 
 technologies with approximately 25 um line and space rules.
-"Advanced" is intended to include silicon interposer and similar technologies.  
 
+"Advanced" is intended to include silicon interposer and similar technologies.
 These have much finer line and space dimensions, but traces are usually much
-more resistive than in organic laminate packages and must operate with reduced trace lengths. 
+more resistive than in organic laminate packages and must operate with much shorter trace lengths. 
 Termination is not expected to be necessary for implementations targeting Advanced packaging.
 
 ~ TableFigure {#tab-reaches; caption: "Recommended BoW Wire Reaches"; width:100%;  }
@@ -537,7 +540,8 @@ Termination is not expected to be necessary for implementations targeting Advanc
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
 
 ~
-Adding termination increases the speed and/or reach, at the expense of greater design complexity.
+Adding termination increases the speed and/or reach, at the expense of greater design complexity
+and power.
 
 # BoW Physical Configuration
 
@@ -562,11 +566,11 @@ A BoW link between two chiplets is made up of
 wires, slices, and stacks as seen in Figure [#fig-components].
 
 * The signal traces in the package between chiplets are called **wires**.
-* The basic unit is a **slice** with 18 or 20 signal bumps. 
+* The basic unit is a **slice**; it must have 18 or 20 signal bumps. 
 It must have 2 bumps for the differential
 clock and 16 single-ended data bumps.
 It may also have the optional single-ended signals AUX and FEC. 
-The long edge of a slice is parallel to the chip edge.
+The long edge of a slice must be parallel to the chip edge.
 * Multiple slices may be placed in a **stack**. The slice positions are
 designated A, B, C, etc, starting with the slice closest to the edge of the chip.
 * A **link** from one chiplet to another must be composed of one or more
@@ -601,7 +605,7 @@ This is a dead-bug view.
 |--------------|----------|------------|-------------|
 |Forward Error | 0/1      |FEC         | Optional    |
 |Correction    |          |            |             |
-+--------------+----------+------------+-------------|
+|--------------|----------|------------|-------------|
 |Auxiliary     | 0/1      |AUX         | Optional    |
 |--------------|----------|------------|-------------|
 ~
@@ -672,8 +676,10 @@ slice on chiplet B (one must be configured for Tx and one for Rx).
 The position-B slices are connected together, and so on.
 
 There is no specified limit to the number of slices in a stack. 
-In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supports 4 slices 
-(a 7-2-7 laminate can support 4 slices but with reduced signal integrity).
+In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supports 4 slices
+as shown in Figure [#fig-pkg_cross_section].
+A 7-2-7 laminate can support 4 slices by omitting the top GND layer, 
+but with reduced signal integrity.
 Layers on the bottom side of the package typically cannot be used for BoW signals 
 due to low via density passing through the thick central core layer.
 

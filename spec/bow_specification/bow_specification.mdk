@@ -677,7 +677,7 @@ In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supp
 Layers on the bottom side of the package typically cannot be used for BoW signals 
 due to low via density passing through the thick central core layer.
 
-In advanced packaging technologies, the shorter wire lengths allow the use of 
+In advanced packaging technologies, the shorter wire lengths may allow the use of 
 non-controlled-impedance wires and unterminated transmitters and receivers.
 The smaller wire and space dimensions may allow
 the wires for multiple slices to be interleaved on a single wiring layer.
@@ -744,8 +744,95 @@ with a bump pitch is 130 um,
 the total edge width is 5.2 mm (4.16 mm without AUX and FEC); the depth from the edge is 1.35 mm.
 In an interposer, if the bump pitch is 40 um, the edge width is 1.60 mm (or 1.28 mm) and the depth is 0.42 mm.
 
-# Timing
+# BoW PHY Electrical Specifications {#elec-specs}
 
+In order to ensure interoperability between differing BoW PHY implementations, this chapter provides a set of 
+electrical specifications that all such BoW PHY implementations must meet.   
+
+## Voltages and Termination Resistance
+
+All BoW implementations must support signaling based on a 0.75 V I/O supply.  BoW PHYs may also support higher or lower signaling 
+voltages, but must support 0.75 V based signaling for interoperability. 
+
+Independently of the I/O supply, BoW transmitters and receivers must meet the DC termination resistance requirements defined in Table [#tab-impedance].
+Note that TX/RX termination (output/input) resistance values are skewed low/high compared to the channel impedance in order to ensure
+that the DC single-ended voltage swing at the RX is never reduced to less than half of the I/O supply (i.e., 375mV for a 0.75V I/O supply).  Note that 
+these termination resistance values should be met with logical 0, logical 1, and mid-scale between logic 0 and logic 1 voltages on the wire 
+between the TX and the RX.     
+
+~ TableFigure {#tab-impedance; caption: "Transmit and Receive Termination Resistance Requirements vs. Mode"; width:100%;  }
+|--------------|---------------------|-----------------------------|-----------------------------|
+|              |Unterminated         |Source-Terminated            | Doubly Terminated           |
+|              |                     |                             |                             |
++:------------:+:-------------------:+:---------------------------:+:----------------------------+
+| TX DC Term.  | As required to meet | **36 &Omega; - 50 &Omega;** | **36 &Omega; - 50 &Omega;** |
+|              | TX rise-time        | (0.72 - 1.0 Z~chan~)        | (0.72 - 1.0 Z~chan~)        |
+|              |                     |                             |                             |
++--------------+---------------------+-----------------------------+-----------------------------+
+| RX DC Term.  | -                   |-                            | **50 &Omega; - 69 &Omega;** |
+|              |                     |                             | (1.0 - 1.38 Z~chan~)        |
+|              |                     |                             |                             |
++--------------+---------------------+-----------------------------+-----------------------------+
+| Within-Slice | -                   | **&sigma; = 1.333%**        | **&sigma; = 0.667%**        |
+| DC Term.     |                     | (8% over 6 &sigma;)         | (4% over 6 &sigma;)         |
+| Matching     |                     |                             |                             |
+|--------------|---------------------|-----------------------------|-----------------------------|
+~  
+
+Especially in doubly terminated modes, within-slice variations of termination resistance would directly result in varying swing levels at each pin.
+Thus, in order to reduce or eliminate the need for per-pin voltage reference adjustment at the RX, Table [#tab-impedance] also specifies
+requirements on DC termination resistance matching across all I/O's within a given BoW slice.  The &sigma; for this variation in the table
+should be interpreted as capturing within-slice manufacturing variability across worst-case voltage/temperature operating conditions, and is expected to 
+be primarily influenced by some combination of transistor and explicit resistor matching (with the mix depending on the circuit implementation).   
+
+In doubly terminated modes of operation, the RX termination resistance should be connected to 0V, the I/O supply, or mid-rail of the I/O 
+supply (e.g., 375mV with a 0.75V I/O supply).  The selection of termination voltage is expected to be static (hardwired) in the RX, and should
+be specified in the receiver's datasheet.  It is expected that Source-Series-Terminated (SST) Transmitters will be largely agnostic to the choice 
+of termination voltage on the receiver.       
+
+## ESD 
+BOW I/O shall be designed to withstand **50 V CDM** (Charged Device Model) and 
+**250 V HBM** (Human Body Model). 
+This requirement is deemed sufficient for intra-package signaling, 
+similar to other die-to-die interface standards.
+
+## Return Loss and Parasitic Capacitance
+
+Since BoW PHYs are targeted for relative dense and simple realizations, it is expected that the primary frequency-dependent 
+parasitics seen at a PHY's I/Os will be capacitive in nature.  Table [#tab-cap] provides limits on the maximum "equivalent"
+capacitance allowed on each side of each BoW I/O pin.  (E.g., a BoW-128 TX is allowed to have up to 600fF of 
+equivalent capacitance.)  Note that while the maximum capacitance specification does increase at lower data-rates, 
+it is recommended that BoW PHY implementations retain as low of a capacitance as practical in order to reduce power consumption 
+and improve signal integrity.    
+
+~ TableFigure {#tab-cap; caption: "Maximum Parasitic Capacitance at a BoW I/O vs. Mode"; width:100%;  }
+|------------------------|-----------|-----------|-----------|
+|                        |BoW--32    |BoW-128    | BoW-256   |
+|                        |or BoW-64  |           |           |
++:----------------------:+:---------:+:---------:+:----------+
+| Maximum Equivalent     | **1.2pF** | **600fF** | **300fF** |
+| Capacitance (TX or RX) |           |           |           |
+|------------------------|-----------|-----------|-----------|
+~  
+
+
+Since the actual frequency-dependent impedance profile of any given implementation may be comprised of a complex electrical network, 
+compliance with the "equivalent" capacitance metric is formally defined by requiring that the magnitude of the return loss of any BoW I/O
+is lower than the maximum limits shown in Figure [#fig-S11] below.  Similarly to DC termination resistance, the maximum s~11~ magnitude 
+in the figure must be met with logical 0, logical 1, and mid-scale between logic 0 and logic 1 voltages on the wire between the TX and RX.     
+
+~ Figure { #fig-S11; caption: "BoW Termination Maximum Return Loss" }
+![S11]
+~
+[S11]: images/s11_max.png {width:auto; max-width:80% }
+
+## Receiver Bandwidth
+
+While this specification does not place a direct requirement on the bandwidth of a BoW receiver implementation, it is recommended that
+such receivers maintain an effective bandwidth of at least **(0.667/T~bit~) Hz**.  For example, for a BoW-256 PHY, the receiver bandwidth 
+is recommended to be at least 10.667 GHz.      
+
+# BoW PHY Timing Specifications
 
 ## Clocking
 
@@ -758,7 +845,7 @@ Figure [#fig-clocking] shows the clock and data flow for a single Tx slice and a
 On the Tx side, data bits (and optional FEC and AUX bits) come in a wide word from the link layer, 
 and are serialized to the line rate. 
 At the Rx side, they are sampled with a common slicer clock in most BoW implementations.
-BoW-256 may optionally implement per-bit delay adjust or per-bit slicer clock adjust.
+BoW PHYs may optionally implement per-bit delay adjust or per-bit slicer clock adjust.
 
 All BoW interfaces shall be DDR (Double Data Rate) at the chip-to-chip interface: 
 the data bit rate is twice the clock frequency, 
@@ -773,7 +860,7 @@ and M=4 to support a 1 Gbps data rate at the Link-PHY interface.
 +:-------------------------------:+:------:+:----------+
 | TxClk                           | 2 GHz  |           |
 +---------------------------------+--------+-----------+
-| CLK+,CLK-                       | 2 GHz  |           |
+| CK+,CK-                       | 2 GHz  |           |
 | D[15:0],AUX,FEC                 | 4 Gbps | DDR       |
 |                                 |        |           |
 +---------------------------------+--------+-----------+
@@ -782,26 +869,22 @@ and M=4 to support a 1 Gbps data rate at the Link-PHY interface.
 |---------------------------------|--------|-----------|
 ~
 
-The ratio M should be limited to integers, preferrably powers of two, and other ratios 
-implemented in a gearbox in the Link layer. 
+The ratio M should be limited to integers, preferably powers of two, and other ratios 
+supported by the Link layer. 
 
 The DDR clock TxClk is provided to the Tx PHY from elsewhere on Chiplet-A.
-This may come from an on-chip PLL (typically shared across multiple slices) or it 
-can be routed from the RxClk of an Rx slice on Chiplet-A. 
-In order to meet duty cycle requirements, a Duty Cycle Corrector (DCC) may be needed in the
-Tx slice. TxClk is used to drive the serializers and provide the output CLK+,CLK- to
-Chiplet-B.
+This may come for example from an on-chip PLL (typically shared across multiple slices) or 
+routed from the RxClk of an Rx slice on Chiplet-A. In order to meet duty cycle requirements, 
+a Duty Cycle Corrector (DCC) may be needed in the Tx slice. TxClk is used to drive the serializers and 
+provide the output CK+,CK- to Chiplet-B.
 
 On the Rx side, the PHY must align the slicer clock to sample the data correctly.
-This may be done with a DLL or adjustable delays or other methods.
-The PHY shall include control logic to self-align the slicer clock for correct sampling of the data.
-Alignment is started by signal AlignDll from the Rx Link Layer; 
-the PHY provides a signal DllAligned to the Link Layer when it is complete.
+This may be done with a DLL or adjustable delays or other methods.  If the PHY includes 
+control logic to self-align the slicer clock for correct sampling of the data, the PHYReady 
+signal should be asserted after the logic has determined that such alignment is complete.
 
-All BoW interfaces shall be source synchronous within a slice. 
-BoW-32 to BoW-128 interfaces do not require per-wire alignment - the signals
-within a slice are aligned sufficiently well by matching their paths.
-BoW-256 interfaces may need per-wire delay adjustment or per-slicer clock adjustment.
+All BoW interfaces shall be source synchronous within a slice. No modes of BoW require per-wire
+or per-slicer delay adjustments, but such capability may be optionally included. 
 
 Clock skew between the slices in each direction of a link depends on the implementation of the
 TxClk distribution to all the Tx slices. 
@@ -819,73 +902,130 @@ core clock distribution skew across the whole link.
 If DCCs are included in the PHY and they need an alignment cycle, they shall include 
 control logic to perform self-alignment.
 
+## Clock and Data Specifications {#clk-data-specs}
 
-## Clock and Data Specifications
+### Transmitter Maximum Rise-Time
 
+The maximum 20% - 80% rise-time measured at the output of BoW TX shall 
+not exceed **32% of a UI**.  For example, for a BoW-128 Transmitter, the 
+20% - 80% rise-time should not exceed 40 ps.  This rise-time should be measured 
+with the TX driving an ideal load of 50 &Omega; (Z~chan~).     
 
-### Timing Requirements 
+### Transmitter Jitter {#tx-jit}
 
-Figure [#fig-eye] shows the definition of the eye diagram parameters.
+The total jitter measured between the CK and any data (D) line at the output 
+of the TX shall not exceed **14% of a UI peak-to-peak at an error rate of 1e-15**. 
+The evaluation of jitter must include all possible TX jitter contributors, including reference clock, clock distribution networks, 
+any DCC, PLL jitter, power-supply noise and switching noise.  In order to retain TX design 
+flexibility, this single total jitter specification includes both random and deterministic 
+contributions to jitter.  Note that to account for the 1e-15 error rate and peak-to-peak
+requirement, the total jitter t~j,tot~ should be computed as:
+
+~ center
+t~j,tot~ = t~j,determinsitic~ + 15.9 &sigma;~tj,random~
+~ 
+
+This jitter must be evaluated for CK edges that are up to **3 UI** earlier than 
+the CLK edge that launched the data bit being captured at the receiver.  This is because even 
+though jitter on the data edges may be correlated with the CK jitter, 
+the slicer in the Rx side is likely to use a different CK edge due to delays in the 
+Rx-side clock alignment circuit (usually a DLL).
+
+In order to properly account for the jitter filtering/peaking that will occur due to the 
+difference in delay between the data launching edge at the TX and the data capturing edge at the RX, 
+the spectrum of jitter at the TX output that is **correlated** between the CLK and D lines should be 
+filtered by the following frequency-dependent transfer function:
+
+~center
+**H~tx_jit~(j&omega;) = 1-e^(-j&omega;t~clk-d~)^**  
+~
+
+where t~clk-d~ is the number of cycles of delay between the CK edge that launched the data 
+bit and the CK edge used to capture it.  Note that jitter that is not correlated between the CK and D 
+signals should **not** be filtered by this transfer function.  (I.e., if the
+CK signal and a given D signal have completely independent sources of jitter added to them, 
+those jitter sources would not be filtered by H~tx_jit~(j&omega;).  Since the total TX jitter 
+after filtering by this transfer function might not be monotonic with t~clk-d~, and since receiver implementations 
+may realize varying values of t~clk-d~, a transmitter must meet the 14% of a UI 
+peak-to-peak specification for **t~clk-d~ = T~bit~**, for **t~clk-d~ = 2T~bit~**, **and** 
+for **t~clk-d~ = 3T~bit~**.     
+
+### Transmitter CK Edge to D Transition Skew + Jitter
+
+In addition to jitter, BoW TX PHY implementations may introduce skew between the 
+individual D signals and the CK signals within a slice.  The total amount of skew and jitter (as defined in Section
+[#tx-jit]) introduced by a BoW TX must be less than **18% of a UI peak-to-peak**.
+For example, a TX whose total jitter is 14% of a UI (and hence just meets the requirement) is 
+allowed to introduce up to 4% of a UI peak-to-peak skew between CK and D, while a TX with jitter better than 
+required by this specification is allowed to introduced a larger amount of skew.
+
+Note that this specification should be measured directly at the TX output while driving 
+an ideal load of 50 &Omega; (Z~chan~).       
+
+### CK Receiver Sensitivity to Common-Mode Variations
+
+The timing of a BoW RX PHY's sampling clock edge at the slicer must be modulated by **less 
+than 0.1% of a UI per mV of common-mode variation on CK+/CK-**.  This sensitivity requirement 
+must be met across any common-mode variation frequency less than or equal to 1/T~bit~.  For example,
+the sampling clock edge of a compliant BoW RX would vary by less than 2% of a UI peak-to-peak 
+for peak-to-peak common mode variation on CK+/CK- of 20mV.        
+
+### Receiver Sensitivity and Timing Margin {#rx-eye}
+
+As indicated in Figure [#fig-eye] and Table [#tab-eye], a BoW receiver must meet the required bit-error-rate 
+of 1e-15 when receiving signals with a vertical opening (voltage margin) of at least V~rx_eye~ and 
+horizontal opening (timing margin) of at least t~rx_eye~.  Both V~rx_eye~ and t~rx_eye~ should include any
+random and/or statistical noise and error terms introduced by either the channel or the TX at a level that 
+corresponds to 1e-15 probability.  Similarly, the receiver's voltage sensitivity (which sets V~rx_eye~)
+must also be evaluated at 1e-15 error rate, so the total voltage sensitvity V~s,RX~ should be computed as:
+
+~center
+V~s,RX~ = V~err,deterministic~ + 15.9 &sigma;~V~~err,random~
+~
+
+Since swing and signal integrity are expected to vary with termination, the RX voltage sensitivity 
+requirements and minimum timing margin requirements are termination-dependent, as outlined
+in Table [#tab-eye].
 
 ~ Figure { #fig-eye; caption: "Eye Diagram Definitions" }
 ![eye]
-[eye]: images/bowspec_figure_eye.PNG { width:auto; max-width:80% }
+[eye]: images/bow_rx_eye.png { width:auto; max-width:80% }
 ~
 
-The CLK and data signals at the receiving slice bumps must meet the conditions in Table [#tab-integrity]
-
-~ TableFigure {#tab-integrity; caption: "BoW Signal Integrity Requirements"; width:100%; }
-<This table generated with https://www.tablesgenerator.com/markdown_tables# >
-
-+----------+----------------------------+-----------------------------------+-------------------+
-| Symbol   | Spec                       | Unterminated or Source Terminated | Doubly Terminated |
-+----------+----------------------------+-----------------------------------+-------------------+
-| V~hi~    | High signal voltage        | 750 mV                            |                   |
-+----------+----------------------------+-----------------------------------+-------------------+
-| V~lo~    | Low signal voltage         | 0 mV                              |                   |
-+----------+----------------------------+-----------------------------------+-------------------+
-| V~swing~ | Signal Swing               | 750 mV                            | 375 mV            |
-+----------+----------------------------+-----------------------------------+-------------------+
-| V~tol~   | Tolerance of Vhi, Vlo (5%) | \+- 37 mV                         | \+- 19 mV         |
-+----------+----------------------------+-----------------------------------+-------------------+
-| t~eye~   | Data eye width             | 50% UI                            | 50% UI            |
-+----------+----------------------------+-----------------------------------+-------------------+
-| V~eye~   | Data eye height            | 40%(V~hi~-V~lo~)                  | 20%(V~hi~-V~lo~)  |
-|          |                            | (300 mV)                          | (75 mV)           |
-+----------+----------------------------+-----------------------------------+-------------------+
-| V~ov~    | Data and CLK overshoot     | 25%(V~hi~-V~lo~)                  | 50%(V~hi~-V~lo~)  |
-|          |                            | (188 mV)                          | (188 mV)          |
-+----------+----------------------------+-----------------------------------+-------------------+
-| t~skew~  | Slice to slice CLK skew    | 100 ps/stack                      | 100 ps/stack      |
-+----------+----------------------------+-----------------------------------+-------------------+
-
+~ TableFigure { #tab-eye; caption: "Receiver Voltage Sensitivity and Minimum Timing Margin"; width: 100%}
+|------------------------|----------------|------------------|-------------------|
+|                        |Unterminated    |Source-Terminated | Doubly Terminated |
+|                        |                |                  |                   |
++:----------------------:+:--------------:+:----------------:+:------------------+
+| Maximum RX sensitivity | **150 mV**     | **150 mV**       | **75 mV**         |
+| (V~rx_eye~)            |                |                  |                   |
+|                        |                |                  |                   |
++------------------------+----------------+------------------+-------------------+
+| Minimum Timing Margin  | **50% T~bit~** | **50% T~bit~**   | **50% T~bit~**    |
+| @ RX bump              |                |                  |                   |
+| (t~rx_eye~)            |                |                  |                   |
+|                        |                |                  |                   |
+|------------------------|----------------|------------------|-------------------|
 ~
 
-V~swing~ of 750 mV must be supported by all unterminated or source-terminated BoW implementations, 
-but other values may be supported.
-V~swing~ of 375 mV must be supported by doubly-terminated implementations.
-BoW transmitters which support double termination must support termination to 750, 375 or 0 mV.
+<XX COMMENT: DO WE WANT TO KEEP THE OVERSHOOT SPEC?
+Overshoot: 25% of VDDIO
+XX>
 
-t~eye~ must be evaluated for each of the bits in a slice
-relative to the differential CLK+ - CLK- signal for that slice.
-t~eye~ must be evaluated for CLK edges up to 3 UI earlier than the eye center.
-This is because even though jitter on the data edges is correlated with the CLK jitter at
-the Tx side, the slicer in the Rx side is likely to use a different CLK edge due to
-delays in the Rx-side clock alignment circuit (usually a DLL).
-The evaluation of jitter must include all possible jitter contributors, 
-including reference clock, clock distribution networks, 
-any DCC, PLL and DLL jitter, power-supply noise and switching noise.
-
-The slice to slice clock skew t~skew~ across the width of a BoW link (along the chip edge) 
-must be less than 100 ps/stack.
-This is dominated by the TxClk distribution network.
-
+<XX COMMENT
 Since these signals do not leave the package, these values must be verified with simulation.
 
 If the slice implementation allows programmatic control of the DLL alignment values, 
 varying those values after locking the DLL may provide timing margin information.
 If the slice implementation allows programmatic control of the receiver voltage 
 thresholds, varying those values may provide vertical margin information.
+XX>
+
+
+### Slice-to-Clice CLK Skew
+
+The slice to slice clock skew t~skew~ across the width of a BoW link (along the chip edge) 
+must be less than **100 ps/stack**.  This is expected to be dominated by the TxClk distribution network.
 
 <XX
 ### Reference Slice Timing
@@ -961,49 +1101,26 @@ DataEyeWidth - BitToBitSkewFanout - BitToBitSkewMismatch
 ~
 XX>
 
-# Electrical Specifications
-
-## Voltages
-
-BoW implementations must support signal swings as specified in Table [#tab-integrity].
-BoW interfaces may also upport higher or lower signaling 
-voltages but must support 0.75 V based signaling to ensure interoperability.
-BoW does not specify the VDD power rail voltage. 
-
-## ESD 
-BOW I/O shall be designed to withstand 50 V CDM (Charged Device Model) and 
-250 V HBM (Human Body Model). 
-This requirement is deemed sufficient for intra-package signalling, 
-similar to other die-to-die interface standards.
-
-## Termination and Return Loss
-
-See Table [#tab-reaches] for the recommended termination vs. reach and mode.
-For lower rates on laminate or similar packages, 
-BoW transmitters should be source-terminated to 50 +/-8 ohms and BoW receivers unterminated.
-
-For rates of 16 Gb/s or reach over 10 mm, BoW receivers should also be terminated in 50 +/- 8 ohms 
-and designed for the smaller signal swings this delivers.
-
-A terminated BoW transmitter or receiver (both data and clock) 
-shall have 16 dB return loss (-16 dB S11 or S22) from 0 to F(CLK) and -4 dB loss
-at 2*F(CLK) when outputting a logic 0, 1 or at the midscale voltage. 
-See Figure [#fig-s11].
-
-
-~ Figure { #fig-S11; caption: "BoW Termination Return Loss S11 and S22" }
-![S11]
-~
-[S11]: images/bowspec_figure_S11.PNG { width:auto; max-width:80% }
-
-A Source-Series-Terminated (SST) transmitter can generally meet the the transmitter specification.
-
-
 # Chip-to-Chip Channel Specifications
+
+With the exception of the maximum skew requirement defined in Section [#chan-skew], BoW does not place
+any direct requirements on characteristics such as channel loss or crosstalk.  Instead, BoW channels
+are considered compliant if they are able to achieve the required V~rx_eye~ and t~rx_eye~ defined 
+in Section [#rx-eye] in conjunction with reference transmitters and receivers that meet all of the
+requirements provided in Section [#elec-specs] and Section [#clk-data-specs]. To assist with evaluating
+compliance of a given channel, open-source software evaluating signal integrity and the overall 
+link budgets with the reference transmitters and receivers will be provided at a future date.
+
+### Channel-Induced CLK Edge to D Transition Skew at RX {#chan-skew}
+
+Within each slice, a BoW channel must not introduce more than **6.67ps** of skew between CLK and D lines.  This corresponds to 1mm of length mismatch 
+on a substrate with an &epsilon;~r~ of 4. 
+
 
 The channel (wires) between chips should meet the following specs to ensure signal integrity.
 
-## BoW Channel Specifications on Laminate
+<XX
+## Recommended BoW Channel Specifications on Laminate
 
 BoW channel length on laminate is limited by the round trip reflection delay to 10 mm for 4 Gb/s/wire.
 
@@ -1031,6 +1148,7 @@ C~cross~/C~total~ of 28% and an impedance of 48 ohms.
 XX>
 
 Channels on interposer will have different requirements, not yet specified.
+XX>
 
 <XX
 ~Framed {color: blue}
@@ -1054,13 +1172,15 @@ Does anyone have more data?
 XX>
 
 
-## BoW Channel Specifications for Doubly-Terminated Links
+## Example BoW Channel Loss and Crosstalk for Doubly-Terminated Links
 
-Doubly-terminated links should meet the following characteristics.
+To provide guidance on the types of channels that are expected to meet the requirements for compliance
+with the BoW reference receiver and transmitter, this section provides examples of typical loss and 
+crosstalk profiles for doubly-terminated channels (which are most sensitive to channel signal integrity).
 
 ### Channel Loss
 
-To avoid the need for equalization, the channel should meet the limit in Figure [#fig-loss].
+To avoid the need for equalization, BoW channels will typically meet the loss limit in Figure [#fig-loss].
 
 ~ Figure { #fig-loss; caption: "BoW Doubly-Terminated Wire Channel Loss Limit" }
 ![loss]
@@ -1070,7 +1190,7 @@ To avoid the need for equalization, the channel should meet the limit in Figure 
 
 ### Crosstalk
 
-The crosstalk in the channel should meet the limit in Figure [#fig-xtalk].
+The crosstalk in a BoW channel will typically meet the limits shown in Figure [#fig-xtalk].
 
 ~ Figure { #fig-xtalk; caption: "BoW Doubly-Terminated Wire Crosstalk Limit" }
 ![xtalk]
@@ -1078,7 +1198,7 @@ The crosstalk in the channel should meet the limit in Figure [#fig-xtalk].
 [xtalk]: images/bowspec_figure6.jpg { width:auto; max-width:60% }
 
 Power-sum crosstalk is the sum of crosstalk power of all aggressors on a target trace.
-The limit is
+The example limit depicted in this Figure corresponds to:
 ~center
 XtalkLimit = -37*e^-f/8GHz^-10 dB
 ~

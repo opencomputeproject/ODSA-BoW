@@ -419,15 +419,15 @@ N is the ratio of the chip-to-chip per-wire data rate to the logic interface per
 +--------+--------+----------+----------+-------------------------------------------------------------+
 | Data   | 16*N   | In       | Out      | Data                                                        |
 +--------+--------+----------+----------+-------------------------------------------------------------+
-| FEC    | N/0    | In       | Out      | Forward Error Correction (optional)                         |
+| FEC    | N or 0 | In       | Out      | Forward Error Correction (optional)                         |
 +--------+--------+----------+----------+-------------------------------------------------------------+
-| AUX    | N/0    | In       | Out      | Auxiliary uses (optional)                                   |
+| AUX    | N or 0 | In       | Out      | Auxiliary uses (optional)                                   |
 +--------+--------+----------+----------+-------------------------------------------------------------+
 | PCLK   | 1      | Out      | Out      |                                                             |
 +--------+--------+----------+----------+-------------------------------------------------------------+
 | TxClk  | 1      | In       | NA       | Comes from a PLL or other clock source, not the Link layer. |
 |        |        |          |          | The TxClk source is usually shared among many Tx slices.    |
-+--------+--------+----------+----------+-------------------------------------------------------------+
++--------+--------+----------+----------+-------------------------------------------------------------+                                                         
 ~
 
 ### Slice Logic Interface: Control Signals
@@ -452,19 +452,20 @@ from the link layer to the PHY.
 ~
 
 #### PHYReset Tx and Rx
-The PHYReset pin is asserted by the link controller to initialize the PHY.
-While PHYReset signal is asserted, the PHY stays in its reset state.
-When the PHYReset signal is de-asserted, the PHY performs
+The PHYReset pin shall be asserted by the link controller to initialize the PHY.
+While PHYReset signal is asserted, the PHY shall stay in its reset state.
+When the PHYReset signal is de-asserted, the PHY shall perform
 any necessary self-alignment. 
 The reset 
 states are otherwise implementation-dependent and shall be documented in the 
 datasheet of a particular implementation. 
 
 #### PHYReady Tx
-On a Tx slice, PHYReady asserted indicates PHY is transmitting good clock and ready to transmit data.
+On a Tx slice, the PHY shall assert PHYReady to indicate it is transmitting 
+good clock and ready to transmit data.
 
 #### PHYReady Rx
-On a Rx slice, the PHY assumes clock received is good when PHYReset is deasserted. 
+On an Rx slice, the PHY assumes clock received is good when PHYReset is deasserted. 
 After the Rx slice clock self-alignments are complete, each Rx PHY slice shall assert its 
 PHYReady pin. How an Rx PHY slice determines completion of the self-alignment is 
 implementation-dependent. For instance, it can be determined by observing the 

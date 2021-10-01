@@ -369,8 +369,8 @@ such as Data Bus Inversion (DBI), flow control, redundancy for defect repair, et
  
 The Link layers of Chiplets A and B will need to agree on the details on FEC and AUX usage.
 An implementation may choose to support the FEC and AUX wires, or to omit both of them.
-<xx If FEC and AUX are included in a PHY implementation, the PHY carries them in the same 
-way as the data bits without acting on the content. >
+If FEC and AUX are included in a PHY implementation, the PHY carries them in the same 
+way as the data bits without acting on the content.
 
 Table [#tab-signals-d2d] summarizes these signals.
 
@@ -395,19 +395,7 @@ Data Bus Inversion (DBI) can be used to mitigate simultaneous switching
 output (SSO) noise of a BoW PHY by reducing the number of BoW data wires
 that switch between adjacent data transfer cycles. 
 DBI functionality is optional; it one of several possible uses of the AUX wire.
-DBI can be implemented in the PHY or in the Link layer.
-
-Within a slice's 16 data signals, the TX DBI logic calculates the DBI bit 
-based on the number of data signals changing from their previous state on the BoW slice wires. 
-
-DBIcurrent = ((data[15]current XOR data[15]prev) 
-+ (data[14]current XOR data[14]prev) 
-... 
-+ (data[1]current XOR data[1]prev) 
-+ (data[0]current XOR data[0]prev)) > 8 ? 1 : 0); 
-
-If the DBI bit=1 then the Tx DBI logic inverts the Data bits.
-If DBI = 1 then the Rx DBI logic inverts the Data bits to recover the original data.
+If implemented, DBI is in the Link layer and must be implemented on both Rx and Tx.
 
 ## Slice Logic Interface
 

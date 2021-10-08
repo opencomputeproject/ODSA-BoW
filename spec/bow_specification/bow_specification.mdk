@@ -886,7 +886,7 @@ TxClk distribution to all the Tx slices.
 That is, for the data flow from Chiplet A to Chiplet B, 
 the TxClk distribution on Chiplet A sets the 
 the clock skew of the Tx slices on Chiplet A and the clock skew of the Rx slices on Chiplet B,
-and vice versa for flow from B to A. This skew must be no more than 100 ps/stack along the chip edge.
+and vice versa for flow from B to A. This skew must be no more than 150 ps/stack along the chip edge.
 There is no specification of the skew between TxClk on Chiplet A vs TxClk on Chiplet B.
 
 On both the Tx and Rx sides, the Link layer must include a Clock Domain Crossing (CDC) to 
@@ -993,8 +993,13 @@ in Table [#tab-eye].
 |                        |                |                  |                   |
 +:----------------------:+:--------------:+:----------------:+:------------------+
 | Maximum RX sensitivity | **150 mV**     | **150 mV**       | **75 mV**         |
+| BoW-128, BoW-256       |                |                  |                   |
 | (V~rx_eye~)            |                |                  |                   |
 |                        |                |                  |                   |
++------------------------+----------------+------------------+-------------------+
+| Maximum RX sensitivity | **300 mV**     | **300 mV**       |                   |
+| BoW-32, Bow-64         |                |                  |                   |
+| (V~rx_eye~)            |                |                  |                   |
 +------------------------+----------------+------------------+-------------------+
 | Minimum Timing Margin  | **50% T~bit~** | **50% T~bit~**   | **50% T~bit~**    |
 | @ RX bump              |                |                  |                   |
@@ -1020,81 +1025,10 @@ XX>
 ### Slice-to-Clice CLK Skew
 
 The slice to slice clock skew t~skew~ across the width of a BoW link (along the chip edge) 
-must be less than **100 ps/stack**.  This is expected to be dominated by the TxClk distribution network.
+must be less than **150 ps/stack**. 
+(E.g., for a 4-stack interface, the skew from end to end must be less than 600 ps.)
+This is expected to be dominated by the TxClk distribution network.
 
-<XX
-### Reference Slice Timing
-
-~framed {color:blue}
-Is this section worth keeping?
-~
-
-XX>
-
-<XX  COMMENT
-
-~ Framed {color: blue}
-
-This is a list of possible specs within a slice
-
-* Clock to data alignment   NA before align, 50 ps after align = 0.20 UI
-* data to data alignment    18 ps
-  * mismatch: 0.6 ps rms at Rx input, 1.1 ps rums at Rx output
-  * fanout skew: 1 mm = 6 ps as a tline
-  * clock distn within slice: 0.6 mm = 7 ps as an RC line
-* clock rise/fall time   80 ps = 0.30 UI
-* clock duty cycle   50+-5% 
-* CLK+ vs CLK- skew    10 ps = 0.04 UI
-* clock random jitter  10 ps rms = 0.04 UI rms
-* clock bounded jitter  20 ps pp = 0.08 UI pp
-* Eye: 400 mV, 50 ps ??    330 mV, 50 ps barely works in 65 nm sim at 8 Gbps
-* clock slip   0 ppm
-
-Slice to slice:
-
-* slice to slice clock skew across width of a link   < 3 ns 
-   * 2.5 ns to go 30 mm, across 22 slices
-~
-XX END COMMENT>
-
-<XX
-
-The following table shows clock and data timing for a 4 Gbps BoW Basic 
-reference design in 65 nm CMOS on 
-laminate packaging. These values are for CLK and data bits at the bumps of the BoW receiver. 
-
-~ TableFigure {#tab-clocks; caption: "BoW Clock Reference Values"; font-size:small; width:100%; }
-<This table generated with https://www.tablesgenerator.com/markdown_tables# >
-<any plus signs need a backslash added manually >
-<column justification needs a ":" in the first "---" line added manually>
-<XX
-
-| Spec                          | Value  | Normalized Value | Condition                                 |
-|:------------------------------|--------|------------------|:------------------------------------------|
-| Bit to bit skew: fanout       | 0 ps   | 0.00 UI          | fanout for mismatched bump pitches        |
-| Bit to bit skew: mismatch     | 3.6 ps | 0.014 UI         | 0.6 ps rms device mismatch (6 sigma)      |
-| Bit to bit skew: clock distn  | 3.9 ps | 0.016 UI         | 0.65 mm from CLK to bits D0, D15          |
-| CLK to mean data skew         | 12 ps  | 0.05 UI          | error of DLL alignment                    |
-| CLK duty cycle                | 50%    | 0.50 UI          | target                                    |
-| CLK duty cycle error          | 2%     | 0.02 UI          | after DCC settled                         |
-| CLK+ vs. CLK- skew            | 3.6 ps | 0.014 UI         |                                           |
-| CLK cyc-to-cyc random jitter  | TBD    |                  | thermal jitter of the whole Tx clock path |
-| CLK cyc-to-cyc bounded jitter | TBD    |                  | bounded jitter of the whole Tx clock path |
-| CLK rise/fall time            | 43 ps  | 0.17 UI          |                                           |
-| Data rise/fall time           | 43 ps  | 0.17 UI          |                                           |
-| Data Eye width                | 125 ps | 0.50 UI          | not including jitter                      |
-| Data Eye height               | 450 mV | 60% Vswing       | Vswing = nominal signal voltage swing     |
-| Data overshoot/undershoot     | 75 mV  | 10% Vswing       |                                           |
-~
-
-The jitter in a link should meet:
-
-~center
-DataEyeWidth - BitToBitSkewFanout - BitToBitSkewMismatch    
-- BitToBitClockDistn - CLKtoMeanDataSkew - CLKdutyCycleError  
-- CLKrandomJitter - DataToDataSkew < 0.10 UI
-~
-XX>
 
 # Chip-to-Chip Channel Specifications
 

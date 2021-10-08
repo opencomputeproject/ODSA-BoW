@@ -500,13 +500,15 @@ A BoW interface must conform to at least one of the Bow Modes seen in Table [#ta
 The recommended maximum wire reach for different packaging types and terminations is 
 seen in Table [#tab-reaches].
 Exceeding these reach values degrades the voltage margins at the receiver.
+
 "Laminate" is intended to include organic laminate packages (a.k.a. "buildup) and similar 
 technologies with approximately 25 um line and space rules.
 
 "Advanced" is intended to include silicon interposer and similar technologies.
 These have much finer line and space dimensions, but traces are usually much
-more resistive than in organic laminate packages and must operate with much shorter trace lengths. 
-Termination is not expected to be necessary for implementations targeting Advanced packaging.
+more resistive than in organic laminate packages and will be limited to much shorter trace lengths. 
+Due to these short traces, termination is not expected to be useful 
+for implementations targeting Advanced packaging.
 
 ~ TableFigure {#tab-reaches; caption: "Recommended BoW Wire Reaches"; width:100%;  }
 

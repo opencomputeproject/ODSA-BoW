@@ -857,7 +857,7 @@ and M=4 to support a 1 Gbps data rate at the Link-PHY interface.
 +:-------------------------------:+:------:+:----------+
 | TxClk                           | 2 GHz  |           |
 +---------------------------------+--------+-----------+
-| CK+,CK-                       | 2 GHz  |           |
+| CLK+,CLK-                       | 2 GHz  |           |
 | D[15:0],AUX,FEC                 | 4 Gbps | DDR       |
 |                                 |        |           |
 +---------------------------------+--------+-----------+
@@ -873,7 +873,7 @@ The DDR clock TxClk is provided to the Tx PHY from elsewhere on Chiplet-A.
 This may come for example from an on-chip PLL (typically shared across multiple slices) or 
 routed from the RxClk of an Rx slice on Chiplet-A. In order to meet duty cycle requirements, 
 a Duty Cycle Corrector (DCC) may be needed in the Tx slice. TxClk is used to drive the serializers and 
-provide the output CK+,CK- to Chiplet-B.
+provide the output CLK+,CLK- to Chiplet-B.
 
 On the Rx side, the PHY must align the slicer clock to sample the data correctly.
 This may be done with a DLL or adjustable delays or other methods.  If the PHY includes 
@@ -910,7 +910,7 @@ with the TX driving an ideal load of 50 &Omega; (Z~chan~).
 
 ### Transmitter Jitter {#tx-jit}
 
-The total jitter measured between the CK and any data (D) line at the output 
+The total jitter measured between the CLK and any data (D) line at the output 
 of the TX shall not exceed **14% of a UI peak-to-peak at an error rate of 1e-15**. 
 The evaluation of jitter must include all possible TX jitter contributors, including reference clock, clock distribution networks, 
 any DCC, PLL jitter, power-supply noise and switching noise.  In order to retain TX design 
@@ -922,50 +922,51 @@ requirement, the total jitter t~j,tot~ should be computed as:
 t~j,tot~ = t~j,determinsitic~ + 15.9 &sigma;~tj,random~
 ~ 
 
-This jitter must be evaluated for CK edges that are up to **3 UI** earlier than 
+This jitter must be evaluated for CLK edges that are up to **3 UI** earlier than 
 the CLK edge that launched the data bit being captured at the receiver.  This is because even 
-though jitter on the data edges may be correlated with the CK jitter, 
-the slicer in the Rx side is likely to use a different CK edge due to delays in the 
+though jitter on the data edges may be correlated with the CLK jitter, 
+the slicer in the Rx side is likely to use a different CLK edge due to delays in the 
 Rx-side clock alignment circuit (usually a DLL).
 
 In order to properly account for the jitter filtering/peaking that will occur due to the 
 difference in delay between the data launching edge at the TX and the data capturing edge at the RX, 
-the spectrum of jitter at the TX output that is **correlated** between the CLK and D lines should be 
+when evaluating the transmitter's jitter (and whether it meets the requirements described in this section),
+the jitter at the TX output that is **correlated** between the CLK and D lines should be 
 filtered by the following frequency-dependent transfer function:
 
 ~center
 **H~tx_jit~(j&omega;) = 1-e^(-j&omega;t~clk-d~)^**  
 ~
 
-where t~clk-d~ is the number of cycles of delay between the CK edge that launched the data 
-bit and the CK edge used to capture it.  Note that jitter that is not correlated between the CK and D 
+where t~clk-d~ is the number of cycles of delay between the CLK edge that launched the data 
+bit and the CLK edge used to capture it.  Note that jitter that is not correlated between the CLK and D 
 signals should **not** be filtered by this transfer function.  (I.e., if the
-CK signal and a given D signal have completely independent sources of jitter added to them, 
+CLK signal and a given D signal have completely independent sources of jitter added to them, 
 those jitter sources would not be filtered by H~tx_jit~(j&omega;).  Since the total TX jitter 
 after filtering by this transfer function might not be monotonic with t~clk-d~, and since receiver implementations 
 may realize varying values of t~clk-d~, a transmitter must meet the 14% of a UI 
 peak-to-peak specification for **t~clk-d~ = T~bit~**, for **t~clk-d~ = 2T~bit~**, **and** 
 for **t~clk-d~ = 3T~bit~**.     
 
-### Transmitter CK Edge to D Transition Skew + Jitter
+### Transmitter CLK Edge to D Transition Skew + Jitter
 
 In addition to jitter, BoW TX PHY implementations may introduce skew between the 
-individual D signals and the CK signals within a slice.  The total amount of skew and jitter (as defined in Section
+individual D signals and the CLK signals within a slice.  The total amount of skew and jitter (as defined in Section
 [#tx-jit]) introduced by a BoW TX must be less than **18% of a UI peak-to-peak**.
 For example, a TX whose total jitter is 14% of a UI (and hence just meets the requirement) is 
-allowed to introduce up to 4% of a UI peak-to-peak skew between CK and D, while a TX with jitter better than 
+allowed to introduce up to 4% of a UI peak-to-peak skew between CLK and D, while a TX with jitter better than 
 required by this specification is allowed to introduced a larger amount of skew.
 
 Note that this specification should be measured directly at the TX output while driving 
 an ideal load of 50 &Omega; (Z~chan~).       
 
-### CK Receiver Sensitivity to Common-Mode Variations
+### CLK Receiver Sensitivity to Common-Mode Variations
 
 The timing of a BoW RX PHY's sampling clock edge at the slicer must be modulated by **less 
-than 0.1% of a UI per mV of common-mode variation on CK+/CK-**.  This sensitivity requirement 
+than 0.1% of a UI per mV of common-mode variation on CLK+/CLK-**.  This sensitivity requirement 
 must be met across any common-mode variation frequency less than or equal to 1/T~bit~.  For example,
 the sampling clock edge of a compliant BoW RX would vary by less than 2% of a UI peak-to-peak 
-for peak-to-peak common mode variation on CK+/CK- of 20mV.        
+for peak-to-peak common mode variation on CLK+/CLK- of 20mV.        
 
 ### Receiver Sensitivity and Timing Margin {#rx-eye}
 
@@ -980,8 +981,11 @@ must also be evaluated at 1e-15 error rate, so the total voltage sensitvity V~s,
 V~s,RX~ = V~err,deterministic~ + 15.9 &sigma;~V~~err,random~
 ~
 
-Since swing and signal integrity are expected to vary with termination, the RX voltage sensitivity 
-requirements and minimum timing margin requirements are termination-dependent, as outlined
+Note that the receiver's voltage sensitivity should take into account all voltage error sources at the
+receiver, including receiver thermal/flicker noise, supply noise, residual offset, and reference level errors. 
+
+Since swing and signal integrity are expected to vary with termination as well as data-rate, the RX voltage 
+sensitivity requirements and minimum timing margin requirements are termination- and rate-dependent, as outlined
 in Table [#tab-eye].
 
 ~ Figure { #fig-eye; caption: "Eye Diagram Definitions" }
@@ -999,7 +1003,7 @@ in Table [#tab-eye].
 | (V~rx_eye~)            |                |                  |                   |
 |                        |                |                  |                   |
 +------------------------+----------------+------------------+-------------------+
-| Maximum RX sensitivity | **300 mV**     | **300 mV**       |                   |
+| Maximum RX sensitivity | **300 mV**     | **300 mV**       | **150 mV**        |
 | BoW-32, Bow-64         |                |                  |                   |
 | (V~rx_eye~)            |                |                  |                   |
 +------------------------+----------------+------------------+-------------------+
@@ -1029,7 +1033,8 @@ XX>
 The slice to slice clock skew t~skew~ across the width of a BoW link (along the chip edge) 
 must be less than **150 ps/stack**. 
 (E.g., for a 4-stack interface, the skew from end to end must be less than 600 ps.)
-This is expected to be dominated by the TxClk distribution network.
+This skew includes only analog delays and specifically does not include any clock-related timing skew due to 
+flip-flops/latches or varying reset states.  This skew is expected to be dominated by the TxClk distribution network.
 
 
 # Chip-to-Chip Channel Specifications
@@ -1078,6 +1083,7 @@ Stripline (buried) wires with 25 um line, 40 um space and 33 um dielectric thick
 C~cross~/C~total~ of 28% and an impedance of 48 ohms.
 XX>
 
+<XX
 Channels on interposer will have different requirements, not yet specified.
 XX>
 
@@ -1107,7 +1113,9 @@ XX>
 
 To provide guidance on the types of channels that are expected to meet the requirements for compliance
 with the BoW reference receiver and transmitter, this section provides examples of typical loss and 
-crosstalk profiles for doubly-terminated channels (which are most sensitive to channel signal integrity).
+crosstalk profiles for doubly-terminated channels supporting 16 Gb/s operation (which are most sensitive 
+to channel signal integrity).  Note that when operating at lower rates, the frequency axes in the figures 
+below can be scaled with the data-rate relative to 16 Gb/s.
 
 ### Channel Loss
 
@@ -1129,7 +1137,7 @@ The crosstalk in a BoW channel will typically meet the limits shown in Figure [#
 [xtalk]: images/bowspec_figure6.jpg { width:auto; max-width:60% }
 
 Power-sum crosstalk is the sum of crosstalk power of all aggressors on a target trace.
-The example limit depicted in this Figure corresponds to:
+The example limit depicted in Figure [#fig-xtalk] corresponds to:
 ~center
 XtalkLimit = -37*e^-f/8GHz^-10 dB
 ~

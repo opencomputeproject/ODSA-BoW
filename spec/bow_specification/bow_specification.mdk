@@ -20,10 +20,16 @@ title,titlenote,titlefooter,h1,h2,h3,h4,h5 {
 
 [TITLE]
 
+~ center
+DRAFT
+~
+
+
+
 This document is a draft and not an approved specification. It is to be released under 
 the following OCP copyright release when completed and approved:
 
-{ page-break-before: always }
+{ page-break-after: always }
 
 ~center
 COPYRIGHT LICENSE AGREEMENT

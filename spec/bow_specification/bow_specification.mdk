@@ -20,16 +20,18 @@ title,titlenote,titlefooter,h1,h2,h3,h4,h5 {
 
 [TITLE]
 
+~ center { page-break-after: always }
+DRAFT
+~
+
+{ page-break-after: always }
+
 ~ center
 DRAFT
 ~
 
-
-
 This document is a draft and not an approved specification. It is to be released under 
-the following OCP copyright release when completed and approved:
-
-{ page-break-after: always }
+the following OCP copyright release when completed and approved.
 
 ~center
 COPYRIGHT LICENSE AGREEMENT
@@ -119,7 +121,8 @@ facsimile transmission of the executed signature page of this Agreement shall co
 due and proper execution of this Agreement by the applicable party.
 { page-break-after: always }
 
-[TOC]
+[TOC] 
+{ page-break-after: always }
 
 [TITLE]
 

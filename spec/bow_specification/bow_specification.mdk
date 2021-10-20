@@ -1063,7 +1063,8 @@ XX>
 
 ### Overshoot
 
-CLK and data signals must not overshoot more than 25% of the I/O voltage.
+CLK and data signals must not overshoot more than 25% of the I/O voltage at both the 
+Tx and Rx ends.
 For a 0.75 V I/O voltage, they must stay within the range -0.188 V to 0.937 V.
 
 

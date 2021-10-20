@@ -221,7 +221,8 @@ XX>
 
 The specifications must be met over process variation, supply voltage range and 
 temperature range (PVT). 
-Each implementation must document its supported supply voltage range and temperature range.
+Each implementation must document its supported I/O voltage range, 
+supply voltage range and temperature range.
 
 Table XX will summarize the compliance points that shall be met in order to comply 
 with the BoW specification. Each of the 
@@ -510,18 +511,23 @@ Link initialization is described in Section [#sec-reset-and-initialization].
 A BoW interface must conform to at least one of the Bow Modes seen in Table [#tab-levels].
 The recommended maximum wire reach for different packaging types and terminations is 
 seen in Table [#tab-reaches].
-Exceeding these reach values degrades the voltage margins at the receiver.
+Exceeding these reach values may degrade the voltage margins at the receiver.
+See section [#sec-chip-to-chip-channel-specifications] for how Tx, Rx and channels 
+are qualified.
 
 "Laminate" is intended to include organic laminate packages (a.k.a. "buildup) and similar 
-technologies with approximately 25 um line and space rules.
+technologies with approximately 25 um line and space rules. 
+The minimum wire length for closely spaced chips in these technologies is around 3 mm
+for the slice closest to the chip edge.
 
 "Advanced" is intended to include silicon interposer and similar technologies.
 These have much finer line and space dimensions, but traces are usually much
 more resistive than in organic laminate packages and will be limited to much shorter trace lengths. 
 Due to these short traces, termination is not expected to be useful 
 for implementations targeting Advanced packaging.
+The minimum wire length in these technologies may be less than 1 mm.
 
-~ TableFigure {#tab-reaches; caption: "Recommended BoW Wire Reaches"; width:100%;  }
+~ TableFigure {#tab-reaches; caption: "**Recommended** BoW Wire Reaches"; width:100%;  }
 
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
 |          |               |       | Laminate     | Laminate          | Laminate          | Advanced     |
@@ -532,13 +538,13 @@ for implementations targeting Advanced packaging.
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
 |          | (Gb/s/wire)   | (GHz) | (mm)         | (mm)              | (mm)              | (mm)         |
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
-| BoW-32   | 2             | 1     | 10           | 20                | 50                | 4            |
+| BoW-32   | 2             | 1     | 10           | 20                | 25+               | 4            |
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
-| BoW-64   | 4             | 2     | NA           | 10                | 50                | 2            |
+| BoW-64   | 4             | 2     | NA           | 10                | 25+               | 2            |
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
-| BoW-128  | 8             | 4     | NA           | 5                 | 50                | 1            |
+| BoW-128  | 8             | 4     | NA           | 5                 | 25+               | 1            |
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
-| BoW-256  | 16            | 8     | NA           | NA                | 50                | NA           |
+| BoW-256  | 16            | 8     | NA           | NA                | 25+               | NA           |
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
 
 ~
@@ -762,17 +768,21 @@ electrical specifications that all such BoW PHY implementations must meet.
 
 ## Voltages and Termination Resistance
 
-All BoW implementations must support signaling based on a 0.75 V I/O supply. 
+All BoW implementations must support signaling based on a 0.75 V "I/O voltage".
 BoW PHYs may also support higher or lower signaling 
 voltages, but must support 0.75 V based signaling for interoperability. 
 
-Independently of the I/O supply, BoW transmitters and receivers must meet the 
+Note that the simplest implementation is to provide a 0.75 supply voltage to the
+BoW VDD bumps, but the supply voltage may be different from the I/O voltage 
+as long as the signal voltages meet the specification.
+
+Independently of the I/O voltage, BoW transmitters and receivers must meet the 
 DC termination resistance requirements defined in Table [#tab-impedance].
 Note that TX/RX termination (output/input) resistance values are skewed 
 low/high compared to the channel impedance in order to ensure
 that the DC single-ended voltage swing at the RX is never reduced to less 
-than half of the I/O supply (i.e., 375 mV for a 0.75 V I/O supply). 
-Note that these termination resistance values should be met with 
+than half of the I/O voltage (i.e., 375 mV for a 0.75 V I/O voltage). 
+Note that these termination resistance values must be met with 
 logical 0, logical 1, and mid-scale between logic 0 and logic 1 voltages on the wire 
 between the TX and the RX.     
 
@@ -801,8 +811,8 @@ requirements on DC termination resistance matching across all I/O's within a giv
 should be interpreted as capturing within-slice manufacturing variability across worst-case voltage/temperature operating conditions, and is expected to 
 be primarily influenced by some combination of transistor and explicit resistor matching (with the mix depending on the circuit implementation).   
 
-In doubly terminated modes of operation, the RX termination resistance should be connected to 0V, the I/O supply, or mid-rail of the I/O 
-supply (e.g., 375 mV with a 0.75 V I/O supply).  The selection of termination voltage is expected to be static (hardwired) in the RX, and should
+In doubly terminated modes of operation, the RX termination resistance should be connected to 0V, the I/O voltage, or mid-rail of the I/O 
+voltage (e.g., 375 mV with a 0.75 V I/O voltage).  The selection of termination voltage is expected to be static (hardwired) in the RX, and should
 be specified in the receiver's datasheet.  It is expected that Source-Series-Terminated (SST) Transmitters will be largely agnostic to the choice 
 of termination voltage on the receiver.       
 
@@ -1038,9 +1048,6 @@ in Table [#tab-eye].
 |------------------------|----------------|------------------|-------------------|
 ~
 
-<XX COMMENT: DO WE WANT TO KEEP THE OVERSHOOT SPEC?
-Overshoot: 25% of VDDIO
-XX>
 
 <XX COMMENT
 Since these signals do not leave the package, these values must be verified with simulation.
@@ -1050,6 +1057,11 @@ varying those values after locking the DLL may provide timing margin information
 If the slice implementation allows programmatic control of the receiver voltage 
 thresholds, varying those values may provide vertical margin information.
 XX>
+
+### Overshoot
+
+CLK and data signals must not overshoot more than 25% of the I/O voltage.
+For a 0.75 V I/O voltage, they must stay within the range -0.188 V to 0.937 V.
 
 
 ### Slice-to-Clice CLK Skew
@@ -1255,8 +1267,8 @@ alignment as specified in the datasheet for the Rx PHY.
 * The Reset input to each PHY shall be asserted upon powerup. 
 It may also be asserted by commands from the LC.
 
-An example topology is shown in Figure [#fig-bow_system].
-
+An example topology is shown in Figure [#fig-bow_system]. 
+The BoW interface communicates to interface and core logic blocks.
 
 ~ Figure { #fig-bow_system; caption: "Example BoW System Configuration" }
 ![bow_system]

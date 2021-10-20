@@ -147,7 +147,7 @@ objectives:
 * Portable across multiple bump pitches
 * Unencumbered by technology license costs
 * Very low power (< 1 pJ/bit) as defined by Tx IO Pad, wire and Rx IO Pad.
-* Very low latency (<5 ns without FEC, <15 ns with FEC from link layer to link layer)
+* Very low latency (<5 ns without FEC, <15 ns with FEC from logic interface to logic interface)
 * High throughput density (100-1000 Gb/s/mm-chip-edge)
 * Backwards compatible (across at least two major specification versions)
 
@@ -176,7 +176,7 @@ The scope of this document has several levels.
   b. Chip-to-chip wire signals
   c. Wire ordering
   c. Timing and electrical specifications on the chip-to-chip interface
-  d. Signals at the link layer interface
+  d. Signals at the logic (link layer) interface
   e. Configuration, initialization, calibration
   f. Functions that must be supported at the link layer or above
 
@@ -331,11 +331,11 @@ reach 8 Gb/s/wire.
 A doubly-terminated link offers longer distances and higher rates, but 
 requires a more complicated receiver design.
 
-## PHY - Link Layer Interface
-Figure [#fig-bow-logicin] shows the interface between a BoW slice and the digital link
-layer logic in a chip. The speed at the link layer interface (Figure [#fig-bow_overview2]) 
+## Logic Interface
+Figure [#fig-bow-logicin] shows the logic interface between a BoW slice and the digital link
+layer logic in a chip. The speed at the logic interface (Figure [#fig-bow_overview2]) 
 is implementation-dependent. Typically, PCLK will be the TxClk frequency divided by a 
-power of 2, so 250, 500 and 1000 MHz are common rates. The data at the link layer 
+power of 2, so 250, 500 and 1000 MHz are common rates. The data at the logic 
 interface is SDR (bit rate equal to PCLK frequency).
 
 
@@ -415,8 +415,8 @@ link controller.
 
 ### Slice Logic Interface: Data Signals
 
-The signals in Table [#tab-mac_interface] shall constitute the data interface between the link layer 
-and the PHY. 
+The signals in Table [#tab-mac_interface] shall constitute the data and clocks in the
+logic interface of the PHY. 
 N is the ratio of the chip-to-chip per-wire data rate to the logic interface per-wire data rate.
 
 ~ TableFigure {#tab-mac_interface; caption: "Logic Interface Signals"; width:100%;  }
@@ -446,8 +446,8 @@ A BoW interface must provide the following control and status signals:
 * PHY Ready
 * Selective reset
 
-The signals in Table [#tab-mac_ctrl_interface] shall constitute the control interface 
-from the link layer to the PHY.
+The signals in Table [#tab-mac_ctrl_interface] shall constitute the control portion
+of the logic interface of the PHY.
 
 ~ TableFigure {#tab-mac_ctrl_interface; caption: "Logic Interface Control Signals"; width:100%;  }
 |----------+--------+----------+----------+------------------------------------------------------------------------------|

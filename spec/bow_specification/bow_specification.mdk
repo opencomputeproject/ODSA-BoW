@@ -21,13 +21,40 @@ title,titlenote,titlefooter,h1,h2,h3,h4,h5 {
 ~ center {font-size: xx-large ; font-weight: bold}
 Bunch of Wires PHY Specification
 ~
-~ center {font-size: x-large ; font-weight: bold}
+~ center {font-size: x-large }
 The Open Domain-Specific Architecture BoW Workstream
 
 DRAFT
 ~
 
-<XX TITLE below causes a page break>
+<XX The below escaped blank lines are in lieu of a working page break >
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+
+
+{ page-break-after: always }
 
 [TITLE]
 
@@ -125,9 +152,11 @@ shall not be interpreted or construed against the party preparing it.
 all of which taken together shall constitute one single agreement between the parties. A 
 facsimile transmission of the executed signature page of this Agreement shall constitute 
 due and proper execution of this Agreement by the applicable party.
+
 { page-break-after: always }
 
 [TOC] 
+
 { page-break-after: always }
 
 [TITLE]

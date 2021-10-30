@@ -499,10 +499,10 @@ The internal registers shall be fully documented in the PHY datasheet.
 
 There shall be a Link Controller (LC) outside the PHY.
 This will manage initialization of the Link.
-It may reside on one of the chiplets of the Link, in a third chiplet in the package
+It may reside on one of the chiplets of the link, in a third chiplet in the package
 or outside the package.
 
-Communication from the Link Controller to the PHY slices shall be by a transport
+Communication from the Link Controller across chiplets shall be by a transport
 mechanism outside the BoW link. 
 This could be a serial link like SPI or I2C, but this is not specified at this time.
 
@@ -511,14 +511,14 @@ Link initialization is described in Section [#sec-reset-and-initialization].
 
 # BoW Modes
 
-A BoW interface must conform to at least one of the Bow Modes seen in Table [#tab-levels].
+A BoW PHY slice must conform to at least one of the BoW Modes seen in Table [#tab-levels].
 The recommended maximum wire reach for different packaging types and terminations is 
 seen in Table [#tab-reaches].
 Exceeding these reach values may degrade the voltage margins at the receiver.
 See section [#sec-chip-to-chip-channel-specifications] for how TX, RX and channels 
 are qualified.
 
-"Laminate" is intended to include organic laminate packages (a.k.a. "buildup) and similar 
+"Laminate" is intended to include organic laminate packages (a.k.a. "buildup"") and similar 
 technologies with approximately 25 um line and space rules. 
 The minimum wire length for closely spaced chips in these technologies is around 3 mm
 for the slice closest to the chip edge.
@@ -530,16 +530,16 @@ Due to these short traces, termination is not expected to be useful
 for implementations targeting Advanced packaging.
 The minimum wire length in these technologies may be less than 1 mm.
 
-~ TableFigure {#tab-reaches; caption: "**Recommended** BoW Wire Reaches"; width:100%;  }
+~ TableFigure {#tab-reaches; caption: "**Recommended** BoW Wire Reaches"; width:95%;  }
 
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
 |          |               |       | Laminate     | Laminate          | Laminate          | Advanced     |
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
 |          |               |       | Unterminated | Source Terminated | Doubly Terminated | Unterminated |
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
-| Bow Mode | Wire Bit Rate | TxClk |  Reach       |  Reach            |  Reach            |  Reach       |
+| BoW Mode | Wire Bit Rate | TxClk |  Reach       |  Reach            |  Reach            |  Reach       |
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
-|          | (Gb/s/wire)   | (GHz) | (mm)         | (mm)              | (mm)              | (mm)         |
+|          | (Gb/s)   | (GHz) | (mm)         | (mm)              | (mm)              | (mm)         |
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+
 | BoW-32   | 2             | 1     | 10           | 20                | 25+               | 4            |
 +----------+---------------+-------+--------------+-------------------+-------------------+--------------+

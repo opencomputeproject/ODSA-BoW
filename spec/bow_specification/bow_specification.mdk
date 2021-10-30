@@ -266,19 +266,48 @@ Table [#tab-compliance] summarize the compliance points that shall be met in ord
 with the BoW specification. Each of the 
 compliance points is discussed in the specification.
 
+<XX Done
 ~ Framed {color: blue}
 Todo: Need to fill in this table - Shahab
 ~
+>
 
 ~ TableFigure {#tab-compliance; caption: "BoW Compliance Summary"; }
-+---------+------------------------------+
-| Section | Description                  |
-+---------+------------------------------+
-| 2.3     | BoW Modes                    |
-| 3.1     | Chip to chip signals (wires) |
-| [#sec-bow-components] | Wire order                   |
-|         |                  Much more....            |
-+---------+------------------------------+
++---------------------------------------+----------------------------------------------+----------------------+
+| Description                           | Section                                      | Detail               |
++---------------------------------------+----------------------------------------------+----------------------+
+| BoW Modes                             | [#sec-bow-modes]                             |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Die-to-die Signals (Wires)            | [#sec-die-to-die-signals-wires]              |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Slice Logic Interface                 | [#sec-slice-logic-interface]                 |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| BoW Modes and Reach                   | [#sec-bow-modes-and-reach]                   | Table [#tab-reaches] |
++---------------------------------------+----------------------------------------------+----------------------+
+| Wire and Slice Ordering               | [#sec-bow-physical-configuration]            |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Voltages and Termination Resistance   | [#sec-voltages-and-termination-resistance]   |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| ESD                                   | [#sec-esd]                                   |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Return Loss and Parasitic Capacitance | [#sec-return-loss-and-parasitic-capacitance] |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Clocking                              | [#sec-clocking]                              |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Clock and Data Specs                  | 7.2                                          |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Channel Skew                          | 8.1                                          |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| External Facilities                   | [#sec-external-facilities]                   |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Initialization                        | [#sec-initialization-sequence]               |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Control Register Mapping              | [#sec-control-register-mapping]                                             |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+|                                       |                                              |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+|                                       |                                              |                      |
+
 ~
 
 <XX
@@ -548,7 +577,7 @@ This could be a serial link like SPI or I2C, but this is not specified at this t
 Link initialization is described in Section [#sec-reset-and-initialization].
 
 
-# BoW Modes
+# BoW Modes and Reach
 
 A BoW PHY slice must conform to at least one of the BoW Modes seen in Table [#tab-levels].
 The recommended maximum wire reach for different packaging types and terminations is 
@@ -597,8 +626,8 @@ and power.
 
 ## Dead-Bug Views
 
-The physical diagrams in this document are oriented looking down at the top layer of the 
-unpackaged chiplets.
+The physical diagrams in this document must be interpreted as 
+looking down at the top layer of the unpackaged chiplets.
 Since these are flip-chip packages, these views are equivalent to looking through the 
 bottom of the package with the balls up (dead bug view).
 For the view as seen looking down on a package as mounted on a PCB (live bug view), 

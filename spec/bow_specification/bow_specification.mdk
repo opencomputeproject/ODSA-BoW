@@ -18,17 +18,50 @@ title,titlenote,titlefooter,h1,h2,h3,h4,h5 {
 [bowspec_logo]: images/bowspec_logo.jpg "bowspec_logo" { width:auto; max-width:90% }
 ~
 
-[TITLE]
+~ center {font-size: xx-large ; font-weight: bold}
+Bunch of Wires PHY Specification
+~
+~ center {font-size: x-large }
+The Open Domain-Specific Architecture BoW Workstream
 
-~ center { page-break-after: always }
 DRAFT
 ~
+
+<XX The below escaped blank lines are in lieu of a working page break >
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+\
+
 
 { page-break-after: always }
 
-~ center
+[TITLE]
+
+~ center 
 DRAFT
 ~
+
 
 This document is a draft and not an approved specification. It is to be released under 
 the following OCP copyright release when completed and approved.
@@ -119,9 +152,11 @@ shall not be interpreted or construed against the party preparing it.
 all of which taken together shall constitute one single agreement between the parties. A 
 facsimile transmission of the executed signature page of this Agreement shall constitute 
 due and proper execution of this Agreement by the applicable party.
+
 { page-break-after: always }
 
 [TOC] 
+
 { page-break-after: always }
 
 [TITLE]
@@ -231,19 +266,48 @@ Table [#tab-compliance] summarize the compliance points that shall be met in ord
 with the BoW specification. Each of the 
 compliance points is discussed in the specification.
 
+<XX Done
 ~ Framed {color: blue}
 Todo: Need to fill in this table - Shahab
 ~
+>
 
 ~ TableFigure {#tab-compliance; caption: "BoW Compliance Summary"; }
-+---------+------------------------------+
-| Section | Description                  |
-+---------+------------------------------+
-| 2.3     | BoW Modes                    |
-| 3.1     | Chip to chip signals (wires) |
-| [#sec-bow-components] | Wire order                   |
-|         |                  Much more....            |
-+---------+------------------------------+
++---------------------------------------+----------------------------------------------+----------------------+
+| Description                           | Section                                      | Detail               |
++---------------------------------------+----------------------------------------------+----------------------+
+| BoW Modes                             | [#sec-bow-modes]                             |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Die-to-die Signals (Wires)            | [#sec-die-to-die-signals-wires]              |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Slice Logic Interface                 | [#sec-slice-logic-interface]                 |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| BoW Modes and Reach                   | [#sec-bow-modes-and-reach]                   | Table [#tab-reaches] |
++---------------------------------------+----------------------------------------------+----------------------+
+| Wire and Slice Ordering               | [#sec-bow-physical-configuration]            |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Voltages and Termination Resistance   | [#sec-voltages-and-termination-resistance]   |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| ESD                                   | [#sec-esd]                                   |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Return Loss and Parasitic Capacitance | [#sec-return-loss-and-parasitic-capacitance] |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Clocking                              | [#sec-clocking]                              |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Clock and Data Specs                  | 7.2                                          |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Channel Skew                          | 8.1                                          |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| External Facilities                   | [#sec-external-facilities]                   |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Initialization                        | [#sec-initialization-sequence]               |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+| Control Register Mapping              | [#sec-control-register-mapping]                                             |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+|                                       |                                              |                      |
++---------------------------------------+----------------------------------------------+----------------------+
+|                                       |                                              |                      |
+
 ~
 
 <XX
@@ -424,23 +488,25 @@ logic interface of the PHY.
 N is the ratio of the chip-to-chip per-wire data rate to the logic interface per-wire data rate.
 
 ~ TableFigure {#tab-mac_interface; caption: "Logic Interface Signals"; width:100%;  }
-|--------+--------+----------+----------+-------------------------------------------------------------|
-| Signal | # Bits | TX Slice | RX Slice | Description                                                 |
-+--------+--------+----------+----------+-------------------------------------------------------------+
-| Data   | 16*N   | In       | Out      | Data                                                        |
-+--------+--------+----------+----------+-------------------------------------------------------------+
-| FEC    | N or 0 | In       | Out      | Forward Error Correction (optional)                         |
-+--------+--------+----------+----------+-------------------------------------------------------------+
-| AUX    | N or 0 | In       | Out      | Auxiliary uses (optional)                                   |
-+--------+--------+----------+----------+-------------------------------------------------------------+
-| PCLK   | 1      | Out      | Out      |                                                             |
-+--------+--------+----------+----------+-------------------------------------------------------------+
-| TxClk  | 1      | In       | NA       | Comes from a PLL or other clock source, not the Link Layer. |
-|        |        |          |          | The TxClk source is usually shared among many TX slices.    |
-|        |        |          |          | May be differential                                         |
-+--------+--------+----------+----------+-------------------------------------------------------------+
-| RxClk  | 1 or 0 | NA       | Out      | May be differential                                         |
-+--------+--------+----------+----------+-------------------------------------------------------------+
+|--------+--------+----------+----------+-----------------------------------------|
+| Signal | # Bits | TX Slice | RX Slice | Description                             |
++--------+--------+----------+----------+-----------------------------------------+
+| Data   | 16*N   | In       | Out      | Data                                    |
++--------+--------+----------+----------+-----------------------------------------+
+| FEC    | N or 0 | In       | Out      | Forward Error Correction (optional)     |
++--------+--------+----------+----------+-----------------------------------------+
+| AUX    | N or 0 | In       | Out      | Auxiliary uses (optional)               |
++--------+--------+----------+----------+-----------------------------------------+
+| PCLK   | 1      | Out      | Out      |                                         |
++--------+--------+----------+----------+-----------------------------------------+
+| TxClk  | 1      | In       | NA       | Comes from a PLL or other clock source, |
+|        |        |          |          | not the Link Layer.                     |
+|        |        |          |          | The TxClk source is usually shared      |
+|        |        |          |          | among many TX slices.                   |
+|        |        |          |          | May be differential                     |
++--------+--------+----------+----------+-----------------------------------------+
+| RxClk  | 1 or 0 | NA       | Out      | May be differential                     |
++--------+--------+----------+----------+-----------------------------------------+
 ~
 
 ### Slice Logic Interface: Control Signals
@@ -454,14 +520,16 @@ The signals in Table [#tab-mac_ctrl_interface] shall constitute the control port
 of the logic interface of the PHY.
 
 ~ TableFigure {#tab-mac_ctrl_interface; caption: "Logic Interface Control Signals"; width:100%;  }
-|----------+--------+----------+----------+------------------------------------------------------------------------------|
-| Signal   | # Bits | TX Slice | RX Slice | Description                                                                  |
-+----------+--------+----------+----------+------------------------------------------------------------------------------+
-| PHYResetB | 1      | In       | In       | Resets the BoW slice.  0 indicates a reset condition                                                      |
-+----------+--------+----------+----------+------------------------------------------------------------------------------+
-| PHYReady | 1      | Out      | Out      | 1 indicates that the PHY is ready to transmit/receive mission mode data |
-+----------+--------+----------+----------+------------------------------------------------------------------------------+
-
+|-----------+--------+----------+----------+------------------------------------|
+| Signal    | # Bits | TX Slice | RX Slice | Description                        |
++-----------+--------+----------+----------+------------------------------------+
+| PHYResetB | 1      | In       | In       | Resets the BoW slice.              |
+|           |        |          |          | 0 causes a reset                   |
++-----------+--------+----------+----------+------------------------------------+
+| PHYReady  | 1      | Out      | Out      | Indicates that the PHY is ready to |
+|           |        |          |          | transmit/receive mission mode data.|
+|           |        |          |          | 1 indicates ready                  |
++-----------+--------+----------+----------+------------------------------------+
 ~
 
 #### PHYResetB TX and RX
@@ -509,7 +577,7 @@ This could be a serial link like SPI or I2C, but this is not specified at this t
 Link initialization is described in Section [#sec-reset-and-initialization].
 
 
-# BoW Modes
+# BoW Modes and Reach
 
 A BoW PHY slice must conform to at least one of the BoW Modes seen in Table [#tab-levels].
 The recommended maximum wire reach for different packaging types and terminations is 
@@ -519,7 +587,7 @@ See section [#sec-chip-to-chip-channel-specifications] for how TX, RX and channe
 are qualified.
 
 "Laminate" is intended to include organic laminate packages (a.k.a. "buildup"") and similar 
-technologies with approximately 25 um line and space rules. 
+technologies with approximately 25 &mu;m line and space rules. 
 The minimum wire length for closely spaced chips in these technologies is around 3 mm
 for the slice closest to the chip edge.
 
@@ -532,23 +600,23 @@ The minimum wire length in these technologies may be less than 1 mm.
 
 ~ TableFigure {#tab-reaches; caption: "**Recommended** BoW Wire Reaches"; width:95%;  }
 
-+----------+---------------+-------+--------------+-------------------+-------------------+--------------+
-|          |               |       | Laminate     | Laminate          | Laminate          | Advanced     |
-+----------+---------------+-------+--------------+-------------------+-------------------+--------------+
-|          |               |       | Unterminated | Source Terminated | Doubly Terminated | Unterminated |
-+----------+---------------+-------+--------------+-------------------+-------------------+--------------+
-| BoW Mode | Wire Bit Rate | TxClk |  Reach       |  Reach            |  Reach            |  Reach       |
-+----------+---------------+-------+--------------+-------------------+-------------------+--------------+
-|          | (Gb/s)   | (GHz) | (mm)         | (mm)              | (mm)              | (mm)         |
-+----------+---------------+-------+--------------+-------------------+-------------------+--------------+
-| BoW-32   | 2             | 1     | 10           | 20                | 25+               | 4            |
-+----------+---------------+-------+--------------+-------------------+-------------------+--------------+
-| BoW-64   | 4             | 2     | NA           | 10                | 25+               | 2            |
-+----------+---------------+-------+--------------+-------------------+-------------------+--------------+
-| BoW-128  | 8             | 4     | NA           | 5                 | 25+               | 1            |
-+----------+---------------+-------+--------------+-------------------+-------------------+--------------+
-| BoW-256  | 16            | 8     | NA           | NA                | 25+               | NA           |
-+----------+---------------+-------+--------------+-------------------+-------------------+--------------+
++--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
+|Package       |                   |           | Laminate  | Laminate  | Laminate  | Advanced  |
++--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
+|Termination   |                   |           | None      | Source    | Double    | None      |
++--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
+| **BoW Mode** | **Wire Bit Rate** | **TxClk** | **Reach** | **Reach** | **Reach** | **Reach** |
++--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
+|              | (Gb/s/wire)            | (GHz)     | (mm)      | (mm)      | (mm)      | (mm)      |
++--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
+| BoW-32       | 2                 | 1         | 10        | 20        | 25+       | 4         |
++--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
+| BoW-64       | 4                 | 2         | NA        | 10        | 25+       | 2         |
++--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
+| BoW-128      | 8                 | 4         | NA        | 5         | 25+       | 1         |
++--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
+| BoW-256      | 16                | 8         | NA        | NA        | 25+       | NA        |
++--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
 
 ~
 Adding termination increases the speed and/or reach, at the expense of greater design complexity
@@ -558,8 +626,8 @@ and power.
 
 ## Dead-Bug Views
 
-The physical diagrams in this document are oriented looking down at the top layer of the 
-unpackaged chiplets.
+The physical diagrams in this document must be interpreted as 
+looking down at the top layer of the unpackaged chiplets.
 Since these are flip-chip packages, these views are equivalent to looking through the 
 bottom of the package with the balls up (dead bug view).
 For the view as seen looking down on a package as mounted on a PCB (live bug view), 
@@ -1041,7 +1109,7 @@ in Table [#tab-eye].
 |                        |                |                  |                   |
 +------------------------+----------------+------------------+-------------------+
 | Maximum RX sensitivity | **300 mV**     | **300 mV**       | **150 mV**        |
-| BoW-32, Bow-64         |                |                  |                   |
+| BoW-32, BoW-64         |                |                  |                   |
 | (V~rx_eye~)            |                |                  |                   |
 +------------------------+----------------+------------------+-------------------+
 | Minimum Timing Margin  | **50% T~bit~** | **50% T~bit~**   | **50% T~bit~**    |
@@ -1370,7 +1438,6 @@ Suggested test patterns are:
 [Pattern]: images/LB_Spec/wave_prbs.png { width:auto; max-width:100% }
 
 ~
-
 
 
 ## Loopback Test

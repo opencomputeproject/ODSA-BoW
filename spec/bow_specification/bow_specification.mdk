@@ -19,6 +19,9 @@ title,titlenote,titlefooter,h1,h2,h3,h4,h5 {
 ~
 
 ~ center {font-size: xx-large ; font-weight: bold}
+\
+\
+\
 Bunch of Wires PHY Specification
 ~
 ~ center {font-size: x-large }
@@ -626,7 +629,7 @@ and power.
 
 ## Dead-Bug Views
 
-The physical diagrams in this document must be interpreted as 
+The physical diagrams and descriptions in this document must be interpreted as 
 looking down at the top layer of the unpackaged chiplets.
 Since these are flip-chip packages, these views are equivalent to looking through the 
 bottom of the package with the balls up (dead bug view).
@@ -691,11 +694,12 @@ This is a dead-bug view.
 
 Each BoW slice consists of a differential clock pair, 16 single-ended data wires, 
 and optional wires FEC and AUX. Each BoW slice is unidirectional when in operation.
-A PHY may be designed as Rx-only and TX-only slices, or
+A PHY may be designed as RX-only and TX-only slices, or
 each slice may have both TX and RX capability, one of which is selected at configuration time. 
-A bidirectional link is composed of some number of slices configured for RX and some for TX.
+A bidirectional link is composed of some whole number of slices configured for RX and some 
+whole number of slices for TX.
 
-FEC (Forward Error Correction) is an optional signal that allows using FEC to 
+FEC (Forward Error Correction) is an optional signal that allows using error correction to 
 improve the bit error rate (BER).  AUX is an optional signal that can be used for purposes
 such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
 the details on FEC and AUX usage, which is defined in the Link Layer.
@@ -733,11 +737,12 @@ Alternate bump arrangements may include:
 * multiple power and ground rows
 
 Somewhat different wire pitches between two chiplets can be accommodated with 
-fan-out in the chip-to-chip wires. This is limited by the maximum wire length.
+fan-out in the chip-to-chip wires. This is limited by the maximum skew due to different 
+wire lengths - see section [#chan-skew].
 
 ## Cross Section
 
-A cross section for an organic laminate (a.k.a. "buildup") package is shown in 
+An example cross section for an organic laminate (a.k.a. "buildup") package is shown in 
 Figure [#fig-pkg_cross_section].
 
 ~ Figure { #fig-pkg_cross_section; caption: "Cross section of a BoW Link in an Organic Laminate Package" }
@@ -747,7 +752,7 @@ Figure [#fig-pkg_cross_section].
 
 In an organic laminate package, signal layers should be alternated with ground layers 
 in order to maintain a controlled impedance of 50 ohms. Each slice position (A, B, C, D) 
-should be associated with one signal layer and there is no mixing 
+should be associated with one signal layer and there should be no mixing 
 of signals from multiple slices.
 
 In any technology, the position-A slice on chiplet A must be connected to the position-A 
@@ -762,7 +767,8 @@ but with reduced signal integrity.
 Layers on the bottom side of the package typically cannot be used for BoW signals 
 due to low via density passing through the thick central core layer.
 
-In advanced packaging technologies, the shorter wire lengths may allow the use of 
+In advanced packaging technologies, the shorter wire lengths and higher wire resistance
+suggests the use of 
 non-controlled-impedance wires and unterminated transmitters and receivers.
 The smaller wire and space dimensions may allow
 the wires for multiple slices to be interleaved on a single wiring layer.
@@ -805,8 +811,9 @@ signal reordering regardless of chiplet rotations.
 ## Slice Stacking Pattern for Symmetric Links
 
 For bidirectional links, a pattern of alternating TX and RX stacks should be used. 
-Figure [#fig-alt_slices] shows a bidirectional link with 4 stacks of 4 slices each, 
-for 8 TX and 8 RX slices on each chiplet.
+Figure [#fig-alt_slices] shows an example bidirectional link with 4 stacks of 4 slices each, 
+for 8 TX and 8 RX slices on each chiplet. The first TX stack should be at the left edge 
+of the link.
 
 
 ~ Figure { #fig-alt_slices; caption: "Alternating-Stacks Pattern of TX and RX Slices in a Link" }
@@ -820,7 +827,7 @@ must be observed.
 An alternate approach with more flexibility is to design every slice to operate as either 
 RX or TX, to be configured after assembly or upon powerup. 
 This allows complete flexibility in link configuration and interoperability and 
-also provides an opportunity for wafer-test loopback testing. 
+also provides an opportunity for wafer-level loopback testing. 
 In this case, number the slices as if they are all TX slices.
 
 In BoW-256 at 16 Gb/s/wire, the link in Figure [#fig-alt_slices] provides a total of 2.0 Tb/s 
@@ -879,23 +886,26 @@ between the TX and the RX.
 Especially in doubly terminated modes, within-slice variations of termination resistance would directly result in varying swing levels at each pin.
 Thus, in order to reduce or eliminate the need for per-pin voltage reference adjustment at the RX, Table [#tab-impedance] also specifies
 requirements on DC termination resistance matching across all I/O's within a given BoW slice.  The &sigma; for this variation in the table
-should be interpreted as capturing within-slice manufacturing variability across worst-case voltage/temperature operating conditions, and is expected to 
+must be interpreted as capturing within-slice manufacturing variability across worst-case voltage/temperature operating conditions, and is expected to 
 be primarily influenced by some combination of transistor and explicit resistor matching (with the mix depending on the circuit implementation).   
 
-In doubly terminated modes of operation, the RX termination resistance should be connected to 0V, the I/O voltage, or mid-rail of the I/O 
-voltage (e.g., 375 mV with a 0.75 V I/O voltage).  The selection of termination voltage is expected to be static (hardwired) in the RX, and should
-be specified in the receiver's datasheet.  It is expected that Source-Series-Terminated (SST) Transmitters will be largely agnostic to the choice 
+In doubly terminated modes of operation, the RX termination resistance must be connected to 0V, 
+the I/O voltage, or mid-rail of the I/O 
+voltage (e.g., 375 mV with a 0.75 V I/O voltage). 
+The selection of termination voltage is expected to be static (hardwired) in the RX, and must
+be specified in the receiver's datasheet. 
+It is expected that Source-Series-Terminated (SST) Transmitters will be largely agnostic to the choice 
 of termination voltage on the receiver.       
 
 ## ESD 
-BOW I/O shall be designed to withstand **50 V CDM** (Charged Device Model) and 
+BoW I/O shall be designed to withstand **50 V CDM** (Charged Device Model) and 
 **250 V HBM** (Human Body Model). 
 This requirement is deemed sufficient for intra-package signaling, 
 similar to other die-to-die interface standards.
 
 ## Return Loss and Parasitic Capacitance
 
-Since BoW PHYs are targeted for relative dense and simple realizations, it is expected that the primary frequency-dependent 
+Since BoW PHYs are targeted for relatively dense and simple realizations, it is expected that the primary frequency-dependent 
 parasitics seen at a PHY's I/Os will be capacitive in nature.  Table [#tab-cap] provides limits on the maximum "equivalent"
 capacitance allowed on each side of each BoW I/O pin.  (E.g., a BoW-128 TX is allowed to have up to 600fF of 
 equivalent capacitance.)  Note that while the maximum capacitance specification does increase at lower data-rates, 
@@ -913,10 +923,14 @@ and improve signal integrity.
 ~  
 
 
-Since the actual frequency-dependent impedance profile of any given implementation may be comprised of a complex electrical network, 
-compliance with the "equivalent" capacitance metric is formally defined by requiring that the magnitude of the return loss of any BoW I/O
-is lower than the maximum limits shown in Figure [#fig-S11] below.  Similarly to DC termination resistance, the maximum s~11~ magnitude 
-in the figure must be met with logical 0, logical 1, and mid-scale between logic 0 and logic 1 voltages on the wire between the TX and RX.     
+Since the actual frequency-dependent impedance profile of any given
+implementation may be comprised of a complex electrical network, 
+compliance with the "equivalent" capacitance metric is formally defined
+by requiring that the magnitude of the return loss of any BoW I/O
+must be lower than the maximum limits shown in Figure [#fig-S11] below.
+Similarly to DC termination resistance, the maximum s~11~ magnitude 
+in the figure must be met with logical 0, logical 1, and mid-scale between
+logic 0 and logic 1 voltages on the wire between the TX and RX.     
 
 ~ Figure { #fig-S11; caption: "BoW Termination Maximum Return Loss" }
 ![S11]
@@ -925,8 +939,10 @@ in the figure must be met with logical 0, logical 1, and mid-scale between logic
 
 ## Receiver Bandwidth
 
-While this specification does not place a direct requirement on the bandwidth of a BoW receiver implementation, it is recommended that
-such receivers maintain an effective bandwidth of at least **(0.667/T~bit~) Hz**.  For example, for a BoW-256 PHY, the receiver bandwidth 
+While this specification does not place a direct requirement on the bandwidth of a BoW
+receiver implementation, 
+such receivers should maintain an effective bandwidth of at least **(0.667/T~bit~) Hz**.
+For example, for a BoW-256 PHY, the receiver bandwidth 
 is recommended to be at least 10.667 GHz.      
 
 # BoW PHY Timing Specifications
@@ -967,7 +983,7 @@ and M=4 to support a 1 Gbps data rate at the Link-PHY interface.
 ~
 
 The ratio M should be limited to integers, preferably powers of two, and other ratios 
-supported by the Link Layer. 
+should be implemented in the Link Layer. 
 
 The DDR clock TxClk is provided to the TX PHY from elsewhere on Chiplet-A.
 This may come for example from an on-chip PLL (typically shared across multiple slices) or 
@@ -976,7 +992,7 @@ a Duty Cycle Corrector (DCC) may be needed in the TX slice. TxClk is used to dri
 provide the output CLK+,CLK- to Chiplet-B.
 
 On the RX side, the PHY must align the slicer clock to sample the data correctly.
-This may be done with a DLL or adjustable delays or other methods.  If the PHY includes 
+This may be done with a DLL, adjustable delays, or other methods.  If the PHY includes 
 control logic to self-align the slicer clock for correct sampling of the data, the PHYReady 
 signal must be asserted after the logic has determined that such alignment is complete.
 The RX PHY may output the received CLK as RxClk to the logic interface.
@@ -992,10 +1008,12 @@ the clock skew of the TX slices on Chiplet A and the clock skew of the RX slices
 and vice versa for flow from B to A. This skew must be no more than 150 ps/stack along the chip edge.
 There is no specification of the skew between TxClk on Chiplet A vs. TxClk on Chiplet B.
 
-On both the Tx and RX sides, the Link Layer must include a Clock Domain Crossing (CDC) to 
+On both the Tx and RX sides, the Link Layer will need to include a Clock Domain Crossing (CDC) to 
 align the data between CoreClk and PCLK. 
-These CDCs must also be able to absorb the slice-to-slice clock skew and 
-core clock distribution skew across the whole link.
+The Link Layer must be able to absorb the slice-to-slice clock skew and 
+core clock distribution skew across a whole BoW link.
+Word alignment across a link need not be supported by the PHY;
+if required, it should be done in the Link Layer.
 
 If DCCs are included in the PHY and they need an alignment cycle, they shall include 
 control logic to perform self-alignment.

@@ -189,7 +189,7 @@ objectives:
 * Unencumbered by technology license costs
 * Very low power (< 1 pJ/bit) as defined by TX IO Pad, wire and RX IO Pad.
 * Very low latency (<5 ns without FEC, <15 ns with FEC from logic interface to logic interface)
-* High throughput density (100-1000+ Gb/s/mm-chip-edge)
+* High throughput density (100-1000+ Gbps/mm-chip-edge)
 * Backwards compatible (across at least two major specification versions)
 
 ## Advantages
@@ -377,7 +377,7 @@ There is more detail on BoW Modes in section [#sec-bow-modes].
 ~ TableFigure {#tab-levels; caption: "BoW Levels"; }
 +----------+----------------+---------------+-------+
 |BoW Mode | Slice Bit Rate | Wire Bit Rate | TxClk |
-|          | Gb/s           | Gb/s/wire     | GHz   |
+|          | Gbps           | Gbps/wire     | GHz   |
 +----------+----------------+---------------+-------+
 | BoW-32   | 32             | 2             | 1     |
 | BoW-64   | 64             | 4             | 2     |
@@ -396,7 +396,7 @@ Figure [#fig-bowspec_tradeoff2] shows the tradeoff between package, data rate, t
 and reach. 
 Source-terminated BoW on laminate allows a longer reach than advanced packaging, 
 but the wider design rules in laminate means that both of these cases are barely able to 
-reach 8 Gb/s/wire.
+reach 8 Gbps/wire.
 A doubly-terminated link offers longer distances and higher rates, but 
 requires a more complicated receiver design.
 
@@ -426,9 +426,9 @@ each BoW slice consists of a differential clock pair,
 16 single-ended data wires, and an optional pair of wires FEC and AUX.
 
 Each BoW slice is unidirectional when in operation.
-A chiplet may be designed with Rx-only and Tx-only slices, or
+A chiplet may be designed with RX-only and TX-only slices, or
 each slice may have both TX and RX capability which is configured at runtime. 
-A bidirectional link is composed of some number of slices configured for RX and some for Tx.
+A bidirectional link is composed of some number of slices configured for RX and some for TX.
 
 FEC (Forward Error Correction) is an optional signal that allows using FEC to 
 improve the bit error rate (BER). 
@@ -470,7 +470,7 @@ Data Bus Inversion (DBI) can be used to mitigate simultaneous switching
 output (SSO) noise or to optimize energy of a BoW PHY by reducing the number of BoW data wires
 that switch between adjacent data transfer cycles. 
 DBI functionality is optional; it one of several possible uses of the AUX wire.
-If implemented, DBI is in the Link Layer and must be implemented on both RX and Tx.
+If implemented, DBI is in the Link Layer and must be implemented on both RX and TX.
 
 ## Slice Logic Interface
 
@@ -610,7 +610,7 @@ The minimum wire length in these technologies may be less than 1 mm.
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
 | **BoW Mode** | **Wire Bit Rate** | **TxClk** | **Reach** | **Reach** | **Reach** | **Reach** |
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
-|              | (Gb/s/wire)            | (GHz)     | (mm)      | (mm)      | (mm)      | (mm)      |
+|              | (Gbps/wire)            | (GHz)     | (mm)      | (mm)      | (mm)      | (mm)      |
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
 | BoW-32       | 2                 | 1         | 10        | 20        | 25+       | 4         |
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
@@ -648,14 +648,16 @@ A BoW link between two chiplets is made up of
 wires, slices, and stacks as seen in Figure [#fig-components].
 
 * The signal traces in the package between chiplets are called **wires**.
-* The basic unit is a **slice**; it must have 18 or 20 signal bumps. 
+* A **slice** is the the basic unit of a BoW PHY. 
+It must have 18 or 20 signal bumps. 
 It must have 2 bumps for the differential
 clock and 16 single-ended data bumps.
 It may also have the optional single-ended signals AUX and FEC. 
 The long edge of a slice must be parallel to the chip edge.
-* Multiple slices may be placed in a **stack**. The slice positions are
+* A **stack** is composed of one or more slices stacked from the chip edge towards the center.
+The slice positions are
 designated A, B, C, etc, starting with the slice closest to the edge of the chip.
-* A **link** from one chiplet to another must be composed of one or more
+* A **link** from one chiplet to another is composed of one or more
 stacks placed along the chip edge. A link may be
 configured with equal numbers of RX and TX slices,
 or it may be asymmetric or one-way.
@@ -751,12 +753,12 @@ Figure [#fig-pkg_cross_section].
 ~
 
 In an organic laminate package, signal layers should be alternated with ground layers 
-in order to maintain a controlled impedance of 50 ohms. Each slice position (A, B, C, D) 
+in order to maintain a controlled impedance of 50 &Omega;. Each slice position (A, B, C, D) 
 should be associated with one signal layer and there should be no mixing 
 of signals from multiple slices.
 
 In any technology, the position-A slice on chiplet A must be connected to the position-A 
-slice on chiplet B (one must be configured for TX and one for Rx). 
+slice on chiplet B (one must be configured for TX and one for RX). 
 The position-B slices are connected together, and so on.
 
 There is no specified limit to the number of slices in a stack. 
@@ -830,7 +832,7 @@ This allows complete flexibility in link configuration and interoperability and
 also provides an opportunity for wafer-level loopback testing. 
 In this case, number the slices as if they are all TX slices.
 
-In BoW-256 at 16 Gb/s/wire, the link in Figure [#fig-alt_slices] provides a total of 2.0 Tb/s 
+In BoW-256 at 16 Gbps/wire, the link in Figure [#fig-alt_slices] provides a total of 2.0 Tb/s 
 in each direction.
 In an organic substrate using the hexagonal bump pattern of Figure [#fig-min_link]
 with a bump pitch is 130 um, 
@@ -1008,7 +1010,7 @@ the clock skew of the TX slices on Chiplet A and the clock skew of the RX slices
 and vice versa for flow from B to A. This skew must be no more than 150 ps/stack along the chip edge.
 There is no specification of the skew between TxClk on Chiplet A vs. TxClk on Chiplet B.
 
-On both the Tx and RX sides, the Link Layer will need to include a Clock Domain Crossing (CDC) to 
+On both the TX and RX sides, the Link Layer will need to include a Clock Domain Crossing (CDC) to 
 align the data between CoreClk and PCLK. 
 The Link Layer must be able to absorb the slice-to-slice clock skew and 
 core clock distribution skew across a whole BoW link.
@@ -1046,7 +1048,7 @@ This jitter must be evaluated for CLK edges that are up to **3 UI** earlier than
 the CLK edge that launched the data bit being captured at the receiver.  This is because even 
 though jitter on the data edges may be correlated with the CLK jitter, 
 the slicer in the RX side is likely to use a different CLK edge due to delays in the 
-Rx-side clock alignment circuit (usually a DLL and clock distribution).
+RX-side clock alignment circuit (usually a DLL and clock distribution).
 
 In order to properly account for the jitter filtering/peaking that will occur due to the 
 difference in delay between the data launching edge at the TX and the data capturing edge at the RX, 
@@ -1104,11 +1106,15 @@ must also be evaluated at 1e-15 error rate, so the total voltage sensitvity V~s,
 V~s,RX~ = V~err,deterministic~ + 15.9 &sigma;~V~~err,random~
 ~
 
-Note that the receiver's voltage sensitivity should take into account all voltage error sources at the
-receiver, including receiver thermal/flicker noise, supply noise, residual offset, and reference level errors. 
+Note that the receiver's voltage sensitivity should take into account all voltage
+error sources at the
+receiver, including receiver thermal/flicker noise, supply noise, residual offset,
+and reference level errors. 
 
-Since swing and signal integrity are expected to vary with termination as well as data-rate, the RX voltage 
-sensitivity requirements and minimum timing margin requirements are termination- and rate-dependent, as outlined
+Since swing and signal integrity are expected to vary with termination as
+well as data-rate, the RX voltage 
+sensitivity requirements and minimum timing margin requirements
+are termination- and rate-dependent, as outlined
 in Table [#tab-eye].
 
 ~ Figure { #fig-eye; caption: "Eye Diagram Definitions" }
@@ -1185,7 +1191,7 @@ on a substrate with an &epsilon;~r~ of 4.
 <XX
 ## Recommended BoW Channel Specifications on Laminate
 
-BoW channel length on laminate is limited by the round trip reflection delay to 10 mm for 4 Gb/s/wire.
+BoW channel length on laminate is limited by the round trip reflection delay to 10 mm for 4 Gbps/wire.
 
 BoW channels longer than 2 mm on laminate should meet these specs:
 
@@ -1195,11 +1201,11 @@ BoW channels longer than 2 mm on laminate should meet these specs:
 +:-----------------------:+:--------------:+:-------:+
 | Length mismatch within a slice |  1 mm   | = ~6 ps <= 0.05 UI |
 +-------------------------+----------------+---------+
-|Impedance                | 50\+-5 ohms    |         |
+|Impedance                | 50\+-5 &Omega;    |         |
 +-------------------------+----------------+---------+
 | C~cross~/C~total~ ratio | < 40%          |         |
 +-------------------------+----------------+---------+
-|   R~series~             |  < 4 ohms      |         |
+|   R~series~             |  < 4 &Omega;      |         |
 +-------------------------+----------------+---------+
 ~
 C~cross~ is the total capacitance of a wire to all its neighboring wires.
@@ -1207,7 +1213,7 @@ C~total~ is the total capacitance of a wire including to grounds.
 
 <XX
 Stripline (buried) wires with 25 um line, 40 um space and 33 um dielectric thickness have 
-C~cross~/C~total~ of 28% and an impedance of 48 ohms.
+C~cross~/C~total~ of 28% and an impedance of 48 &Omega;.
 XX>
 
 <XX
@@ -1224,8 +1230,8 @@ Kens quick study found wire lengths from 570 to 1380 um
 The best config looked like 3 um line and space, alternating signal and ground layers.
 This gives a wire pitch of 1/9 the bump pitch, so we could even support 4 slices in just one
 signal layer.
-The line C for 1400 um is 0.76 pF, the R is 14 ohms, the RC is 11 ps, which is okay for 
-8 Gb/s.
+The line C for 1400 um is 0.76 pF, the R is 14 &Omega;, the RC is 11 ps, which is okay for 
+8 Gbps.
 Source termination is probably not wanted in this case since there is so much Rline, 
 the lines are short and
 we cant build a reasonable controlled impedance line.
@@ -1244,9 +1250,9 @@ In laminate packages, the channel characteristic impedance should be between 45 
 
 To provide guidance on the types of channels that are expected to meet the requirements for compliance
 with the BoW reference receiver and transmitter, this section provides examples of typical loss and 
-crosstalk profiles for doubly-terminated channels supporting 16 Gb/s operation (which are most sensitive 
+crosstalk profiles for doubly-terminated channels supporting 16 Gbps operation (which are most sensitive 
 to channel signal integrity).  Note that when operating at lower rates, the frequency axes in the figures 
-below can be scaled with the data-rate relative to 16 Gb/s.
+below can be scaled with the data-rate relative to 16 Gbps.
 
 ### Channel Loss
 
@@ -1504,7 +1510,7 @@ In bidirectional links, loopback tests can be implemented in several modes:
  can perform on-chip loopback testing simply by turning on both the RX and TX paths at once.
  This has more on-chip circuitry, but allows loopback testing with no switches or extra 
  lines connected to the bumps other than the TX driver tristate switches. 
- Figure [#fig_test_sl] applies, except there is only one shared set of bumps for a Tx/RX slice.
+ Figure [#fig_test_sl] applies, except there is only one shared set of bumps for a TX/RX slice.
  * long loopback 
   * the PRBS pattern is generated by chiplet-A, sent over the replica channel on the ATE 
   load board which loops it back 

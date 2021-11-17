@@ -968,21 +968,19 @@ the data bit rate is twice the clock frequency,
 so data is clocked in on both edges of the clock in the RX slice.
 BoW PHYs shall be SDR (Single Data Rate) at the logic interface.
 
-~Framed {color: blue}
+
 Table [#tab-clock-ratios] provides recommended clock and data rates for each BoW mode.
 The ratio M should be limited to integers, preferably powers of two, and any other ratios 
 should be implemented outside the PHY.
-
-\[ Should we include this recommendatation from the Link Layer group? ]  
-Supporting a PCLK of 1000 MHz is highly recommended. 
 
 Note that higher PCLK rates (and lower M ratios) 
 help reduce gate count and Link Layer latency, but 
 lower rates are often more power efficient.
 The best PCLK rate(s) to implement for a particular chiplet will tend to be a function of its process node.
-~
+For implementations in process nodes at 16 nm and below, supporting 1000 MHz is recommended.
 
-~ TableFigure {#tab-clock-ratios; color: blue; caption: "Recommended PCLK and Logic Data Rates for Figure [#fig-clocking]"; width:100%;  }
+
+~ TableFigure {#tab-clock-ratios;  caption: "Recommended PCLK and Logic Data Rates for Figure [#fig-clocking]"; width:100%;  }
 |--------|-------|------|------|-------|
 |        |Data   | PCLK |Mux   | Logic |
 | Mode   |Rate   |      |Ratio | Data  |
@@ -1032,7 +1030,7 @@ The DDR clock TxClk is provided to the TX PHY from elsewhere on Chiplet-A.
 This may come for example from an on-chip PLL (typically shared across multiple slices) or 
 routed from the RxClk of an RX slice on Chiplet-A. In order to meet duty cycle requirements, 
 a Duty Cycle Corrector (DCC) may be needed in the TX slice. TxClk is used to drive the serializers and 
-provide the output CLK+,CLK- to Chiplet-B.
+provide the output CLK+, CLK- to Chiplet-B.
 
 On the RX side, the PHY must align the slicer clock to sample the data correctly.
 This may be done with a DLL, adjustable delays, or other methods.  If the PHY includes 
@@ -1044,13 +1042,20 @@ All BoW interfaces shall be source synchronous at the die-to-die interface withi
 No modes of BoW require per-wire
 or per-slicer delay adjustments, but such capability may be optionally included. 
 
-Clock skew between the slices in each direction of a link depends on the implementation of the
+Clock skew between the slices in each direction of a link likely depends on the implementation of the
 TxClk distribution to all the TX slices. 
 That is, for the data flow from Chiplet A to Chiplet B, 
 the TxClk distribution on Chiplet A probably dominates the 
 the clock skew of the TX slices on Chiplet A and the clock skew of the RX slices on Chiplet B,
-and vice versa for flow from B to A. This skew must be no more than 150 ps/stack along the chip edge.
-There is no specification of the skew between TxClk on Chiplet A vs. TxClk on Chiplet B.
+and vice versa for flow from B to A. 
+The skew between Tx CLK signals within one direction of a link 
+must be no more than 150 ps/stack along the chip edge.
+There is no specification of the skew between TxClk on Chiplet A vs. TxClk on Chiplet B nor between
+different links.
+
+~ Framed {color: blue}
+TBD: does PCLK need to be aligned to 150 ps/stack?  Do we reset PCLK dividers?
+~
 
 On both the TX and RX sides, the Link Layer will usually need to include a Clock Domain Crossing (CDC) to 
 align the data between CoreClk and PCLK. 
@@ -1059,16 +1064,13 @@ core clock distribution skew across a whole BoW link.
 Word alignment across a link need not be supported by the PHY;
 if required, it should be done in the Link Layer.
 
-If DCCs are included in the PHY and they need an alignment cycle, they shall include 
-control logic to perform self-alignment.
-
 ## Clock and Data Specifications {#clk-data-specs}
 
 ### Transmitter Maximum Rise-Time
 
 The maximum 20% - 80% rise-time simulated at the output of BoW TX shall 
 not exceed **32% of a UI**.  For example, for a BoW-128 Transmitter, the 
-20% - 80% rise-time should not exceed 40 ps.  This rise-time should be simulated 
+20% - 80% rise-time shall not exceed 40 ps.  This rise-time shall be simulated 
 with the TX driving an ideal load of 50 &Omega; (Z~chan~).     
 
 ### Transmitter Jitter {#tx-jit}
@@ -1095,7 +1097,7 @@ RX-side clock alignment circuit (usually a DLL and clock distribution).
 In order to properly account for the jitter filtering/peaking that will occur due to the 
 difference in delay between the data launching edge at the TX and the data capturing edge at the RX, 
 when evaluating the transmitter's jitter (and whether it meets the requirements described in this section),
-the jitter at the TX output that is **correlated** between the CLK and D lines should be 
+the jitter at the TX output that is **correlated** between the CLK and D lines shall be 
 filtered by the following frequency-dependent transfer function:
 
 ~center
@@ -1105,10 +1107,10 @@ filtered by the following frequency-dependent transfer function:
 where t~clk-d~ is the delay between the CLK edge that launched the data 
 bit and the CLK edge used to capture it. 
 Note that jitter that is not correlated between the CLK and D 
-signals should **not** be filtered by this transfer function.  (I.e., if the
+signals shall **not** be filtered by this transfer function.  (I.e., if the
 CLK signal and a given D signal have completely independent sources of jitter added to them
 such as non-shared portions of the clock distribution network, 
-those jitter sources should not be filtered by H~tx_jit~(j&omega;).  Since the total TX jitter 
+those jitter sources shall not be filtered by H~tx_jit~(j&omega;).  Since the total TX jitter 
 after filtering by this transfer function might not be monotonic with t~clk-d~, 
 and since receiver implementations 
 may realize varying values of t~clk-d~, a transmitter must meet the 14% of a UI 
@@ -1124,7 +1126,7 @@ For example, a TX whose total jitter is 14% of a UI (and hence just meets the re
 allowed to introduce up to 4% of a UI peak-to-peak skew between CLK and D, while a TX with jitter better than 
 required by this specification is allowed to introduced a larger amount of skew.
 
-Note that this specification should be simulated directly at the TX output while driving 
+Note that this specification shall be simulated directly at the TX output while driving 
 an ideal load of 50 &Omega; (Z~chan~).       
 
 ### CLK Receiver Sensitivity to Common-Mode Variations
@@ -1139,16 +1141,16 @@ for peak-to-peak common mode variation on CLK+/CLK- of 20mV.
 
 As indicated in Figure [#fig-eye] and Table [#tab-eye], a BoW receiver must meet the required bit-error-rate 
 of 1e-15 when receiving signals with a vertical opening (voltage margin) of at least V~rx_eye~ and 
-horizontal opening (timing margin) of at least t~rx_eye~.  Both V~rx_eye~ and t~rx_eye~ should include any
+horizontal opening (timing margin) of at least t~rx_eye~.  Both V~rx_eye~ and t~rx_eye~ shall include any
 random and/or statistical noise and error terms introduced by either the channel or the TX at a level that 
 corresponds to 1e-15 probability.  Similarly, the receiver's voltage sensitivity (which sets V~rx_eye~)
-must also be evaluated at 1e-15 error rate, so the total voltage sensitvity V~s,RX~ should be computed as:
+must also be evaluated at 1e-15 error rate, so the total voltage sensitvity V~s,RX~ shall be computed as:
 
 ~center
 V~s,RX~ = V~err,deterministic~ + 15.9 &sigma;~V~~err,random~
 ~
 
-Note that the receiver's voltage sensitivity should take into account all voltage
+Note that the receiver's voltage sensitivity shall take into account all voltage
 error sources at the
 receiver, including receiver thermal/flicker noise, supply noise, residual offset,
 and reference level errors. 
@@ -1200,6 +1202,10 @@ XX>
 CLK and data signals must not overshoot more than 25% of the I/O voltage at both the 
 TX and RX ends.
 For a 0.75 V I/O voltage, they must stay within the range -0.188 V to 0.937 V.
+
+~ Framed {color: blue}
+Overshoot depends on Tx and Channel. Overshoot spec protects the Rx from damage.  How to handle this?
+~
 
 
 ### Slice-to-Clice CLK Skew
@@ -1422,7 +1428,7 @@ slices via the APB interface. This is implementation dependent
 1. The LC de-asserts Reset to the TX PHY slices
 1. Once its TX clock stabilizes, each TX PHY slice asserts Ready to the LC
 1. When all TX PHY slices are ready, the LC signals the TX Link Layer to 
-send the clock training pattern specified by the RX PHY
+send the clock training pattern (repeating indefinitely) specified by the RX PHY
 1. The LC de-asserts Reset to the RX PHY slices 
 1. Each RX PHY slice performs clock and data alignment and signals Ready to the LC when done
 1. When all RX PHY slices are ready, the LC signals the TX and RX 
@@ -1446,6 +1452,7 @@ PLL or DLL losing lock are possible causes.
 * There is no definition of what should be done with unused PHYs 
 (that are on the chip but have no partner on another chiplet)
 * There is no definition of addressing chiplets, Links or slices
+* Possible use of PRBS patterns for training
 
 
 # Configuration

@@ -950,12 +950,76 @@ is recommended to be at least 10.667 GHz.
 
 # BoW PHY Timing Specifications
 
-## Clocking
 
 ~ Figure { #fig-clocking; caption: "BoW Clock and Data Block Diagram - One TX Slice, One RX Slice" }
 ![clocking]
 [clocking]: images/bowspec_figure_PHY_block.PNG { width:auto; max-width:100% }
 ~
+
+## Bit Ordering
+
+~ framed {color: blue}
+The PHY TX serializer shall order data this way (referring to Figure [#fig-clocking]):  
+
+* On the first CLK edge (CLK+ rising) bits P_D[0:15] are sent on wires D[0:15]   
+* On the second CLK edge (CLK+ falling) bits P_D[16:31] are sent on wires D[0:15]   
+* and so on to bits P_D[M\*16-16:M\*16-1]. 
+* Then the cycle repeats.
+
+
+The RX PHY shall order bits in the same fashion.
+However, the bits at the RX PHY logic interface P_D[*] may be offset by a multiple of 16 bits from the TX order
+if the TX and RX PCLK dividers are not aligned.
+A PHY implementation may provide a way to align the TX and RX dividers, or it may rely on the Link Layer
+to rotate the RX P_D[*] bits to provide that alignment as part of the training of the Link Layer.
+~
+.
+~framed {color: blue}
+Alternate description of the same ordering:
+
+On the "first" serial cycle, CLK+ rises (CLK- falls),  
+D[0] sends P_D[0],  
+D[1] sends P_D[1],  
+... ,  
+D[15] sends P_D[15]
+   
+   
+On the "second" serial cycle, CLK+ falls (CLK- rises),  
+D[0] sends P_D[16],  
+D[1] sends P_D[17],  
+.. ,  
+D[15] sends P_D[31]  
+...
+
+~
+.
+
+~ framed {color: blue}
+But Keysight implemented this:  
+1st cycle:  
+D[0] sends P_D[0]  
+D[1] sends P_D[8]  
+D[2] sends P_D[16]  
+...  
+D[15] sends P_D[120]  
+
+2nd cycle:  
+D[0] sends P_D[1]  
+D[1] sends P_D[9]  
+...
+
+8th cycle  
+D[0] sends P_D[7]  
+...  
+D[15] sends P_D[127]  
+
+Is there an industry-standard ordering for other serializers?  
+  
+Keysight's implementation relies on the Link Layer to align the P_D[*] bits.
+~
+
+
+## Clocking
 
 Figure [#fig-clocking] shows the clock and data flow for a single TX slice and a single RX slice.
 On the TX side, data bits (and optional FEC and AUX bits) come in a wide word from the Link Layer, 
@@ -967,7 +1031,6 @@ BoW PHYs shall be DDR (Double Data Rate) at the chip-to-chip interface:
 the data bit rate is twice the clock frequency, 
 so data is clocked in on both edges of the clock in the RX slice.
 BoW PHYs shall be SDR (Single Data Rate) at the logic interface.
-
 
 Table [#tab-clock-ratios] provides recommended clock and data rates for each BoW mode.
 The ratio M should be limited to integers, preferably powers of two, and any other ratios 
@@ -1055,6 +1118,8 @@ different links.
 
 ~ Framed {color: blue}
 TBD: does PCLK need to be aligned to 150 ps/stack?  Do we reset PCLK dividers?
+
+Keysight does not align PCLK dividers and makes the Link Layer CDC handle this.
 ~
 
 On both the TX and RX sides, the Link Layer will usually need to include a Clock Domain Crossing (CDC) to 

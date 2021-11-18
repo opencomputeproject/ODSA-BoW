@@ -19,6 +19,9 @@ title,titlenote,titlefooter,h1,h2,h3,h4,h5 {
 ~
 
 ~ center {font-size: xx-large ; font-weight: bold}
+\
+\
+\
 Bunch of Wires PHY Specification
 ~
 ~ center {font-size: x-large }
@@ -186,7 +189,7 @@ objectives:
 * Unencumbered by technology license costs
 * Very low power (< 1 pJ/bit) as defined by TX IO Pad, wire and RX IO Pad.
 * Very low latency (<5 ns without FEC, <15 ns with FEC from logic interface to logic interface)
-* High throughput density (100-1000+ Gb/s/mm-chip-edge)
+* High throughput density (100-1000+ Gbps/mm-chip-edge)
 * Backwards compatible (across at least two major specification versions)
 
 ## Advantages
@@ -368,19 +371,19 @@ A BoW PHY must be operable in one of the BoW Modes listed in ascending order in 
 A BoW Mode defines the speed of clock and data of the PHY on the die-to-die wires.
 In all modes, the data must be clocked DDR: 
 the chip-to-chip data wire bit rate is double the clock wire frequency.
-All BoW interfaces must be able to interoperate with all the lower modes.
+All BoW interfaces faster than BoW-64 should also be able to support BoW-64.
 Supporting rates other than the defined four modes is an implementation choice.
-There is more detail on BoW Modes in section [#sec-bow-modes].
-~ TableFigure {#tab-levels; caption: "BoW Levels"; }
-+----------+----------------+---------------+-------+
-|BoW Mode | Slice Bit Rate | Wire Bit Rate | TxClk |
-|          | Gb/s           | Gb/s/wire     | GHz   |
-+----------+----------------+---------------+-------+
-| BoW-32   | 32             | 2             | 1     |
-| BoW-64   | 64             | 4             | 2     |
-| BoW-128  | 128            | 8             | 4     |
-| BoW-256  | 256            | 16            | 8     |
-+----------+----------------+---------------+-------+
+There is more detail on BoW Modes in section [#sec-bow-modes-and-reach].
+~ TableFigure {#tab-levels; caption: "BoW Modes"; }
++---------+-----------------+---------------+-------+
+|BoW Mode | Slice Data Rate | Wire Bit Rate | TxClk |
+|         | Gbps            | Gbps/wire     | GHz   |
++:-------:+:---------------:+:-------------:+:-----:+
+| BoW-32  | 32              | 2             | 1     |
+| BoW-64  | 64              | 4             | 2     |
+| BoW-128 | 128             | 8             | 4     |
+| BoW-256 | 256             | 16            | 8     |
++---------+-----------------+---------------+-------+
 ~
 
 
@@ -393,7 +396,7 @@ Figure [#fig-bowspec_tradeoff2] shows the tradeoff between package, data rate, t
 and reach. 
 Source-terminated BoW on laminate allows a longer reach than advanced packaging, 
 but the wider design rules in laminate means that both of these cases are barely able to 
-reach 8 Gb/s/wire.
+reach 8 Gbps/wire.
 A doubly-terminated link offers longer distances and higher rates, but 
 requires a more complicated receiver design.
 
@@ -423,9 +426,9 @@ each BoW slice consists of a differential clock pair,
 16 single-ended data wires, and an optional pair of wires FEC and AUX.
 
 Each BoW slice is unidirectional when in operation.
-A chiplet may be designed with Rx-only and Tx-only slices, or
+A chiplet may be designed with RX-only and TX-only slices, or
 each slice may have both TX and RX capability which is configured at runtime. 
-A bidirectional link is composed of some number of slices configured for RX and some for Tx.
+A bidirectional link is composed of some number of slices configured for RX and some for TX.
 
 FEC (Forward Error Correction) is an optional signal that allows using FEC to 
 improve the bit error rate (BER). 
@@ -467,7 +470,7 @@ Data Bus Inversion (DBI) can be used to mitigate simultaneous switching
 output (SSO) noise or to optimize energy of a BoW PHY by reducing the number of BoW data wires
 that switch between adjacent data transfer cycles. 
 DBI functionality is optional; it one of several possible uses of the AUX wire.
-If implemented, DBI is in the Link Layer and must be implemented on both RX and Tx.
+If implemented, DBI is in the Link Layer and must be implemented on both RX and TX.
 
 ## Slice Logic Interface
 
@@ -575,6 +578,7 @@ mechanism outside the BoW link.
 This could be a serial link like SPI or I2C, but this is not specified at this time.
 
 Link initialization is described in Section [#sec-reset-and-initialization].
+Clocks are described in [#sec-clocking].
 
 
 # BoW Modes and Reach
@@ -607,7 +611,7 @@ The minimum wire length in these technologies may be less than 1 mm.
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
 | **BoW Mode** | **Wire Bit Rate** | **TxClk** | **Reach** | **Reach** | **Reach** | **Reach** |
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
-|              | (Gb/s/wire)            | (GHz)     | (mm)      | (mm)      | (mm)      | (mm)      |
+|              | (Gbps/wire)            | (GHz)     | (mm)      | (mm)      | (mm)      | (mm)      |
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
 | BoW-32       | 2                 | 1         | 10        | 20        | 25+       | 4         |
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
@@ -626,7 +630,7 @@ and power.
 
 ## Dead-Bug Views
 
-The physical diagrams in this document must be interpreted as 
+The physical diagrams and descriptions in this document must be interpreted as 
 looking down at the top layer of the unpackaged chiplets.
 Since these are flip-chip packages, these views are equivalent to looking through the 
 bottom of the package with the balls up (dead bug view).
@@ -645,14 +649,16 @@ A BoW link between two chiplets is made up of
 wires, slices, and stacks as seen in Figure [#fig-components].
 
 * The signal traces in the package between chiplets are called **wires**.
-* The basic unit is a **slice**; it must have 18 or 20 signal bumps. 
+* A **slice** is the the basic unit of a BoW PHY. 
+It must have 18 or 20 signal bumps. 
 It must have 2 bumps for the differential
 clock and 16 single-ended data bumps.
 It may also have the optional single-ended signals AUX and FEC. 
 The long edge of a slice must be parallel to the chip edge.
-* Multiple slices may be placed in a **stack**. The slice positions are
+* A **stack** is composed of one or more slices stacked from the chip edge towards the center.
+The slice positions are
 designated A, B, C, etc, starting with the slice closest to the edge of the chip.
-* A **link** from one chiplet to another must be composed of one or more
+* A **link** from one chiplet to another is composed of one or more
 stacks placed along the chip edge. A link may be
 configured with equal numbers of RX and TX slices,
 or it may be asymmetric or one-way.
@@ -691,11 +697,12 @@ This is a dead-bug view.
 
 Each BoW slice consists of a differential clock pair, 16 single-ended data wires, 
 and optional wires FEC and AUX. Each BoW slice is unidirectional when in operation.
-A PHY may be designed as Rx-only and TX-only slices, or
+A PHY may be designed as RX-only and TX-only slices, or
 each slice may have both TX and RX capability, one of which is selected at configuration time. 
-A bidirectional link is composed of some number of slices configured for RX and some for TX.
+A bidirectional link is composed of some whole number of slices configured for RX and some 
+whole number of slices for TX.
 
-FEC (Forward Error Correction) is an optional signal that allows using FEC to 
+FEC (Forward Error Correction) is an optional signal that allows using error correction to 
 improve the bit error rate (BER).  AUX is an optional signal that can be used for purposes
 such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
 the details on FEC and AUX usage, which is defined in the Link Layer.
@@ -733,11 +740,12 @@ Alternate bump arrangements may include:
 * multiple power and ground rows
 
 Somewhat different wire pitches between two chiplets can be accommodated with 
-fan-out in the chip-to-chip wires. This is limited by the maximum wire length.
+fan-out in the chip-to-chip wires. This is limited by the maximum skew due to different 
+wire lengths - see section [#chan-skew].
 
 ## Cross Section
 
-A cross section for an organic laminate (a.k.a. "buildup") package is shown in 
+An example cross section for an organic laminate (a.k.a. "buildup") package is shown in 
 Figure [#fig-pkg_cross_section].
 
 ~ Figure { #fig-pkg_cross_section; caption: "Cross section of a BoW Link in an Organic Laminate Package" }
@@ -746,12 +754,12 @@ Figure [#fig-pkg_cross_section].
 ~
 
 In an organic laminate package, signal layers should be alternated with ground layers 
-in order to maintain a controlled impedance of 50 ohms. Each slice position (A, B, C, D) 
-should be associated with one signal layer and there is no mixing 
+in order to maintain a controlled impedance of 50 &Omega;. Each slice position (A, B, C, D) 
+should be associated with one signal layer and there should be no mixing 
 of signals from multiple slices.
 
 In any technology, the position-A slice on chiplet A must be connected to the position-A 
-slice on chiplet B (one must be configured for TX and one for Rx). 
+slice on chiplet B (one must be configured for TX and one for RX). 
 The position-B slices are connected together, and so on.
 
 There is no specified limit to the number of slices in a stack. 
@@ -762,7 +770,8 @@ but with reduced signal integrity.
 Layers on the bottom side of the package typically cannot be used for BoW signals 
 due to low via density passing through the thick central core layer.
 
-In advanced packaging technologies, the shorter wire lengths may allow the use of 
+In advanced packaging technologies, the shorter wire lengths and higher wire resistance
+suggests the use of 
 non-controlled-impedance wires and unterminated transmitters and receivers.
 The smaller wire and space dimensions may allow
 the wires for multiple slices to be interleaved on a single wiring layer.
@@ -805,8 +814,9 @@ signal reordering regardless of chiplet rotations.
 ## Slice Stacking Pattern for Symmetric Links
 
 For bidirectional links, a pattern of alternating TX and RX stacks should be used. 
-Figure [#fig-alt_slices] shows a bidirectional link with 4 stacks of 4 slices each, 
-for 8 TX and 8 RX slices on each chiplet.
+Figure [#fig-alt_slices] shows an example bidirectional link with 4 stacks of 4 slices each, 
+for 8 TX and 8 RX slices on each chiplet. The first TX stack should be at the left edge 
+of the link.
 
 
 ~ Figure { #fig-alt_slices; caption: "Alternating-Stacks Pattern of TX and RX Slices in a Link" }
@@ -820,10 +830,10 @@ must be observed.
 An alternate approach with more flexibility is to design every slice to operate as either 
 RX or TX, to be configured after assembly or upon powerup. 
 This allows complete flexibility in link configuration and interoperability and 
-also provides an opportunity for wafer-test loopback testing. 
+also provides an opportunity for wafer-level loopback testing. 
 In this case, number the slices as if they are all TX slices.
 
-In BoW-256 at 16 Gb/s/wire, the link in Figure [#fig-alt_slices] provides a total of 2.0 Tb/s 
+In BoW-256 at 16 Gbps/wire, the link in Figure [#fig-alt_slices] provides a total of 2.0 Tb/s 
 in each direction.
 In an organic substrate using the hexagonal bump pattern of Figure [#fig-min_link]
 with a bump pitch is 130 um, 
@@ -879,23 +889,26 @@ between the TX and the RX.
 Especially in doubly terminated modes, within-slice variations of termination resistance would directly result in varying swing levels at each pin.
 Thus, in order to reduce or eliminate the need for per-pin voltage reference adjustment at the RX, Table [#tab-impedance] also specifies
 requirements on DC termination resistance matching across all I/O's within a given BoW slice.  The &sigma; for this variation in the table
-should be interpreted as capturing within-slice manufacturing variability across worst-case voltage/temperature operating conditions, and is expected to 
+must be interpreted as capturing within-slice manufacturing variability across worst-case voltage/temperature operating conditions, and is expected to 
 be primarily influenced by some combination of transistor and explicit resistor matching (with the mix depending on the circuit implementation).   
 
-In doubly terminated modes of operation, the RX termination resistance should be connected to 0V, the I/O voltage, or mid-rail of the I/O 
-voltage (e.g., 375 mV with a 0.75 V I/O voltage).  The selection of termination voltage is expected to be static (hardwired) in the RX, and should
-be specified in the receiver's datasheet.  It is expected that Source-Series-Terminated (SST) Transmitters will be largely agnostic to the choice 
+In doubly terminated modes of operation, the RX termination resistance must be connected to 0V, 
+the I/O voltage, or mid-rail of the I/O 
+voltage (e.g., 375 mV with a 0.75 V I/O voltage). 
+The selection of termination voltage is expected to be static (hardwired) in the RX, and must
+be specified in the receiver's datasheet. 
+It is expected that Source-Series-Terminated (SST) Transmitters will be largely agnostic to the choice 
 of termination voltage on the receiver.       
 
 ## ESD 
-BOW I/O shall be designed to withstand **50 V CDM** (Charged Device Model) and 
+BoW I/O shall be designed to withstand **50 V CDM** (Charged Device Model) and 
 **250 V HBM** (Human Body Model). 
 This requirement is deemed sufficient for intra-package signaling, 
 similar to other die-to-die interface standards.
 
 ## Return Loss and Parasitic Capacitance
 
-Since BoW PHYs are targeted for relative dense and simple realizations, it is expected that the primary frequency-dependent 
+Since BoW PHYs are targeted for relatively dense and simple realizations, it is expected that the primary frequency-dependent 
 parasitics seen at a PHY's I/Os will be capacitive in nature.  Table [#tab-cap] provides limits on the maximum "equivalent"
 capacitance allowed on each side of each BoW I/O pin.  (E.g., a BoW-128 TX is allowed to have up to 600fF of 
 equivalent capacitance.)  Note that while the maximum capacitance specification does increase at lower data-rates, 
@@ -913,10 +926,14 @@ and improve signal integrity.
 ~  
 
 
-Since the actual frequency-dependent impedance profile of any given implementation may be comprised of a complex electrical network, 
-compliance with the "equivalent" capacitance metric is formally defined by requiring that the magnitude of the return loss of any BoW I/O
-is lower than the maximum limits shown in Figure [#fig-S11] below.  Similarly to DC termination resistance, the maximum s~11~ magnitude 
-in the figure must be met with logical 0, logical 1, and mid-scale between logic 0 and logic 1 voltages on the wire between the TX and RX.     
+Since the actual frequency-dependent impedance profile of any given
+implementation may be comprised of a complex electrical network, 
+compliance with the "equivalent" capacitance metric is formally defined
+by requiring that the magnitude of the return loss of any BoW I/O
+must be lower than the maximum limits shown in Figure [#fig-S11] below.
+Similarly to DC termination resistance, the maximum s~11~ magnitude 
+in the figure must be met with logical 0, logical 1, and mid-scale between
+logic 0 and logic 1 voltages on the wire between the TX and RX.     
 
 ~ Figure { #fig-S11; caption: "BoW Termination Maximum Return Loss" }
 ![S11]
@@ -925,18 +942,84 @@ in the figure must be met with logical 0, logical 1, and mid-scale between logic
 
 ## Receiver Bandwidth
 
-While this specification does not place a direct requirement on the bandwidth of a BoW receiver implementation, it is recommended that
-such receivers maintain an effective bandwidth of at least **(0.667/T~bit~) Hz**.  For example, for a BoW-256 PHY, the receiver bandwidth 
+While this specification does not place a direct requirement on the bandwidth of a BoW
+receiver implementation, 
+such receivers should maintain an effective bandwidth of at least **(0.667/T~bit~) Hz**.
+For example, for a BoW-256 PHY, the receiver bandwidth 
 is recommended to be at least 10.667 GHz.      
 
 # BoW PHY Timing Specifications
 
-## Clocking
 
 ~ Figure { #fig-clocking; caption: "BoW Clock and Data Block Diagram - One TX Slice, One RX Slice" }
 ![clocking]
 [clocking]: images/bowspec_figure_PHY_block.PNG { width:auto; max-width:100% }
 ~
+
+## Bit Ordering
+
+~ framed {color: blue}
+The PHY TX serializer shall order data this way (referring to Figure [#fig-clocking]):  
+
+* On the first CLK edge (CLK+ rising) bits P_D[0:15] are sent on wires D[0:15]   
+* On the second CLK edge (CLK+ falling) bits P_D[16:31] are sent on wires D[0:15]   
+* and so on to bits P_D[M\*16-16:M\*16-1]. 
+* Then the cycle repeats.
+
+
+The RX PHY shall order bits in the same fashion.
+However, the bits at the RX PHY logic interface P_D[*] may be offset by a multiple of 16 bits from the TX order
+if the TX and RX PCLK dividers are not aligned.
+A PHY implementation may provide a way to align the TX and RX dividers, or it may rely on the Link Layer
+to rotate the RX P_D[*] bits to provide that alignment as part of the training of the Link Layer.
+~
+.
+~framed {color: blue}
+Alternate description of the same ordering:
+
+On the "first" serial cycle, CLK+ rises (CLK- falls),  
+D[0] sends P_D[0],  
+D[1] sends P_D[1],  
+... ,  
+D[15] sends P_D[15]
+   
+   
+On the "second" serial cycle, CLK+ falls (CLK- rises),  
+D[0] sends P_D[16],  
+D[1] sends P_D[17],  
+.. ,  
+D[15] sends P_D[31]  
+...
+
+~
+.
+
+~ framed {color: blue}
+But Keysight implemented this:  
+1st cycle:  
+D[0] sends P_D[0]  
+D[1] sends P_D[8]  
+D[2] sends P_D[16]  
+...  
+D[15] sends P_D[120]  
+
+2nd cycle:  
+D[0] sends P_D[1]  
+D[1] sends P_D[9]  
+...
+
+8th cycle  
+D[0] sends P_D[7]  
+...  
+D[15] sends P_D[127]  
+
+Is there an industry-standard ordering for other serializers?  
+  
+Keysight's implementation relies on the Link Layer to align the P_D[*] bits.
+~
+
+
+## Clocking
 
 Figure [#fig-clocking] shows the clock and data flow for a single TX slice and a single RX slice.
 On the TX side, data bits (and optional FEC and AUX bits) come in a wide word from the Link Layer, 
@@ -944,14 +1027,52 @@ and are serialized to the line rate.
 At the RX side, they are sampled with a common slicer clock in most BoW implementations.
 BoW PHYs may optionally implement per-bit delay adjust or per-bit slicer clock adjust.
 
-All BoW interfaces shall be DDR (Double Data Rate) at the chip-to-chip interface: 
+BoW PHYs shall be DDR (Double Data Rate) at the chip-to-chip interface: 
 the data bit rate is twice the clock frequency, 
 so data is clocked in on both edges of the clock in the RX slice.
+BoW PHYs shall be SDR (Single Data Rate) at the logic interface.
 
-The following table provides clock and data rates for an example with 4 Gbps wire data rate 
+Table [#tab-clock-ratios] provides recommended clock and data rates for each BoW mode.
+The ratio M should be limited to integers, preferably powers of two, and any other ratios 
+should be implemented outside the PHY.
+
+Note that higher PCLK rates (and lower M ratios) 
+help reduce gate count and Link Layer latency, but 
+lower rates are often more power efficient.
+The best PCLK rate(s) to implement for a particular chiplet will tend to be a function of its process node.
+For implementations in process nodes at 16 nm and below, supporting 1000 MHz is recommended.
+
+
+~ TableFigure {#tab-clock-ratios;  caption: "Recommended PCLK and Logic Data Rates for Figure [#fig-clocking]"; width:100%;  }
+|--------|-------|------|------|-------|
+|        |Data   | PCLK |Mux   | Logic |
+| Mode   |Rate   |      |Ratio | Data  |
+|        | (Gbps)|(MHz) |M     | Width |
++:------:+:-----:+:----:+:----:+:-----:+
+| BoW-32 | 2     | 250  | 8    | 8x18  |
+|        |       | 500  | 4    | 4x18  |
+|        |       |1000  | 2    | 2x18  |
++--------+-------+------+------+-------+
+|BoW-64  | 4     | 250  | 16   | 16x18 |
+|        |       | 500  | 8    | 8x18  |
+|        |       | 1000 | 4    | 4x18  |
+|        |       | 2000 | 2    | 2x18  |
++--------+-------+------+------+-------+
+|BoW-128 | 8     | 500  | 16   | 16x18 |
+|        |       | 1000 | 8    | 8x18  |
+|        |       | 2000 | 4    | 4x18  |
++--------+-------+------+------+-------+
+|BoW-256 | 16    | 500  | 32   | 32x18 |
+|        |       | 1000 | 16   | 16x18 |
+|        |       | 2000 | 8    | 8x18  |
++--------+-------+------+------+-------+
+~
+
+
+Table [#tab-example-clock] provides clock and data rates for an example with 4 Gbps wire data rate 
 and M=4 to support a 1 Gbps data rate at the Link-PHY interface.
 
-~ TableFigure {#tab-; caption: "Example Clock and Data Rates for Figure [#fig-clocking] with 4 Gbps, M=4"; width:100%;  }
+~ TableFigure {#tab-example-clock; caption: "Example Clock and Data Rates for Figure [#fig-clocking] with 4 Gbps, M=4"; width:100%;  }
 |---------------------------------|--------|-----------|
 | Signal                          |Rate    |SDR/DDR    |
 +:-------------------------------:+:------:+:----------+
@@ -966,39 +1087,47 @@ and M=4 to support a 1 Gbps data rate at the Link-PHY interface.
 |---------------------------------|--------|-----------|
 ~
 
-The ratio M should be limited to integers, preferably powers of two, and other ratios 
-supported by the Link Layer. 
+
 
 The DDR clock TxClk is provided to the TX PHY from elsewhere on Chiplet-A.
 This may come for example from an on-chip PLL (typically shared across multiple slices) or 
 routed from the RxClk of an RX slice on Chiplet-A. In order to meet duty cycle requirements, 
 a Duty Cycle Corrector (DCC) may be needed in the TX slice. TxClk is used to drive the serializers and 
-provide the output CLK+,CLK- to Chiplet-B.
+provide the output CLK+, CLK- to Chiplet-B.
 
 On the RX side, the PHY must align the slicer clock to sample the data correctly.
-This may be done with a DLL or adjustable delays or other methods.  If the PHY includes 
+This may be done with a DLL, adjustable delays, or other methods.  If the PHY includes 
 control logic to self-align the slicer clock for correct sampling of the data, the PHYReady 
 signal must be asserted after the logic has determined that such alignment is complete.
 The RX PHY may output the received CLK as RxClk to the logic interface.
 
-All BoW interfaces shall be source synchronous within a slice. No modes of BoW require per-wire
+All BoW interfaces shall be source synchronous at the die-to-die interface within a slice.
+No modes of BoW require per-wire
 or per-slicer delay adjustments, but such capability may be optionally included. 
 
-Clock skew between the slices in each direction of a link depends on the implementation of the
+Clock skew between the slices in each direction of a link likely depends on the implementation of the
 TxClk distribution to all the TX slices. 
 That is, for the data flow from Chiplet A to Chiplet B, 
 the TxClk distribution on Chiplet A probably dominates the 
 the clock skew of the TX slices on Chiplet A and the clock skew of the RX slices on Chiplet B,
-and vice versa for flow from B to A. This skew must be no more than 150 ps/stack along the chip edge.
-There is no specification of the skew between TxClk on Chiplet A vs. TxClk on Chiplet B.
+and vice versa for flow from B to A. 
+The skew between Tx CLK signals within one direction of a link 
+must be no more than 150 ps/stack along the chip edge.
+There is no specification of the skew between TxClk on Chiplet A vs. TxClk on Chiplet B nor between
+different links.
 
-On both the Tx and RX sides, the Link Layer must include a Clock Domain Crossing (CDC) to 
+~ Framed {color: blue}
+TBD: does PCLK need to be aligned to 150 ps/stack?  Do we reset PCLK dividers?
+
+Keysight does not align PCLK dividers and makes the Link Layer CDC handle this.
+~
+
+On both the TX and RX sides, the Link Layer will usually need to include a Clock Domain Crossing (CDC) to 
 align the data between CoreClk and PCLK. 
-These CDCs must also be able to absorb the slice-to-slice clock skew and 
-core clock distribution skew across the whole link.
-
-If DCCs are included in the PHY and they need an alignment cycle, they shall include 
-control logic to perform self-alignment.
+The Link Layer must be able to absorb the slice-to-slice clock skew and 
+core clock distribution skew across a whole BoW link.
+Word alignment across a link need not be supported by the PHY;
+if required, it should be done in the Link Layer.
 
 ## Clock and Data Specifications {#clk-data-specs}
 
@@ -1006,7 +1135,7 @@ control logic to perform self-alignment.
 
 The maximum 20% - 80% rise-time simulated at the output of BoW TX shall 
 not exceed **32% of a UI**.  For example, for a BoW-128 Transmitter, the 
-20% - 80% rise-time should not exceed 40 ps.  This rise-time should be simulated 
+20% - 80% rise-time shall not exceed 40 ps.  This rise-time shall be simulated 
 with the TX driving an ideal load of 50 &Omega; (Z~chan~).     
 
 ### Transmitter Jitter {#tx-jit}
@@ -1028,12 +1157,12 @@ This jitter must be evaluated for CLK edges that are up to **3 UI** earlier than
 the CLK edge that launched the data bit being captured at the receiver.  This is because even 
 though jitter on the data edges may be correlated with the CLK jitter, 
 the slicer in the RX side is likely to use a different CLK edge due to delays in the 
-Rx-side clock alignment circuit (usually a DLL and clock distribution).
+RX-side clock alignment circuit (usually a DLL and clock distribution).
 
 In order to properly account for the jitter filtering/peaking that will occur due to the 
 difference in delay between the data launching edge at the TX and the data capturing edge at the RX, 
 when evaluating the transmitter's jitter (and whether it meets the requirements described in this section),
-the jitter at the TX output that is **correlated** between the CLK and D lines should be 
+the jitter at the TX output that is **correlated** between the CLK and D lines shall be 
 filtered by the following frequency-dependent transfer function:
 
 ~center
@@ -1043,10 +1172,10 @@ filtered by the following frequency-dependent transfer function:
 where t~clk-d~ is the delay between the CLK edge that launched the data 
 bit and the CLK edge used to capture it. 
 Note that jitter that is not correlated between the CLK and D 
-signals should **not** be filtered by this transfer function.  (I.e., if the
+signals shall **not** be filtered by this transfer function.  (I.e., if the
 CLK signal and a given D signal have completely independent sources of jitter added to them
 such as non-shared portions of the clock distribution network, 
-those jitter sources should not be filtered by H~tx_jit~(j&omega;).  Since the total TX jitter 
+those jitter sources shall not be filtered by H~tx_jit~(j&omega;).  Since the total TX jitter 
 after filtering by this transfer function might not be monotonic with t~clk-d~, 
 and since receiver implementations 
 may realize varying values of t~clk-d~, a transmitter must meet the 14% of a UI 
@@ -1062,7 +1191,7 @@ For example, a TX whose total jitter is 14% of a UI (and hence just meets the re
 allowed to introduce up to 4% of a UI peak-to-peak skew between CLK and D, while a TX with jitter better than 
 required by this specification is allowed to introduced a larger amount of skew.
 
-Note that this specification should be simulated directly at the TX output while driving 
+Note that this specification shall be simulated directly at the TX output while driving 
 an ideal load of 50 &Omega; (Z~chan~).       
 
 ### CLK Receiver Sensitivity to Common-Mode Variations
@@ -1077,20 +1206,24 @@ for peak-to-peak common mode variation on CLK+/CLK- of 20mV.
 
 As indicated in Figure [#fig-eye] and Table [#tab-eye], a BoW receiver must meet the required bit-error-rate 
 of 1e-15 when receiving signals with a vertical opening (voltage margin) of at least V~rx_eye~ and 
-horizontal opening (timing margin) of at least t~rx_eye~.  Both V~rx_eye~ and t~rx_eye~ should include any
+horizontal opening (timing margin) of at least t~rx_eye~.  Both V~rx_eye~ and t~rx_eye~ shall include any
 random and/or statistical noise and error terms introduced by either the channel or the TX at a level that 
 corresponds to 1e-15 probability.  Similarly, the receiver's voltage sensitivity (which sets V~rx_eye~)
-must also be evaluated at 1e-15 error rate, so the total voltage sensitvity V~s,RX~ should be computed as:
+must also be evaluated at 1e-15 error rate, so the total voltage sensitvity V~s,RX~ shall be computed as:
 
 ~center
 V~s,RX~ = V~err,deterministic~ + 15.9 &sigma;~V~~err,random~
 ~
 
-Note that the receiver's voltage sensitivity should take into account all voltage error sources at the
-receiver, including receiver thermal/flicker noise, supply noise, residual offset, and reference level errors. 
+Note that the receiver's voltage sensitivity shall take into account all voltage
+error sources at the
+receiver, including receiver thermal/flicker noise, supply noise, residual offset,
+and reference level errors. 
 
-Since swing and signal integrity are expected to vary with termination as well as data-rate, the RX voltage 
-sensitivity requirements and minimum timing margin requirements are termination- and rate-dependent, as outlined
+Since swing and signal integrity are expected to vary with termination as
+well as data-rate, the RX voltage 
+sensitivity requirements and minimum timing margin requirements
+are termination- and rate-dependent, as outlined
 in Table [#tab-eye].
 
 ~ Figure { #fig-eye; caption: "Eye Diagram Definitions" }
@@ -1135,6 +1268,10 @@ CLK and data signals must not overshoot more than 25% of the I/O voltage at both
 TX and RX ends.
 For a 0.75 V I/O voltage, they must stay within the range -0.188 V to 0.937 V.
 
+~ Framed {color: blue}
+Overshoot depends on Tx and Channel. Overshoot spec protects the Rx from damage.  How to handle this?
+~
+
 
 ### Slice-to-Clice CLK Skew
 
@@ -1167,7 +1304,7 @@ on a substrate with an &epsilon;~r~ of 4.
 <XX
 ## Recommended BoW Channel Specifications on Laminate
 
-BoW channel length on laminate is limited by the round trip reflection delay to 10 mm for 4 Gb/s/wire.
+BoW channel length on laminate is limited by the round trip reflection delay to 10 mm for 4 Gbps/wire.
 
 BoW channels longer than 2 mm on laminate should meet these specs:
 
@@ -1177,11 +1314,11 @@ BoW channels longer than 2 mm on laminate should meet these specs:
 +:-----------------------:+:--------------:+:-------:+
 | Length mismatch within a slice |  1 mm   | = ~6 ps <= 0.05 UI |
 +-------------------------+----------------+---------+
-|Impedance                | 50\+-5 ohms    |         |
+|Impedance                | 50\+-5 &Omega;    |         |
 +-------------------------+----------------+---------+
 | C~cross~/C~total~ ratio | < 40%          |         |
 +-------------------------+----------------+---------+
-|   R~series~             |  < 4 ohms      |         |
+|   R~series~             |  < 4 &Omega;      |         |
 +-------------------------+----------------+---------+
 ~
 C~cross~ is the total capacitance of a wire to all its neighboring wires.
@@ -1189,7 +1326,7 @@ C~total~ is the total capacitance of a wire including to grounds.
 
 <XX
 Stripline (buried) wires with 25 um line, 40 um space and 33 um dielectric thickness have 
-C~cross~/C~total~ of 28% and an impedance of 48 ohms.
+C~cross~/C~total~ of 28% and an impedance of 48 &Omega;.
 XX>
 
 <XX
@@ -1206,8 +1343,8 @@ Kens quick study found wire lengths from 570 to 1380 um
 The best config looked like 3 um line and space, alternating signal and ground layers.
 This gives a wire pitch of 1/9 the bump pitch, so we could even support 4 slices in just one
 signal layer.
-The line C for 1400 um is 0.76 pF, the R is 14 ohms, the RC is 11 ps, which is okay for 
-8 Gb/s.
+The line C for 1400 um is 0.76 pF, the R is 14 &Omega;, the RC is 11 ps, which is okay for 
+8 Gbps.
 Source termination is probably not wanted in this case since there is so much Rline, 
 the lines are short and
 we cant build a reasonable controlled impedance line.
@@ -1226,9 +1363,9 @@ In laminate packages, the channel characteristic impedance should be between 45 
 
 To provide guidance on the types of channels that are expected to meet the requirements for compliance
 with the BoW reference receiver and transmitter, this section provides examples of typical loss and 
-crosstalk profiles for doubly-terminated channels supporting 16 Gb/s operation (which are most sensitive 
+crosstalk profiles for doubly-terminated channels supporting 16 Gbps operation (which are most sensitive 
 to channel signal integrity).  Note that when operating at lower rates, the frequency axes in the figures 
-below can be scaled with the data-rate relative to 16 Gb/s.
+below can be scaled with the data-rate relative to 16 Gbps.
 
 ### Channel Loss
 
@@ -1356,7 +1493,7 @@ slices via the APB interface. This is implementation dependent
 1. The LC de-asserts Reset to the TX PHY slices
 1. Once its TX clock stabilizes, each TX PHY slice asserts Ready to the LC
 1. When all TX PHY slices are ready, the LC signals the TX Link Layer to 
-send the clock training pattern specified by the RX PHY
+send the clock training pattern (repeating indefinitely) specified by the RX PHY
 1. The LC de-asserts Reset to the RX PHY slices 
 1. Each RX PHY slice performs clock and data alignment and signals Ready to the LC when done
 1. When all RX PHY slices are ready, the LC signals the TX and RX 
@@ -1380,6 +1517,7 @@ PLL or DLL losing lock are possible causes.
 * There is no definition of what should be done with unused PHYs 
 (that are on the chip but have no partner on another chiplet)
 * There is no definition of addressing chiplets, Links or slices
+* Possible use of PRBS patterns for training
 
 
 # Configuration
@@ -1486,7 +1624,7 @@ In bidirectional links, loopback tests can be implemented in several modes:
  can perform on-chip loopback testing simply by turning on both the RX and TX paths at once.
  This has more on-chip circuitry, but allows loopback testing with no switches or extra 
  lines connected to the bumps other than the TX driver tristate switches. 
- Figure [#fig_test_sl] applies, except there is only one shared set of bumps for a Tx/RX slice.
+ Figure [#fig_test_sl] applies, except there is only one shared set of bumps for a TX/RX slice.
  * long loopback 
   * the PRBS pattern is generated by chiplet-A, sent over the replica channel on the ATE 
   load board which loops it back 

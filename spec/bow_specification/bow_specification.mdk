@@ -1120,15 +1120,14 @@ the TxClk distribution on Chiplet A probably dominates the
 the clock skew of the TX slices on Chiplet A and the clock skew of the RX slices on Chiplet B,
 and vice versa for flow from B to A. 
 The skew between Tx CLK signals within one direction of a link 
-must be no more than 150 ps/stack along the chip edge.
+should be no more than 150 ps/stack along the chip edge.
 There is no specification of the skew between TxClk on Chiplet A vs. TxClk on Chiplet B nor between
 different links.
 
-~ Framed {color: blue}
-TBD: does PCLK need to be aligned to 150 ps/stack?  Do we reset PCLK dividers?
-
-Keysight does not align PCLK dividers and makes the Link Layer CDC handle this.
-~
+Note that the dividers creating PCLK in each PHY slice are not required to be aligned.
+This implies that they will tend to have random starting states,
+leading to additional PCLK misalignment between slices of up to one PCLK period.
+PHY implementations may optionally include methods to align these dividers.
 
 On both the TX and RX sides, the Link Layer will usually need to include a Clock Domain Crossing (CDC) to 
 align the data between CoreClk and PCLK. 
@@ -1284,7 +1283,7 @@ Overshoot depends on Tx and Channel. Overshoot spec protects the Rx from damage.
 ### Slice-to-Clice CLK Skew
 
 The slice to slice clock skew t~skew~ across the width of a BoW link (along the chip edge) 
-must be less than **150 ps/stack**. 
+should be less than 150 ps/stack. 
 (E.g., for a 4-stack interface, the skew from end to end must be less than 600 ps.)
 This skew includes only analog delays and specifically does not include any 
 clock-related timing skew due to 

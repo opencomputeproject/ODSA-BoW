@@ -940,6 +940,12 @@ logic 0 and logic 1 voltages on the wire between the TX and RX.
 ~
 [S11]: images/s11_max.png {width:auto; max-width:80% }
 
+~ framed {color: blue}
+Nov 2021: simulation with example channels show that we either need to reduce the capacitance to 200 fF
+(9.8 dB S11) or reduce the Rx eye opening to 30-40% UI to reach 1e-15 BER.
+This is unresolved.
+~
+
 ## Receiver Bandwidth
 
 While this specification does not place a direct requirement on the bandwidth of a BoW
@@ -958,7 +964,7 @@ is recommended to be at least 10.667 GHz.
 
 ## Bit Ordering
 
-~ framed {color: blue}
+
 The PHY TX serializer shall order data this way (referring to Figure [#fig-clocking]):  
 
 * On the first CLK edge (CLK+ rising) bits P_D[0:15] are sent on wires D[0:15]   
@@ -972,8 +978,9 @@ However, the bits at the RX PHY logic interface P_D[*] may be offset by a multip
 if the TX and RX PCLK dividers are not aligned.
 A PHY implementation may provide a way to align the TX and RX dividers, or it may rely on the Link Layer
 to rotate the RX P_D[*] bits to provide that alignment as part of the training of the Link Layer.
-~
-.
+
+
+<XX
 ~framed {color: blue}
 Alternate description of the same ordering:
 
@@ -1017,6 +1024,7 @@ Is there an industry-standard ordering for other serializers?
   
 Keysight's implementation relies on the Link Layer to align the P_D[*] bits.
 ~
+>
 
 
 ## Clocking
@@ -1412,7 +1420,7 @@ XX>
 # BoW in an ODSA Design
 Chiplet-based designs require logical connectivity between the die in a
 single package, in addition to physical connectivity. This section provides an overview of 
-how with the Open Domain-Specific Architecture stack it can be used as an underlay for 
+how the Open Domain-Specific Architecture stack can be used as an underlay for 
 popular transaction protocols.
 
 ## BoW for Common Transaction Protocols
@@ -1471,18 +1479,23 @@ or outside the package.
 This could be a serial link like SPI or I2C, but this is not specified at this time.
 * A source of training pattern data outside the PHY, assumed to be the Link Layer here.
 This must be able to repetitively
-transmit an arbitrary 288-bit pattern (16 bits per wire) required by the RX slice for clock 
+transmit an arbitrary 16 bit per wire pattern (256 or 288 bits pattern depending on inclusion of FEC+AUX) 
+required by the RX slice for clock
 alignment as specified in the datasheet for the RX PHY.
-* The Reset input to each PHY shall be asserted upon powerup. 
+* The PHYReset input to each PHY shall be asserted upon powerup. 
 It may also be asserted by commands from the LC.
 
 An example topology is shown in Figure [#fig-bow_system]. 
-The BoW interface communicates to interface and core logic blocks.
+The BoW interface communicates to interface and core logic (I&C) blocks.
 
 ~ Figure { #fig-bow_system; caption: "Example BoW System Configuration" }
 ![bow_system]
 ~
 [bow_system]: images/bow_system.png { width:auto; max-width:70% }
+
+~ framed {color:blue}
+Add another figure with the LC embedded rather than external
+~
 
 ## Initialization Sequence
 
@@ -1490,33 +1503,33 @@ A TX-RX Link shall be brought up as follows:
 
 1. The Link Controller (LC) performs any needed configuration of the PHY 
 slices via the APB interface. This is implementation dependent
-1. The LC de-asserts Reset to the TX PHY slices
-1. Once its TX clock stabilizes, each TX PHY slice asserts Ready to the LC
+1. The LC de-asserts PHYReset to the TX PHY slices
+1. Once its TX clock stabilizes, each TX PHY slice asserts PHYReady to the LC
 1. When all TX PHY slices are ready, the LC signals the TX Link Layer to 
-send the clock training pattern (repeating indefinitely) specified by the RX PHY
-1. The LC de-asserts Reset to the RX PHY slices 
-1. Each RX PHY slice performs clock and data alignment and signals Ready to the LC when done
+send the training pattern (repeating indefinitely) specified by the RX PHY
+1. The LC de-asserts PHYReset to the RX PHY slices 
+1. Each RX PHY slice performs clock and data alignment and signals PHYReady to the LC when done
 1. When all RX PHY slices are ready, the LC signals the TX and RX 
 Link Layers that they can proceed with channel bonding
 
-Not specified:
+Implementation dependent:
 
 * Whether the up and down links are initialized one at a time or in parallel
-* How the signals from the the LC get from the I2C to the PHY Ready and Reset pins of the PHY
+* How the signals from the the LC get from and to the PHYReady and PHYReset pins of the PHY
 * How the Link Layer performs channel bonding or start of data transmission
 * Any PHY registers required to implement this process - these
 are an implementation choice. 
 
 
-## Other Unspecified Areas
+## Unspecified Items
 
 * There is no low-power standby mode defined.
-* There is no specification for when a PHY should de-assert its Ready pin. 
+* There is no specification for when a PHY should de-assert its PHYReady pin. 
 PLL or DLL losing lock are possible causes.
-* There is no definition of what occurs if the PHY does de-assert Ready
+* There is no definition of what occurs if the PHY does de-assert PHYReady
 * There is no definition of what should be done with unused PHYs 
 (that are on the chip but have no partner on another chiplet)
-* There is no definition of addressing chiplets, Links or slices
+* There is no definition of logical addressing of chiplets, Links or slices
 * Possible use of PRBS patterns for training
 
 
@@ -1555,7 +1568,7 @@ The registers shall be fully documented in the PHY datasheet.
 How do other specs do this?
 ~
 
-Test patterns should be programmable to repeat indefiniately.
+Test patterns should be programmable to repeat indefinitely.
 
 Suggested test patterns are:
 
@@ -1584,19 +1597,19 @@ A BoW interface may implement loopback testing for several use cases:
 at chiplet wafer-sort test, post-assembly package test, and debug/validation. 
 
 Wafer sort tests are currently only practical for the BoW interface with 
-regular bump pitches (~130um), where ATE (automatic testing equipment) probe 
+regular bump pitches (~130 &mu;m), where ATE (automatic testing equipment) probe 
 boards with matching pin pitches are available. 
 Microbump probes will require additional effort.
 
-Unidirectional links need open-loop testing. 
+Unidirectional links should support open-loop testing. 
 In TX open loop testing, shown in Figure [#fig_test_tx], Chiplet-A transmits a 
 known test pattern (PRBS9 or PRBS31) to a golden reference receiver through the ATE load board. 
-The received pattern is verified in the ATE load board.
+The received pattern should be verified in the ATE load board.
 
 RX open loop testing, shown in Figure [#fig_test_rx], is used for a link 
 where the DUT is only a receiver. 
 A golden reference TX transmits a known pattern (PRBS9 or PRBS31) through the channel to the chiplet. 
-The received pattern will be analyzed for quality and functional tests. 
+The received pattern should be analyzed for quality and functional tests. 
 
 The logic for generating and testing the PRBS sequences is outside the PHY, e.g., in the Link Layer.
 
@@ -1613,23 +1626,23 @@ The logic for generating and testing the PRBS sequences is outside the PHY, e.g.
 
 In bidirectional links, loopback tests can be implemented in several modes:
 
- * slice-to-slice short loopback 
+ * Slice-to-slice short loopback 
   * Data is looped back within the chip
  from a TX slice to an RX slice using on-chip switching (shown in Figure [#fig_test_sl]). 
  The short loopback path is configured by the ATE using implementation-dependent registers.
   * Loopback can be implemented before the PHY serializer, between the serializer and the output buffer, 
   and/or at the bumps. 
- * intra-slice short loopback
+ * Intra-slice short loopback
   * A single slice containing both RX and TX paths sharing the same bumps
  can perform on-chip loopback testing simply by turning on both the RX and TX paths at once.
  This has more on-chip circuitry, but allows loopback testing with no switches or extra 
  lines connected to the bumps other than the TX driver tristate switches. 
  Figure [#fig_test_sl] applies, except there is only one shared set of bumps for a TX/RX slice.
- * long loopback 
-  * the PRBS pattern is generated by chiplet-A, sent over the replica channel on the ATE 
+ * Long loopback 
+  * The PRBS pattern is generated by chiplet-A, sent over the replica channel on the ATE 
   load board which loops it back 
  (shown in Figure [#fig_test_ll]). 
- The received pattern will be passed to a bit error rate tester (BERT) to analyze the 
+ The received pattern should be passed to a bit error rate tester (BERT) to analyze the 
  performance of the link with off-chip data and clock wires.
 
 

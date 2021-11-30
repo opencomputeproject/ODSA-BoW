@@ -477,6 +477,7 @@ If implemented, DBI is in the Link Layer and must be implemented on both RX and 
 Figure [#fig-bow-logicin] shows the data and control signals in the interfaces to 
 the logic in the die in each BoW transmit and receive slice. The data at the slice 
 logic interface must be SDR (Single Data Rate - bit rate equal to the PCLK frequency). 
+
 <XX
 The BoW PHY is 
 expected to be used with a link controller. The transmission of logical information 
@@ -941,9 +942,12 @@ logic 0 and logic 1 voltages on the wire between the TX and RX.
 [S11]: images/s11_max.png {width:auto; max-width:80% }
 
 ~ framed {color: blue}
-Nov 2021: simulation with example channels show that we either need to reduce the capacitance to 200 fF
-(9.8 dB S11) or reduce the Rx eye opening to 30-40% UI to reach 1e-15 BER.
+**
+Nov 2021: simulation with example channels show that we either need to reduce the capacitance 
+from 300 to 200 fF
+(9.8 dB S11) or reduce the Rx eye opening from 50% UI to 30-40% to reach 1e-15 BER.
 This is unresolved.
+**
 ~
 
 ## Receiver Bandwidth
@@ -978,53 +982,6 @@ However, the bits at the RX PHY logic interface P_D[*] may be offset by a multip
 if the TX and RX PCLK dividers are not aligned.
 A PHY implementation may provide a way to align the TX and RX dividers, or it may rely on the Link Layer
 to rotate the RX P_D[*] bits to provide that alignment as part of the training of the Link Layer.
-
-
-<XX
-~framed {color: blue}
-Alternate description of the same ordering:
-
-On the "first" serial cycle, CLK+ rises (CLK- falls),  
-D[0] sends P_D[0],  
-D[1] sends P_D[1],  
-... ,  
-D[15] sends P_D[15]
-   
-   
-On the "second" serial cycle, CLK+ falls (CLK- rises),  
-D[0] sends P_D[16],  
-D[1] sends P_D[17],  
-.. ,  
-D[15] sends P_D[31]  
-...
-
-~
-.
-
-~ framed {color: blue}
-But Keysight implemented this:  
-1st cycle:  
-D[0] sends P_D[0]  
-D[1] sends P_D[8]  
-D[2] sends P_D[16]  
-...  
-D[15] sends P_D[120]  
-
-2nd cycle:  
-D[0] sends P_D[1]  
-D[1] sends P_D[9]  
-...
-
-8th cycle  
-D[0] sends P_D[7]  
-...  
-D[15] sends P_D[127]  
-
-Is there an industry-standard ordering for other serializers?  
-  
-Keysight's implementation relies on the Link Layer to align the P_D[*] bits.
-~
->
 
 
 ## Clocking
@@ -1416,52 +1373,6 @@ What is the origin of the Xtalk Limit equation?  Is there a paper reference?
 ~
 XX>
 
-# BoW in an ODSA Design
-Chiplet-based designs require logical connectivity between the die in a
-single package, in addition to physical connectivity. This section provides an overview of 
-how the Open Domain-Specific Architecture stack can be used as an underlay for 
-popular transaction protocols.
-
-## BoW for Common Transaction Protocols
-Two connected die in a multi-chiplet device need to exchange logical information. 
-The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
-Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
-integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
-interface. The logical component of the ODSA interface aims to 
-support protocols used for the two most common chiplet use cases, package 
-aggregation and die disaggregation across a wide range of open and proprietary D2D PHYs
-such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. 
-
-~ Figure {#fig-odsa-stack; caption: "The BoW PHY in the ODSA Stack"}
-![bowspec_figstack]
-~
-[bowspec_figstack]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
-
-The ODSA stack abstracts
-the PHY layer from the logical interface by using the well-defined abstraction interfaces
-PIPE and LPIF. 
-Any logic transaction controller, such as a PCIe controller, that
-supports a PIPE or LPIF interface can use any D2D PHY that also supports that
-interface as its physical layer.
-As shown in Figure [#fig-odsa-stack], the BoW interface may receive data
-through either the PIPE or LPIF interfaces to support common transaction protocols. 
-For this use case, some BoW-specific adapter logic will be needed to support the requirements of PIPE 
-or LPIF.
-The specifications for these adapters are outside the scope of this document. 
-Figure [#fig-bow-pcie] shows how the
-BoW with an PIPE adapter can be interfaced to a PCIe controller.
-
-~ Framed {color: blue}
-Bapi: please remove "serializer" and "deserializer" from the labels in Figure [#fig-bow-pcie]
- - these are part of the PHY.
-~
-
-
-
-~ Figure {#fig-bow-pcie; caption: "BoW with a PIPE adapter for PCIe transactions"}
-![bowspec_figcomponentspcie]
-~
-[bowspec_figcomponentspcie]: images/fig-bow_pcie.jpg {width:auto; max-width: 100%}
 
 
 # Reset and Initialization
@@ -1677,3 +1588,49 @@ to loop back the data from the transmitter of chiplet-A to the receiver of chipl
 
 
 
+# BoW in an ODSA Design
+Chiplet-based designs require logical connectivity between the die in a
+single package, in addition to physical connectivity. This section provides an overview of 
+how the Open Domain-Specific Architecture stack can be used as an underlay for 
+popular transaction protocols.
+
+## BoW for Common Transaction Protocols
+Two connected die in a multi-chiplet device need to exchange logical information. 
+The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
+Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
+integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
+interface. The logical component of the ODSA interface aims to 
+support protocols used for the two most common chiplet use cases, package 
+aggregation and die disaggregation across a wide range of open and proprietary D2D PHYs
+such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. 
+
+~ Figure {#fig-odsa-stack; caption: "The BoW PHY in the ODSA Stack"}
+![bowspec_figstack]
+~
+[bowspec_figstack]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
+
+The ODSA stack abstracts
+the PHY layer from the logical interface by using the well-defined abstraction interfaces
+PIPE and LPIF. 
+Any logic transaction controller, such as a PCIe controller, that
+supports a PIPE or LPIF interface can use any D2D PHY that also supports that
+interface as its physical layer.
+As shown in Figure [#fig-odsa-stack], the BoW interface may receive data
+through either the PIPE or LPIF interfaces to support common transaction protocols. 
+For this use case, some BoW-specific adapter logic will be needed to support the requirements of PIPE 
+or LPIF.
+The specifications for these adapters are outside the scope of this document. 
+Figure [#fig-bow-pcie] shows how the
+BoW with an PIPE adapter can be interfaced to a PCIe controller.
+
+~ Framed {color: blue}
+Need to remove "serializer" and "deserializer" from the labels in Figure [#fig-bow-pcie]
+ - these are part of the PHY, not the PIPE adaptor.j
+~
+
+
+
+~ Figure {#fig-bow-pcie; caption: "BoW with a PIPE adapter for PCIe transactions"}
+![bowspec_figcomponentspcie]
+~
+[bowspec_figcomponentspcie]: images/fig-bow_pcie.jpg {width:auto; max-width: 100%}

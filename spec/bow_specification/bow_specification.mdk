@@ -902,9 +902,27 @@ be specified in the receiver's datasheet.
 It is expected that Source-Series-Terminated (SST) Transmitters will be largely agnostic to the choice 
 of termination voltage on the receiver.       
 
+## PHY protection
+
+A BoW PHY must not draw excessive current nor be damaged under the following conditions:
+
+* the bumps are open-circuited, e.g., at wafer test, or if not connected in a package assembly
+* during powerup
+* in the unpowered state when connected to a matching PHY which may be powered or unpowered
+* in the reset state when connected to a matching PHY which may be powered or unpowered
+* in the operational state
+
+In particular, RX slices must avoid "crowbar" states. This may be done by disabling the receiver circuit
+or with a weak pulldown at the bumps. A pullup must not be used.
+
+A PHY slice which can be configured as TX or RX must have the TX circuit disabled when PHYReset is asserted.
+~framed {color:blue}
+Issue: This conflicts with the Initialization section that calls for programming the PHY while in reset.
+~
+
 ## ESD 
 BoW I/O shall be designed to withstand **50 V CDM** (Charged Device Model) and 
-**250 V HBM** (Human Body Model). 
+**250 V HBM** (Human Body Model) at the bumps.
 This requirement is deemed sufficient for intra-package signaling, 
 similar to other die-to-die interface standards.
 
@@ -1412,7 +1430,8 @@ Add another figure with the LC embedded rather than external
 
 A TX-RX Link shall be brought up as follows:
 
-1. The Link Controller (LC) performs any needed configuration of the PHY 
+1. The Link Controller (LC) asserts PHYReset to the PHY slices on both ends of the link
+1. The LC performs any needed configuration of the PHY 
 slices via the APB interface. This is implementation dependent
 1. The LC de-asserts PHYReset to the TX PHY slices
 1. Once its TX clock stabilizes, each TX PHY slice asserts PHYReady to the LC
@@ -1423,13 +1442,18 @@ send the training pattern (repeating indefinitely) specified by the RX PHY
 1. When all RX PHY slices are ready, the LC signals the TX and RX 
 Link Layers to proceed with channel bonding
 
+~framed {color:blue}
+Issue: If PHYReset resets the registers in the PHY (e.g., TX enable), 
+how can we program it while PHYReset is asserted?
+~
+
+
 Implementation dependent:
 
 * Whether the up and down links are initialized one at a time or in parallel
 * How the signals from the the LC get from and to the PHYReady and PHYReset pins of the PHY
 * How the Link Layer performs channel bonding or start of data transmission
-* Any PHY registers required to implement this process - these
-are an implementation choice. 
+* Any PHY registers required to implement this process 
 
 
 ## Unspecified Items

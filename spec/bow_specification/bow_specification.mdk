@@ -27,7 +27,8 @@ Bunch of Wires PHY Specification
 ~ center {font-size: x-large }
 The Open Domain-Specific Architecture BoW Workstream
 
-DRAFT
+DRAFT  
+1 Dec 2021
 ~
 
 <XX The below escaped blank lines are in lieu of a working page break >
@@ -439,7 +440,7 @@ which simplifies the clock generation and serialization functions.
 If used, FEC is implemented in the Link Layer, and the PHY treats the FEC bit the same
 as the other data bits. 
 
-AUX is an optional signal that can be used for purposes
+AUX is an optional signal that may be used for purposes
 such as Data Bus Inversion (DBI), flow control, redundancy for defect repair, etc.
  
 The Link Layers of Chiplets A and B will need to agree on the details on FEC and AUX usage.
@@ -466,7 +467,7 @@ Table [#tab-signals-d2d] summarizes these signals.
 
 ### DBI on the AUX wire
 
-Data Bus Inversion (DBI) can be used to mitigate simultaneous switching
+Data Bus Inversion (DBI) may be used to mitigate simultaneous switching
 output (SSO) noise or to optimize energy of a BoW PHY by reducing the number of BoW data wires
 that switch between adjacent data transfer cycles. 
 DBI functionality is optional; it one of several possible uses of the AUX wire.
@@ -555,7 +556,7 @@ sending CLK and that the TX Link Layer is sending training data on the data wire
 
 After the RX slice clock self-alignments are complete, each RX PHY slice shall assert its 
 PHYReady pin. How an RX PHY slice determines completion of the self-alignment is 
-implementation-dependent. For instance, it can be determined by observing the 
+implementation-dependent. For instance, it may be determined by observing the 
 settling of the DLL or by a simple timer. PHYReady asserted indicates
 that any data received will be captured correctly.
 
@@ -704,7 +705,7 @@ A bidirectional link is composed of some whole number of slices configured for R
 whole number of slices for TX.
 
 FEC (Forward Error Correction) is an optional signal that allows using error correction to 
-improve the bit error rate (BER).  AUX is an optional signal that can be used for purposes
+improve the bit error rate (BER).  AUX is an optional signal that may be used for purposes
 such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
 the details on FEC and AUX usage, which is defined in the Link Layer.
 
@@ -740,7 +741,7 @@ Alternate bump arrangements may include:
 * different ordering of power and ground bumps
 * multiple power and ground rows
 
-Somewhat different wire pitches between two chiplets can be accommodated with 
+Somewhat different wire pitches between two chiplets may be accommodated with 
 fan-out in the chip-to-chip wires. This is limited by the maximum skew due to different 
 wire lengths - see section [#chan-skew].
 
@@ -766,7 +767,7 @@ The position-B slices are connected together, and so on.
 There is no specified limit to the number of slices in a stack. 
 In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supports 4 slices
 as shown in Figure [#fig-pkg_cross_section].
-A 7-2-7 laminate can support 4 slices by omitting the top GND layer, 
+A 7-2-7 laminate may support 4 slices by omitting the top GND layer, 
 but with reduced signal integrity.
 Layers on the bottom side of the package typically cannot be used for BoW signals 
 due to low via density passing through the thick central core layer.
@@ -1329,7 +1330,7 @@ To provide guidance on the types of channels that are expected to meet the requi
 with the BoW reference receiver and transmitter, this section provides examples of typical loss and 
 crosstalk profiles for doubly-terminated channels supporting 16 Gbps operation (which are most sensitive 
 to channel signal integrity).  Note that when operating at lower rates, the frequency axes in the figures 
-below can be scaled with the data-rate relative to 16 Gbps.
+below must be scaled with the data-rate relative to 16 Gbps.
 
 ### Channel Loss
 
@@ -1420,7 +1421,7 @@ send the training pattern (repeating indefinitely) specified by the RX PHY
 1. The LC de-asserts PHYReset to the RX PHY slices 
 1. Each RX PHY slice performs clock and data alignment and signals PHYReady to the LC when done
 1. When all RX PHY slices are ready, the LC signals the TX and RX 
-Link Layers that they can proceed with channel bonding
+Link Layers to proceed with channel bonding
 
 Implementation dependent:
 
@@ -1489,7 +1490,7 @@ Suggested test patterns are:
 * Isolated 1 and 0 pattern to test DC wander and single  bit response:
 
  *  ['0'] X 10 + '1' + ['0'] X 10 + ['1'] X 10 + '0' + ['1'] X 10 + ['0'] X 10
- * This can be prepended to a PRBS pattern as seen in Figure [#fig-Pattern]
+ * This may be prepended to a PRBS pattern as seen in Figure [#fig-Pattern]
 
 
 ~ Figure { #fig-Pattern; caption: "Stress Test Pattern" }
@@ -1534,17 +1535,17 @@ The logic for generating and testing the PRBS sequences is outside the PHY, e.g.
 [fig_test_rx]: images/LB_Spec/Slide3a.png { width:auto; max-width:100% }
 ~
 
-In bidirectional links, loopback tests can be implemented in several modes:
+In bidirectional links, loopback tests may be implemented in several modes:
 
  * Slice-to-slice short loopback 
   * Data is looped back within the chip
  from a TX slice to an RX slice using on-chip switching (shown in Figure [#fig_test_sl]). 
  The short loopback path is configured by the ATE using implementation-dependent registers.
-  * Loopback can be implemented before the PHY serializer, between the serializer and the output buffer, 
+  * Loopback may be implemented before the PHY serializer, between the serializer and the output buffer, 
   and/or at the bumps. 
  * Intra-slice short loopback
   * A single slice containing both RX and TX paths sharing the same bumps
- can perform on-chip loopback testing simply by turning on both the RX and TX paths at once.
+ may perform on-chip loopback testing simply by turning on both the RX and TX paths at once.
  This has more on-chip circuitry, but allows loopback testing with no switches or extra 
  lines connected to the bumps other than the TX driver tristate switches. 
  Figure [#fig_test_sl] applies, except there is only one shared set of bumps for a TX/RX slice.
@@ -1566,7 +1567,7 @@ In bidirectional links, loopback tests can be implemented in several modes:
 [fig_test_ll]: images/LB_Spec/Slide1a.png { width:auto; max-width:60% }
 ~
 
-Both loopback modes can potentially be used for in-field validation bring-up and test. 
+Both loopback modes may potentially be used for in-field validation bring-up and test. 
 Cooperation across chiplets will be required to execute these tests in the field. 
 Open-loop testing requires the use of a fixed test pattern recognized by both ends and 
 is the only option for unidirectional links. 
@@ -1575,7 +1576,7 @@ validation/verification purposes.
 
 Figure [#fig_test_cll] shows how a long loopback mode is executed across two chiplets 
 for in-field validation and test 
-where TX and RX are in different chiplets. Furthermore, this configuration can be expanded 
+where TX and RX are in different chiplets. Furthermore, this configuration may be expanded 
 to loop back the data from the transmitter of chiplet-A to the receiver of chiplet-A. 
 
 
@@ -1591,7 +1592,7 @@ to loop back the data from the transmitter of chiplet-A to the receiver of chipl
 # BoW in an ODSA Design
 Chiplet-based designs require logical connectivity between the die in a
 single package, in addition to physical connectivity. This section provides an overview of 
-how the Open Domain-Specific Architecture stack can be used as an underlay for 
+how the Open Domain-Specific Architecture stack may be used as an underlay for 
 popular transaction protocols.
 
 ## BoW for Common Transaction Protocols
@@ -1613,7 +1614,7 @@ The ODSA stack abstracts
 the PHY layer from the logical interface by using the well-defined abstraction interfaces
 PIPE and LPIF. 
 Any logic transaction controller, such as a PCIe controller, that
-supports a PIPE or LPIF interface can use any D2D PHY that also supports that
+supports a PIPE or LPIF interface may use any D2D PHY that also supports that
 interface as its physical layer.
 As shown in Figure [#fig-odsa-stack], the BoW interface may receive data
 through either the PIPE or LPIF interfaces to support common transaction protocols. 
@@ -1621,7 +1622,7 @@ For this use case, some BoW-specific adapter logic will be needed to support the
 or LPIF.
 The specifications for these adapters are outside the scope of this document. 
 Figure [#fig-bow-pcie] shows how the
-BoW with an PIPE adapter can be interfaced to a PCIe controller.
+BoW with an PIPE adapter may be interfaced to a PCIe controller.
 
 ~ Framed {color: blue}
 Need to remove "serializer" and "deserializer" from the labels in Figure [#fig-bow-pcie]

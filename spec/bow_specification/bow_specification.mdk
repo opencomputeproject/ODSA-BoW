@@ -230,7 +230,7 @@ The scope of this document has several levels.
   d. Configuration and management programming
   e. Design for test and test methods
   f. Performance estimates
-  e. Compliance verification
+  e. Conformance verification
 
 1. The following activities are outside the scope of this document:
   a. Specific implementations of the interface
@@ -246,9 +246,9 @@ of this specification:
 
 ## Language
 * "Shall" or "must" indicates a requirement.
-Failure to meet the requirement results in non-compliance
+Failure to meet the requirement results in non-conformance
 * "Should" indicates a recommendation, but not a requirement.
-Failure to implement the recommendation does not result in non-compliance.
+Failure to implement the recommendation does not result in non-conformance.
 * "May" indicates an implementation option.
 * The lack of one of the above verbs indicates the material is informative.
 * "Reference" indicates a reference design that is provided as example for explanation, 
@@ -259,16 +259,16 @@ Note to spec writers:
 Avoid using more than one of the above specification verbs in a single sentence to avoid confusion. 
 XX>
 
-## Compliance Summary
+## Conformance Summary
 
 The specifications must be met over process variation, supply voltage range and 
 temperature range (PVT). 
 Each implementation must document its supported I/O voltage range, 
 supply voltage range and temperature range.
 
-Table [#tab-compliance] summarize the compliance points that shall be met in order to comply 
+Table [#tab-conformance] summarize the conformance points that shall be met in order to comply 
 with the BoW specification. Each of the 
-compliance points is discussed in the specification.
+conformance points is discussed in the specification.
 
 <XX Done
 ~ Framed {color: blue}
@@ -276,7 +276,7 @@ Todo: Need to fill in this table - Shahab
 ~
 >
 
-~ TableFigure {#tab-compliance; caption: "BoW Compliance Summary"; }
+~ TableFigure {#tab-conformance; caption: "BoW Conformance Summary"; }
 +---------------------------------------+----------------------------------------------+----------------------+
 | Description                           | Section                                      | Detail               |
 +---------------------------------------+----------------------------------------------+----------------------+
@@ -292,6 +292,8 @@ Todo: Need to fill in this table - Shahab
 +---------------------------------------+----------------------------------------------+----------------------+
 | Voltages and Termination Resistance   | [#sec-voltages-and-termination-resistance]   |                      |
 +---------------------------------------+----------------------------------------------+----------------------+
+| PHY Protection                        | [#sec-phy-protection]                        |                      |
++---------------------------------------+----------------------------------------------+----------------------+
 | ESD                                   | [#sec-esd]                                   |                      |
 +---------------------------------------+----------------------------------------------+----------------------+
 | Return Loss and Parasitic Capacitance | [#sec-return-loss-and-parasitic-capacitance] |                      |
@@ -306,11 +308,8 @@ Todo: Need to fill in this table - Shahab
 +---------------------------------------+----------------------------------------------+----------------------+
 | Initialization                        | [#sec-initialization-sequence]               |                      |
 +---------------------------------------+----------------------------------------------+----------------------+
-| Control Register Mapping              | [#sec-control-register-mapping]                                             |                      |
+| Control Register Mapping              | [#sec-control-register-mapping]              |                      |
 +---------------------------------------+----------------------------------------------+----------------------+
-|                                       |                                              |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-|                                       |                                              |                      |
 
 ~
 
@@ -949,7 +948,7 @@ and improve signal integrity.
 
 Since the actual frequency-dependent impedance profile of any given
 implementation may be comprised of a complex electrical network, 
-compliance with the "equivalent" capacitance metric is formally defined
+conformance with the "equivalent" capacitance metric is formally defined
 by requiring that the magnitude of the return loss of any BoW I/O
 must be lower than the maximum limits shown in Figure [#fig-S11] below.
 Similarly to DC termination resistance, the maximum s~11~ magnitude 
@@ -1183,7 +1182,7 @@ an ideal load of 50 &Omega; (Z~chan~).
 The timing of a BoW RX PHY's sampling clock edge at the slicer must be modulated by **less 
 than 0.1% of a UI per mV of common-mode variation on CLK+/CLK-**.  This sensitivity requirement 
 must be met across any common-mode variation frequency less than or equal to 1/T~bit~.  For example,
-the sampling clock edge of a compliant BoW RX would vary by less than 2% of a UI peak-to-peak 
+the sampling clock edge of a conforming BoW RX would vary by less than 2% of a UI peak-to-peak 
 for peak-to-peak common mode variation on CLK+/CLK- of 20mV.        
 
 ### Receiver Sensitivity and Timing Margin {#rx-eye}
@@ -1272,10 +1271,10 @@ This skew is expected to be dominated by the TxClk distribution network.
 
 With the exception of the maximum skew requirement defined in Section [#chan-skew], BoW does not place
 any direct requirements on characteristics such as channel loss or crosstalk.  Instead, BoW channels
-are considered compliant if they are able to achieve the required V~rx_eye~ and t~rx_eye~ defined 
+are considered conforming if they are able to achieve the required V~rx_eye~ and t~rx_eye~ defined 
 in Section [#rx-eye] in conjunction with reference transmitters and receivers that meet all of the
 requirements provided in Section [#elec-specs] and Section [#clk-data-specs]. To assist with evaluating
-compliance of a given channel, open-source software evaluating signal integrity and the overall 
+conformance of a given channel, open-source software evaluating signal integrity and the overall 
 link budgets with the reference transmitters and receivers will be provided at a future date.
 
 ## Channel-Induced CLK Edge to D Transition Skew at RX {#chan-skew}
@@ -1345,7 +1344,7 @@ In laminate packages, the channel characteristic impedance should be between 45 
 
 ## Example BoW Channel for Doubly-Terminated Links
 
-To provide guidance on the types of channels that are expected to meet the requirements for compliance
+To provide guidance on the types of channels that are expected to meet the requirements for conformance
 with the BoW reference receiver and transmitter, this section provides examples of typical loss and 
 crosstalk profiles for doubly-terminated channels supporting 16 Gbps operation (which are most sensitive 
 to channel signal integrity).  Note that when operating at lower rates, the frequency axes in the figures 

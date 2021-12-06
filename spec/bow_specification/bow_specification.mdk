@@ -1465,9 +1465,28 @@ send the training pattern (repeating) specified by the RX PHY
 1. When all RX PHY slices are ready, the LC signals the TX and RX 
 Link Layers to proceed with channel bonding
 
-### Proposal 2:  
+### Proposal 2:
 
 Same sequence but use an APB command instead of defining a new signal PHYRun
+
+### Proposal 3 (BCA):
+
+1. The Link Controller (LC) asserts PHYResetB to the PHY slices on both ends of the link.
+**This places APB registers in their reset state.**
+1. The Link Controller (LC) **de-asserts PHYResetB to the TX** PHY slices
+1. The LC performs any needed configuration of the TX PHY 
+slices via the APB interface. This is implementation dependent. 
+If the TX needs to be enabled (see section [#sec-phy-protection]), it happens here.
+1. Once its outgoing CLK and PCLK stabilize, each TX PHY slice asserts PHYReady to the LC
+1. When all TX PHY slices are ready, the LC signals the TX Link Layer to 
+send the training pattern (repeating) specified by the RX PHY
+1. The Link Controller (LC) **de-asserts PHYResetB to the RX** PHY slices
+1. The LC performs any needed configuration of the RX PHY 
+slices via the APB interface. This is implementation dependent. 
+If the RX needs to be enabled, it happens here.
+1. Each RX PHY slice performs clock and data alignment and signals PHYReady to the LC when done
+1. When all RX PHY slices are ready, the LC signals the TX and RX 
+Link Layers to proceed with channel bonding
 ~
 
 

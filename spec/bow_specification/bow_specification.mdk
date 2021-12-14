@@ -27,7 +27,8 @@ Bunch of Wires PHY Specification
 ~ center {font-size: x-large }
 The Open Domain-Specific Architecture BoW Workstream
 
-DRAFT
+DRAFT  
+1 Dec 2021
 ~
 
 <XX The below escaped blank lines are in lieu of a working page break >
@@ -229,7 +230,7 @@ The scope of this document has several levels.
   d. Configuration and management programming
   e. Design for test and test methods
   f. Performance estimates
-  e. Compliance verification
+  e. Conformance verification
 
 1. The following activities are outside the scope of this document:
   a. Specific implementations of the interface
@@ -245,9 +246,9 @@ of this specification:
 
 ## Language
 * "Shall" or "must" indicates a requirement.
-Failure to meet the requirement results in non-compliance
+Failure to meet the requirement results in non-conformance
 * "Should" indicates a recommendation, but not a requirement.
-Failure to implement the recommendation does not result in non-compliance.
+Failure to implement the recommendation does not result in non-conformance.
 * "May" indicates an implementation option.
 * The lack of one of the above verbs indicates the material is informative.
 * "Reference" indicates a reference design that is provided as example for explanation, 
@@ -258,16 +259,16 @@ Note to spec writers:
 Avoid using more than one of the above specification verbs in a single sentence to avoid confusion. 
 XX>
 
-## Compliance Summary
+## Conformance Summary
 
 The specifications must be met over process variation, supply voltage range and 
 temperature range (PVT). 
 Each implementation must document its supported I/O voltage range, 
 supply voltage range and temperature range.
 
-Table [#tab-compliance] summarize the compliance points that shall be met in order to comply 
+Table [#tab-conformance] summarize the conformance points that shall be met in order to comply 
 with the BoW specification. Each of the 
-compliance points is discussed in the specification.
+conformance points is discussed in the specification.
 
 <XX Done
 ~ Framed {color: blue}
@@ -275,7 +276,7 @@ Todo: Need to fill in this table - Shahab
 ~
 >
 
-~ TableFigure {#tab-compliance; caption: "BoW Compliance Summary"; }
+~ TableFigure {#tab-conformance; caption: "BoW Conformance Summary"; }
 +---------------------------------------+----------------------------------------------+----------------------+
 | Description                           | Section                                      | Detail               |
 +---------------------------------------+----------------------------------------------+----------------------+
@@ -291,6 +292,8 @@ Todo: Need to fill in this table - Shahab
 +---------------------------------------+----------------------------------------------+----------------------+
 | Voltages and Termination Resistance   | [#sec-voltages-and-termination-resistance]   |                      |
 +---------------------------------------+----------------------------------------------+----------------------+
+| PHY Protection                        | [#sec-phy-protection]                        |                      |
++---------------------------------------+----------------------------------------------+----------------------+
 | ESD                                   | [#sec-esd]                                   |                      |
 +---------------------------------------+----------------------------------------------+----------------------+
 | Return Loss and Parasitic Capacitance | [#sec-return-loss-and-parasitic-capacitance] |                      |
@@ -305,11 +308,8 @@ Todo: Need to fill in this table - Shahab
 +---------------------------------------+----------------------------------------------+----------------------+
 | Initialization                        | [#sec-initialization-sequence]               |                      |
 +---------------------------------------+----------------------------------------------+----------------------+
-| Control Register Mapping              | [#sec-control-register-mapping]                                             |                      |
+| Control Register Mapping              | [#sec-control-register-mapping]              |                      |
 +---------------------------------------+----------------------------------------------+----------------------+
-|                                       |                                              |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-|                                       |                                              |                      |
 
 ~
 
@@ -439,7 +439,7 @@ which simplifies the clock generation and serialization functions.
 If used, FEC is implemented in the Link Layer, and the PHY treats the FEC bit the same
 as the other data bits. 
 
-AUX is an optional signal that can be used for purposes
+AUX is an optional signal that may be used for purposes
 such as Data Bus Inversion (DBI), flow control, redundancy for defect repair, etc.
  
 The Link Layers of Chiplets A and B will need to agree on the details on FEC and AUX usage.
@@ -466,7 +466,7 @@ Table [#tab-signals-d2d] summarizes these signals.
 
 ### DBI on the AUX wire
 
-Data Bus Inversion (DBI) can be used to mitigate simultaneous switching
+Data Bus Inversion (DBI) may be used to mitigate simultaneous switching
 output (SSO) noise or to optimize energy of a BoW PHY by reducing the number of BoW data wires
 that switch between adjacent data transfer cycles. 
 DBI functionality is optional; it one of several possible uses of the AUX wire.
@@ -555,7 +555,7 @@ sending CLK and that the TX Link Layer is sending training data on the data wire
 
 After the RX slice clock self-alignments are complete, each RX PHY slice shall assert its 
 PHYReady pin. How an RX PHY slice determines completion of the self-alignment is 
-implementation-dependent. For instance, it can be determined by observing the 
+implementation-dependent. For instance, it may be determined by observing the 
 settling of the DLL or by a simple timer. PHYReady asserted indicates
 that any data received will be captured correctly.
 
@@ -704,7 +704,7 @@ A bidirectional link is composed of some whole number of slices configured for R
 whole number of slices for TX.
 
 FEC (Forward Error Correction) is an optional signal that allows using error correction to 
-improve the bit error rate (BER).  AUX is an optional signal that can be used for purposes
+improve the bit error rate (BER).  AUX is an optional signal that may be used for purposes
 such as DBI, flow control, redundancy, etc. Chiplets A and B will need to agree on
 the details on FEC and AUX usage, which is defined in the Link Layer.
 
@@ -740,7 +740,7 @@ Alternate bump arrangements may include:
 * different ordering of power and ground bumps
 * multiple power and ground rows
 
-Somewhat different wire pitches between two chiplets can be accommodated with 
+Somewhat different wire pitches between two chiplets may be accommodated with 
 fan-out in the chip-to-chip wires. This is limited by the maximum skew due to different 
 wire lengths - see section [#chan-skew].
 
@@ -766,7 +766,7 @@ The position-B slices are connected together, and so on.
 There is no specified limit to the number of slices in a stack. 
 In organic laminate, the practical limit in 2020 is an 8-2-8 laminate which supports 4 slices
 as shown in Figure [#fig-pkg_cross_section].
-A 7-2-7 laminate can support 4 slices by omitting the top GND layer, 
+A 7-2-7 laminate may support 4 slices by omitting the top GND layer, 
 but with reduced signal integrity.
 Layers on the bottom side of the package typically cannot be used for BoW signals 
 due to low via density passing through the thick central core layer.
@@ -901,9 +901,27 @@ be specified in the receiver's datasheet.
 It is expected that Source-Series-Terminated (SST) Transmitters will be largely agnostic to the choice 
 of termination voltage on the receiver.       
 
+## PHY protection
+
+A BoW PHY should not draw excessive current nor be damaged under the following conditions:
+
+* the bumps are open-circuited, e.g., at wafer test, or if not connected in a package assembly
+* during powerup
+* in the unpowered state when connected to a matching PHY which may be powered or unpowered
+* in the reset state when connected to a matching PHY which may be powered or unpowered
+* in the operational state
+
+In particular, RX slices should avoid "crowbar" states. This may be done by disabling the receiver circuit
+or with a weak pulldown at the bumps (except CLK-, which may get a pullup or may be left open). 
+Pullups should not be used on bumps other than CLK-.
+
+A PHY slice which can be configured as TX or RX must have the TX 
+circuit disabled when PHYResetB is asserted and an explicit APB command must be performed to 
+turn on the TX circuit.
+
 ## ESD 
 BoW I/O shall be designed to withstand **50 V CDM** (Charged Device Model) and 
-**250 V HBM** (Human Body Model). 
+**250 V HBM** (Human Body Model) at the bumps.
 This requirement is deemed sufficient for intra-package signaling, 
 similar to other die-to-die interface standards.
 
@@ -929,7 +947,7 @@ and improve signal integrity.
 
 Since the actual frequency-dependent impedance profile of any given
 implementation may be comprised of a complex electrical network, 
-compliance with the "equivalent" capacitance metric is formally defined
+conformance with the "equivalent" capacitance metric is formally defined
 by requiring that the magnitude of the return loss of any BoW I/O
 must be lower than the maximum limits shown in Figure [#fig-S11] below.
 Similarly to DC termination resistance, the maximum s~11~ magnitude 
@@ -1163,7 +1181,7 @@ an ideal load of 50 &Omega; (Z~chan~).
 The timing of a BoW RX PHY's sampling clock edge at the slicer must be modulated by **less 
 than 0.1% of a UI per mV of common-mode variation on CLK+/CLK-**.  This sensitivity requirement 
 must be met across any common-mode variation frequency less than or equal to 1/T~bit~.  For example,
-the sampling clock edge of a compliant BoW RX would vary by less than 2% of a UI peak-to-peak 
+the sampling clock edge of a conforming BoW RX would vary by less than 2% of a UI peak-to-peak 
 for peak-to-peak common mode variation on CLK+/CLK- of 20mV.        
 
 ### Receiver Sensitivity and Timing Margin {#rx-eye}
@@ -1252,10 +1270,10 @@ This skew is expected to be dominated by the TxClk distribution network.
 
 With the exception of the maximum skew requirement defined in Section [#chan-skew], BoW does not place
 any direct requirements on characteristics such as channel loss or crosstalk.  Instead, BoW channels
-are considered compliant if they are able to achieve the required V~rx_eye~ and t~rx_eye~ defined 
+are considered conforming if they are able to achieve the required V~rx_eye~ and t~rx_eye~ defined 
 in Section [#rx-eye] in conjunction with reference transmitters and receivers that meet all of the
 requirements provided in Section [#elec-specs] and Section [#clk-data-specs]. To assist with evaluating
-compliance of a given channel, open-source software evaluating signal integrity and the overall 
+conformance of a given channel, open-source software evaluating signal integrity and the overall 
 link budgets with the reference transmitters and receivers will be provided at a future date.
 
 ## Channel-Induced CLK Edge to D Transition Skew at RX {#chan-skew}
@@ -1325,11 +1343,11 @@ In laminate packages, the channel characteristic impedance should be between 45 
 
 ## Example BoW Channel for Doubly-Terminated Links
 
-To provide guidance on the types of channels that are expected to meet the requirements for compliance
+To provide guidance on the types of channels that are expected to meet the requirements for conformance
 with the BoW reference receiver and transmitter, this section provides examples of typical loss and 
 crosstalk profiles for doubly-terminated channels supporting 16 Gbps operation (which are most sensitive 
 to channel signal integrity).  Note that when operating at lower rates, the frequency axes in the figures 
-below can be scaled with the data-rate relative to 16 Gbps.
+below must be scaled with the data-rate relative to 16 Gbps.
 
 ### Channel Loss
 
@@ -1392,7 +1410,7 @@ This must be able to repetitively
 transmit an arbitrary 16 bit per wire pattern (256 or 288 bits pattern depending on inclusion of FEC+AUX) 
 required by the RX slice for clock
 alignment as specified in the datasheet for the RX PHY.
-* The PHYReset input to each PHY shall be asserted upon powerup. 
+* The PHYResetB input to each PHY shall be asserted upon powerup. 
 It may also be asserted by commands from the LC.
 
 An example topology is shown in Figure [#fig-bow_system]. 
@@ -1409,30 +1427,38 @@ Add another figure with the LC embedded rather than external
 
 ## Initialization Sequence
 
-A TX-RX Link shall be brought up as follows:
 
-1. The Link Controller (LC) performs any needed configuration of the PHY 
-slices via the APB interface. This is implementation dependent
-1. The LC de-asserts PHYReset to the TX PHY slices
-1. Once its TX clock stabilizes, each TX PHY slice asserts PHYReady to the LC
+
+### A TX-RX Link should be brought up as follows:
+
+1. The Link Controller (LC) asserts PHYResetB to the PHY slices on both ends of the link.
+1. The Link Controller (LC) **de-asserts PHYResetB to the TX** PHY slices
+1. The LC performs any needed configuration of the TX PHY 
+slices via the APB interface. This is implementation dependent. 
+If the TX needs to be enabled (see section [#sec-phy-protection]), it happens here.
+1. Once its outgoing CLK and PCLK stabilize, each TX PHY slice asserts PHYReady to the LC
 1. When all TX PHY slices are ready, the LC signals the TX Link Layer to 
-send the training pattern (repeating indefinitely) specified by the RX PHY
-1. The LC de-asserts PHYReset to the RX PHY slices 
+send the training pattern (repeating) specified by the RX PHY
+1. The Link Controller (LC) **de-asserts PHYResetB to the RX** PHY slices
+1. The LC performs any needed configuration of the RX PHY 
+slices via the APB interface. This is implementation dependent. 
+If the RX needs to be enabled, it happens here.
 1. Each RX PHY slice performs clock and data alignment and signals PHYReady to the LC when done
 1. When all RX PHY slices are ready, the LC signals the TX and RX 
-Link Layers that they can proceed with channel bonding
+Link Layers to proceed with channel bonding
+
 
 Implementation dependent:
 
 * Whether the up and down links are initialized one at a time or in parallel
-* How the signals from the the LC get from and to the PHYReady and PHYReset pins of the PHY
+* How the signals from the the LC get from and to the PHYReady and PHYResetB pins of the PHY
 * How the Link Layer performs channel bonding or start of data transmission
-* Any PHY registers required to implement this process - these
-are an implementation choice. 
+* Any PHY registers required to implement this process 
 
 
 ## Unspecified Items
 
+* Whether the APB registers are separate for each slice or shared among slices in a link
 * There is no low-power standby mode defined.
 * There is no specification for when a PHY should de-assert its PHYReady pin. 
 PLL or DLL losing lock are possible causes.
@@ -1489,7 +1515,7 @@ Suggested test patterns are:
 * Isolated 1 and 0 pattern to test DC wander and single  bit response:
 
  *  ['0'] X 10 + '1' + ['0'] X 10 + ['1'] X 10 + '0' + ['1'] X 10 + ['0'] X 10
- * This can be prepended to a PRBS pattern as seen in Figure [#fig-Pattern]
+ * This may be prepended to a PRBS pattern as seen in Figure [#fig-Pattern]
 
 
 ~ Figure { #fig-Pattern; caption: "Stress Test Pattern" }
@@ -1534,17 +1560,17 @@ The logic for generating and testing the PRBS sequences is outside the PHY, e.g.
 [fig_test_rx]: images/LB_Spec/Slide3a.png { width:auto; max-width:100% }
 ~
 
-In bidirectional links, loopback tests can be implemented in several modes:
+In bidirectional links, loopback tests may be implemented in several modes:
 
  * Slice-to-slice short loopback 
   * Data is looped back within the chip
  from a TX slice to an RX slice using on-chip switching (shown in Figure [#fig_test_sl]). 
  The short loopback path is configured by the ATE using implementation-dependent registers.
-  * Loopback can be implemented before the PHY serializer, between the serializer and the output buffer, 
+  * Loopback may be implemented before the PHY serializer, between the serializer and the output buffer, 
   and/or at the bumps. 
  * Intra-slice short loopback
   * A single slice containing both RX and TX paths sharing the same bumps
- can perform on-chip loopback testing simply by turning on both the RX and TX paths at once.
+ may perform on-chip loopback testing simply by turning on both the RX and TX paths at once.
  This has more on-chip circuitry, but allows loopback testing with no switches or extra 
  lines connected to the bumps other than the TX driver tristate switches. 
  Figure [#fig_test_sl] applies, except there is only one shared set of bumps for a TX/RX slice.
@@ -1566,7 +1592,7 @@ In bidirectional links, loopback tests can be implemented in several modes:
 [fig_test_ll]: images/LB_Spec/Slide1a.png { width:auto; max-width:60% }
 ~
 
-Both loopback modes can potentially be used for in-field validation bring-up and test. 
+Both loopback modes may potentially be used for in-field validation bring-up and test. 
 Cooperation across chiplets will be required to execute these tests in the field. 
 Open-loop testing requires the use of a fixed test pattern recognized by both ends and 
 is the only option for unidirectional links. 
@@ -1575,7 +1601,7 @@ validation/verification purposes.
 
 Figure [#fig_test_cll] shows how a long loopback mode is executed across two chiplets 
 for in-field validation and test 
-where TX and RX are in different chiplets. Furthermore, this configuration can be expanded 
+where TX and RX are in different chiplets. Furthermore, this configuration may be expanded 
 to loop back the data from the transmitter of chiplet-A to the receiver of chiplet-A. 
 
 
@@ -1591,7 +1617,7 @@ to loop back the data from the transmitter of chiplet-A to the receiver of chipl
 # BoW in an ODSA Design
 Chiplet-based designs require logical connectivity between the die in a
 single package, in addition to physical connectivity. This section provides an overview of 
-how the Open Domain-Specific Architecture stack can be used as an underlay for 
+how the Open Domain-Specific Architecture stack may be used as an underlay for 
 popular transaction protocols.
 
 ## BoW for Common Transaction Protocols
@@ -1613,7 +1639,7 @@ The ODSA stack abstracts
 the PHY layer from the logical interface by using the well-defined abstraction interfaces
 PIPE and LPIF. 
 Any logic transaction controller, such as a PCIe controller, that
-supports a PIPE or LPIF interface can use any D2D PHY that also supports that
+supports a PIPE or LPIF interface may use any D2D PHY that also supports that
 interface as its physical layer.
 As shown in Figure [#fig-odsa-stack], the BoW interface may receive data
 through either the PIPE or LPIF interfaces to support common transaction protocols. 
@@ -1621,7 +1647,7 @@ For this use case, some BoW-specific adapter logic will be needed to support the
 or LPIF.
 The specifications for these adapters are outside the scope of this document. 
 Figure [#fig-bow-pcie] shows how the
-BoW with an PIPE adapter can be interfaced to a PCIe controller.
+BoW with an PIPE adapter may be interfaced to a PCIe controller.
 
 ~ Framed {color: blue}
 Need to remove "serializer" and "deserializer" from the labels in Figure [#fig-bow-pcie]

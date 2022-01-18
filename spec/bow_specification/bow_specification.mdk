@@ -939,7 +939,7 @@ and improve signal integrity.
 |                        |BoW--32     |BoW-128     | BoW-256    |
 |                        |or BoW-64   |            |            |
 +:----------------------:+:----------:+:----------:+:-----------+
-| Maximum Equivalent     | **1.0 pF** | **500 fF** | **300 fF** |
+| Maximum Equivalent     | **1.0 pF** | **500 fF** | **250 fF** |
 | Capacitance (TX or RX) |            |            |            |
 |------------------------|------------|------------|------------|
 ~  

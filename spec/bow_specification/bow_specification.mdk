@@ -24,12 +24,12 @@ title,titlenote,titlefooter,h1,h2,h3,h4,h5 {
 \
 Bunch of Wires PHY Specification
 ~
-~ center {font-size: x-large }
+~ center {font-size: x-large ; page-break-after: always }
 The Open Domain-Specific Architecture BoW Workstream
 
 DRAFT  
 22 Jan 2022
-{ page-break-after: always}
+
 ~
 
 

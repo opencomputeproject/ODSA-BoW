@@ -24,12 +24,14 @@ title,titlenote,titlefooter,h1,h2,h3,h4,h5 {
 \
 Bunch of Wires PHY Specification
 ~
-~ center {font-size: x-large }
+~ center {font-size: x-large ; page-break-after: always }
 The Open Domain-Specific Architecture BoW Workstream
 
 DRAFT  
-1 Dec 2021
+22 Jan 2022
+
 ~
+
 
 <XX The below escaped blank lines are in lieu of a working page break >
 \
@@ -58,7 +60,7 @@ DRAFT
 \
 
 
-{ page-break-after: always }
+
 
 [TITLE]
 
@@ -156,12 +158,13 @@ shall not be interpreted or construed against the party preparing it.
 all of which taken together shall constitute one single agreement between the parties. A 
 facsimile transmission of the executed signature page of this Agreement shall constitute 
 due and proper execution of this Agreement by the applicable party.
-
 { page-break-after: always }
 
 [TOC] 
 
-{ page-break-after: always }
+\
+\
+
 
 [TITLE]
 

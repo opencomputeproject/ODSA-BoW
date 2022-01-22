@@ -905,11 +905,11 @@ of termination voltage on the receiver.
 
 A BoW PHY should not draw excessive current nor be damaged under the following conditions:
 
-* the bumps are open-circuited, e.g., at wafer test, or if not connected in a package assembly
-* during powerup
-* in the unpowered state when connected to a matching PHY which may be powered or unpowered
-* in the reset state when connected to a matching PHY which may be powered or unpowered
-* in the operational state
+* The bumps are open-circuited, e.g., at wafer test, or if not connected in a package assembly
+ during power-up.
+* In the un-powered state when connected to a matching PHY which may be powered or un-powered.
+* In the reset state when connected to a matching PHY which may be powered or un-powered.
+* In the operational state.
 
 In particular, RX slices should avoid "crowbar" states. This may be done by disabling the receiver circuit
 or with a weak pulldown at the bumps (except CLK-, which may get a pullup or may be left open). 
@@ -949,12 +949,19 @@ Since the actual frequency-dependent impedance profile of any given
 implementation may be comprised of a complex electrical network, 
 conformance with the "equivalent" capacitance metric is formally defined
 by requiring that the magnitude of the return loss of any BoW I/O
-must be lower than the maximum limits shown in Figure [#fig-S11] below.
+must be lower than the maximum limits shown in Figures [#fig-s11-tx] and [#fig-S11] below.
+(Note that the return loss requirements are different for TX and RX because of the differences 
+in DC termination between the two sides.)  
 Similarly to DC termination resistance, the maximum s~11~ magnitude 
 in the figure must be met with logical 0, logical 1, and mid-scale between
 logic 0 and logic 1 voltages on the wire between the TX and RX.     
 
-~ Figure { #fig-S11; caption: "BoW Termination Maximum Return Loss" }
+~ Figure { #fig-S11-tx; caption: "BoW TX Termination Maximum Return Loss" }
+![S11-tx]
+~
+[S11-tx]: images/s11_bow_tx.png {width:auto; max-width:80% }
+
+~ Figure { #fig-S11; caption: "BoW RX Termination Maximum Return Loss" }
 ![S11]
 ~
 [S11]: images/s11_max.png {width:auto; max-width:80% }
@@ -1177,12 +1184,6 @@ requirement, the total timing error t~err,tot~ may be computed as:
 t~err,tot~ = t~err,determinsitic~ + 15.9 &sigma;~tj,random~
 ~ 
 
-### TX Overshoot
-
-CLK and data signals must not overshoot more than **XX%** of the I/O voltage at the 
-TX output with an open-circuit load connected to it.
-For a 0.75 V I/O voltage, the TX output must stay within the range -37.5 mV to 787.5 mV.
-
 ### CLK Receiver Sensitivity to Common-Mode Variations
 
 The differential receiver for the CLK signal within a BoW receiver must achieve an input-referred 
@@ -1198,8 +1199,8 @@ A BoW receiver must meet a set of requirements on the following sets of timing a
 * **Maximum RX Deterministic Voltage Error**: This term (**V~err,det,RX~**) must include all deterministic voltage errors that would
 shift the receiver's voltage threshold relative to its ideal position in the middle of the signal swing.  For example, 
 any deterministic voltage errors due to residual offset, reference level error, and supply noise must be included.
-This specification is a peak-to-peak requirement, so if a given design has e.g. +/-10 mV of threshold offset, this
-would imply that the design can achieves a RX deterministic voltage error of no better than 20 mV. 
+This specification accounts for the double-sided loss in margin, so if a given design has e.g. a residual threshold error of 0mV 
+to +10mV, this would imply that the design can achieve a V~err,det,RX~ of no better than 20 mV. 
 
 * **Maximum Total Required RX Voltage Margin**: This term must include all possible voltage errors 
 at the RX at a probability of 1e-15 or higher.  In addition to the deterministic RX voltage error sources mentioned above, error 
@@ -1213,13 +1214,13 @@ V~err,tot,RX~ = V~err,det,RX~ + 15.9 &sigma;~V~~err,random,RX~
 * **Maximum RX Deterministic Timing Error**: This term (**t~err,det,RX~**) must include all deterministic timing errors that would 
 shift the receiver's sampling timing relative to its ideal position for any data line.  This term must therefore include
 errors due to e.g. residual sample timing position error, DLL dither, and power supply 
-induced jitter.  This specification is a peak-to-peak requirement, so if a given design has e.g. +/-5% UI of RX clock
-power-supply induced jitter, this would imply that the design can achieve a RX deterministic timing error
-of no better than 10% UI.  
+induced jitter.  This specification accounts for the double-sided loss in margin, so if a given design has a mismatch-induced
+shift of the sampling position (relative to the ideal) of 0% to 5%, this would imply that the design can achieve a 
+t~err,det,RX~ of no better than 10% UI.
 
 * **Maximum Total RX Timing Error**: This term must include all possible timing errors at the RX at a probability of
 1e-15 or higher.  In addition to the deterministic RX timing error sources mention above, error sources such as 
-RX clock receiver or clock distribution random jitter must be included in this term.  For Gaussian random jitter, the 
+RX clock receiver or clock distribution random jitter must be included in the total timing error.  For Gaussian random jitter, the 
 maximum total required timing error (**t~err,tot,RX~**) may be computed as:
 
 ~center
@@ -1227,7 +1228,7 @@ t~err,tot,RX~ = t~err,det,RX~ + 15.9 &sigma;~t~~err,random,RX~
 ~
 
 Since swing and signal integrity are expected to vary with termination as well as data-rate, the RX voltage
-and timing requirements are termination- and rate-dependent, as outline in Table [#tab-eye].
+and timing requirements are termination- and rate-dependent, as outlined in Table [#tab-eye].
 
 ~ TableFigure { #tab-eye; caption: "Receiver Voltage and Timing Requirements for BoW-256"; width: 100%}
 |-------------------|------------------|------------------|-------------------------|------------------|-------------------------|
@@ -1235,13 +1236,13 @@ and timing requirements are termination- and rate-dependent, as outline in Table
 |                   |------------------|------------------|-------------------------|------------------|-------------------------|
 |                   |Any Termination   |Doubly Terminated |Source- or Un-Terminated |Doubly Terminated |Source- or Un-Terminated |
 +:-----------------:+:----------------:+:----------------:+:-----------------------:+:----------------:+:-----------------------:+
-| **V~err,det,RX~** | **40 mV**        | **40 mV**        |**100 mV**               | **100 mV**       | **150 mV**              |
+| **V~err,det,RX~** | **40 mV**        | **40 mV**        |**100 mV**               | **65 mV**       | **150 mV**              |
 +-------------------+------------------+------------------+-------------------------+------------------+-------------------------+
-| **V~err,tot,RX~** | **75 mV**        |**75 mV**         |**150 mV**               | **150 mV**       | **200 mV**              |
+| **V~err,tot,RX~** | **75 mV**        |**75 mV**         |**150 mV**               | **100 mV**       | **200 mV**              |
 +-------------------+------------------+------------------+-------------------------+------------------+-------------------------+
-| **t~err,det,RX~** | **32% T~bit~**   | **32% T~bit~**   |**32% T~bit~**           | **32% T~bit~**   | **32% T~bit~**          |
+| **t~err,det,RX~** | **32% T~bit~**   | **32% T~bit~**   |**32% T~bit~**           | **28% T~bit~**   | **28% T~bit~**          |
 +-------------------+------------------+------------------+-------------------------+------------------+-------------------------+
-| **t~err,tot,RX~** | **40.5% T~bit~** | **40.5% T~bit~** |**40.5% T~bit~**         | **40.5% T~bit~** | **40.5% T~bit~**        |
+| **t~err,tot,RX~** | **40.5% T~bit~** | **40.5% T~bit~** |**40.5% T~bit~**         | **36.5% T~bit~** | **36.5% T~bit~**        |
 |-------------------|------------------|------------------|-------------------------|------------------|-------------------------|
 ~
 
@@ -1254,12 +1255,17 @@ If the slice implementation allows programmatic control of the receiver voltage
 thresholds, varying those values may provide vertical margin information.
 XX>
 
-### RX Overshoot
+### Receiver Voltage Overshoot
 
-For the purposes of voltage safety limits, during normal operation, a BoW RX may assume that CLK and data signals 
-will not overshoot more than **XX%** of the I/O voltage at the RX input.
-Thus, for a 0.75 V I/O voltage, the voltage at the input of the RX may be assumed to 
-stay within the range -187.5 mV to 937.5 mV.
+This specification does not place a specific requirement on the overshoot observed by the RX, 
+but it is expected that the overshoot should have magnitude of less than 300 mV for 750 mV I/O supply.
+Since overshoot is most likely to create potential reliability and other issues in unterminated operating modes,
+BoW RX's are allowed to turn on termination resistors to reduce the overshoot they observe.  The value of the 
+RX termination resistance in this case must be larger than 50 &Omega;, but is otherwise unconstrained as long
+as the receiver is able to meet its timing margin requirements with the resulting swing/channel.
+
+BoW TX's therefore shall be designed to achieve their lifetime, reliability, and other requirements regardless
+of whether the BoW RX selects to operate with or without termination.     
 
 ### Slice-to-Clice CLK Skew
 
@@ -1267,37 +1273,35 @@ The slice to slice clock skew t~skew~ across the width of a BoW link (along the 
 should be less than 150 ps/stack. 
 (E.g., for a 4-stack interface, the skew from end to end must be less than 600 ps.)
 This skew includes only analog delays and specifically does not include any 
-clock-related timing skew due to 
-flip-flops/latches or varying reset states.  
+clock-related timing skew due to flip-flops/latches or varying reset states.  
+
 This skew is expected to be dominated by the TxClk distribution network.
 
 
 # Chip-to-Chip Channel Specifications
 
-With the exception of the maximum skew and overshoot requirements defined in Sections [#chan-skew]
-and [#chan-overshoot], BoW does not place any direct requirements on characteristics such as channel 
-loss or crosstalk.  Instead, BoW channels
-are considered conforming if they are able to achieve the required V~rx_eye~ and t~rx_eye~ defined 
-in Section [#rx-eye] in conjunction with reference transmitters and receivers that meet all of the
-requirements provided in Section [#elec-specs] and Section [#clk-data-specs]. To assist with evaluating
-conformance of a given channel, open-source software evaluating signal integrity and the overall 
+BoW does not place any direct requirements on characteristics such as channel 
+loss or crosstalk.  Instead, BoW channels are considered conforming if they are able to achieve the 
+required error rate of 1e-15 in conjunction with reference transmitters and receivers that meet all of the
+requirements provided in Section [#elec-specs] and Section [#clk-data-specs]. 
+
+To assist with evaluating conformance of a given channel, open-source software evaluating signal integrity and the overall 
 link budgets with the reference transmitters and receivers will be provided at a future date.
 
 ## Channel-Induced CLK Edge to D Transition Skew at RX {#chan-skew}
 
-Within each slice, a BoW channel must not introduce more than **2% UI** of skew between 
-CLK and D lines.  For BoW-256, this corresponds to ~187.5 &mu;m of length mismatch 
+Within each slice, a BoW channel should not introduce more than **2% UI** of skew between 
+any D lines and the CLK lines.  For BoW-256, this corresponds to ~187.5 &mu;m of length mismatch 
 on a substrate with an &epsilon;~r~ of 4. 
 
-Note that if the BoW PHYs used on a given channel include per-bit delay adjustment, channels
-with skew larger than this requirement may be supported.  Note however that all of the timing
-requirements described in Section [#clk-data-specs] must then be met with the per-bit delay
-adjustment applied, and taking into account any drift or other errors introduced by that
-circuitry.    
+Note that the skew recommendation above is based on achieving sufficient timing margin on representative
+channels; channels with better signal integrity may allow for larger skew between the D and CLK lines as 
+they meet the overall timing margin requirements.
 
-## Channel-Induced Overshoot {#chan-overshoot}
-
-A BoW channel must not introduce overshoot of more than **XX%** of the I/O voltage at the RX input.   
+Note further that if the BoW PHYs used on a given channel include per-bit delay adjustment, channels
+with larger skew can be supported.  Note however that all of the timing requirements described in 
+Section [#clk-data-specs] must then be met with the per-bit delay adjustment applied, and taking into 
+account any drift or other errors introduced by that circuitry.       
 
 <XX
 ## Recommended BoW Channel Specifications on Laminate
@@ -1363,7 +1367,7 @@ To provide guidance on the types of channels that are expected to meet the requi
 with the BoW reference receiver and transmitter, this section provides examples of typical loss and 
 crosstalk profiles for doubly-terminated channels supporting 16 Gbps operation (which are most sensitive 
 to channel signal integrity).  Note that when operating at lower rates, the frequency axes in the figures 
-below must be scaled with the data-rate relative to 16 Gbps.
+below should be scaled with the data-rate relative to 16 Gbps.
 
 ### Channel Loss
 

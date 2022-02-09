@@ -28,7 +28,7 @@ Bunch of Wires PHY Specification
 The Open Domain-Specific Architecture BoW Workstream
 
 DRAFT  
-22 Jan 2022
+3 Feb 2022
 
 ~
 
@@ -942,7 +942,7 @@ and improve signal integrity.
 |                        |BoW--32     |BoW-128     | BoW-256    |
 |                        |or BoW-64   |            |            |
 +:----------------------:+:----------:+:----------:+:-----------+
-| Maximum Equivalent     | **1.0 pF** | **500 fF** | **250 fF** |
+| Maximum Equivalent     | **800 fF** | **400 fF** | **200 fF** |
 | Capacitance (TX or RX) |            |            |            |
 |------------------------|------------|------------|------------|
 ~  
@@ -1190,10 +1190,13 @@ t~err,tot~ = t~err,determinsitic~ + 15.9 &sigma;~tj,random~
 ### CLK Receiver Sensitivity to Common-Mode Variations
 
 The differential receiver for the CLK signal within a BoW receiver must achieve an input-referred 
-common-mode to differential conversion gain of less than **0.2 V / V**.  This requirement must be met across 
-any common-mode input frequency less than or equal to 1/T~bit~.  For example, with a conformant BoW
+common-mode to differential conversion gain of less than **0.2 V / V**.  This requirement must be met 
+across any common-mode input frequency less than or equal to 1/T~bit~.  For example, with a conformant BoW
 RX, 20mV of common-mode variation on the CLK+/CLK- lines must impact the effective 
 differential input by less than 4mV.
+
+Note that common-mode variations on the CLK+/CLK- lines of ~10-15% of the signal swing may be expected 
+on typical in BoW channels. 
 
 ### Receiver Sensitivity and Timing Margin {#rx-eye}
 
@@ -1258,7 +1261,7 @@ If the slice implementation allows programmatic control of the receiver voltage
 thresholds, varying those values may provide vertical margin information.
 XX>
 
-### Receiver Voltage Overshoot
+### Voltage Overshoot
 
 This specification does not place a specific requirement on the overshoot observed by the RX, 
 but it is expected that the overshoot should have magnitude of less than 300 mV for 750 mV I/O supply.
@@ -1303,8 +1306,8 @@ they meet the overall timing margin requirements.
 
 Note further that if the BoW PHYs used on a given channel include per-bit delay adjustment, channels
 with larger skew can be supported.  Note however that all of the timing requirements described in 
-Section [#clk-data-specs] must then be met with the per-bit delay adjustment applied, and taking into 
-account any drift or other errors introduced by that circuitry.       
+Section [#clk-data-specs] must then be met with the residual skew and its variation over time 
+taken into account.       
 
 <XX
 ## Recommended BoW Channel Specifications on Laminate
@@ -1374,7 +1377,7 @@ below should be scaled with the data-rate relative to 16 Gbps.
 
 ### Channel Loss
 
-To avoid the need for equalization, a BoW-256 channel will typically need to have lower loss than
+To avoid the need for equalization, a BoW-256 channel should typically have lower loss than
 shown in Figure [#fig-loss].
 
 ~ Figure { #fig-loss; caption: "BoW Doubly-Terminated Wire Channel Loss Limit" }
@@ -1385,19 +1388,8 @@ shown in Figure [#fig-loss].
 
 ### Crosstalk
 
-The crosstalk in a BoW-256 channel will typically need to be less than that 
-shown in Figure [#fig-xtalk].
-
-~ Figure { #fig-xtalk; caption: "BoW Doubly-Terminated Wire Crosstalk Limit" }
-![xtalk]
-~
-[xtalk]: images/bowspec_figure6.jpg { width:auto; max-width:60% }
-
-Power-sum crosstalk is the sum of crosstalk power of all aggressors on a target trace.
-The example limit depicted in Figure [#fig-xtalk] corresponds to:
-~center
-XtalkLimit = -37*e^-f/8GHz^-10 dB
-~
+The total crosstalk observed on an individual signal within a BoW-256 channel 
+should typically be less than ~35% of the signal swing.
 
 <XX
 ~Framed {color: blue}
@@ -1521,15 +1513,13 @@ The registers shall be fully documented in the PHY datasheet.
 
 ## Test Patterns
 
-~framed {color:blue}
-* Should we make any or all of these test patterns mandatory to facilitate interoperability?
-* Syncing a receiver to a PRBS-31 pattern is slow without an agreed start time. 
-How do other specs do this?
-~
+In order to support die-to-die (in package) testing, within a BoW implementation,
+either the link layer, the PHY, or both must be able to support the generation (on the TX side)
+or checking (on the RX side) of repeating data patterns.  
 
-Test patterns should be programmable to repeat indefinitely.
-
-Suggested test patterns are:
+Users of BoW systems should check that one or more of the test patterns supported on the TX
+is also supported on the RX.  Such pattern generators / checkers should therefore support the
+following patterns: 
 
 * PRBS-9 Pattern, defined  by polynomial of X^9^+ X^5^ +1
 

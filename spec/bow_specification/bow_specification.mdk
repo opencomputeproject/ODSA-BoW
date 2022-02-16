@@ -27,8 +27,8 @@ Bunch of Wires PHY Specification
 ~ center {font-size: x-large ; page-break-after: always }
 The Open Domain-Specific Architecture BoW Workstream
 
-DRAFT  
-3 Feb 2022
+DRAFT 0.99  
+14 Feb 2022
 
 ~
 
@@ -1462,6 +1462,8 @@ If the RX needs to be enabled, it happens here.
 1. When all RX PHY slices are ready, the LC signals the TX and RX 
 Link Layers to proceed with channel bonding
 
+Note that BoW PHY implementations that do not adopt the order recommended above are not be guaranteed
+to interoperate with other BoW PHY implementations.
 
 Implementation dependent:
 

@@ -341,18 +341,10 @@ nor is it designed for buses that are entirely on die.
 This document specifies the protocol for a BoW PHY slice. The aggregation
 of multiple PHYs into a link is beyond the scope of this document.
 
-
 ~ Figure { #fig-bow_overview2; caption: "BoW Overview" }
 ![bow_overview2]
 [bow_overview2]: images/Bow-link-PHY-wires2.png { width:auto; max-width:70% }
 ~
-
-<xx
-~ Figure { #fig-bow_overview; caption: "BoW Overview" }
-![bow_overview]
-[bow_overview]: images/bowspec_figintro.jpg { width:auto; max-width:70% }
-~
-XX>
 
 A BoW PHY slice either transmits or receives 16 bits of data between die. 
 The BoW is a source-synchronous PHY and each transmitting
@@ -414,7 +406,7 @@ interface is SDR (bit rate equal to PCLK frequency).
 ~ Figure {#fig-bow-logicin; caption: "BoW slice logic interface"}
 ![bowspec_figslicelogicint]
 ~
-[bowspec_figslicelogicint]: images/fig-bowphylogicint.jpg {width:auto; max-width: 100%}
+[bowspec_figslicelogicint]: images/fig-bowphylogicint.png {width:auto; max-width: 90%}
 
 
 # Signal Definitions
@@ -861,17 +853,27 @@ Note that the simplest implementation is to provide a 0.75 supply voltage to the
 BoW VDD bumps, but the supply voltage may be different from the I/O voltage 
 as long as the signal voltages meet the specification.
 
-Independently of the I/O voltage, BoW transmitters and receivers must meet the 
+In doubly terminated modes of operation, the RX termination resistance must be connected to 0V, 
+the I/O voltage, or mid-rail of the I/O 
+voltage (e.g., 375 mV with a 0.75 V I/O voltage). 
+The selection of termination voltage is expected to be static (hardwired) in the RX, and must
+be specified in the receiver's datasheet. 
+It is expected that Source-Series-Terminated (SST) Transmitters will be largely agnostic to the choice 
+of termination voltage on the receiver.
+
+Regardless of the value selected for the I/O supply voltage, BoW transmitters and receivers must meet the 
 DC termination resistance requirements defined in Table [#tab-impedance].
 Note that TX/RX termination (output/input) resistance values are skewed 
 low/high compared to the channel impedance in order to ensure
 that the DC single-ended voltage swing at the RX is never reduced to less 
 than half of the I/O voltage (i.e., 375 mV for a 0.75 V I/O voltage). 
 Note that these termination resistance values must be met with 
-logical 0, logical 1, and mid-scale between logic 0 and logic 1 voltages on the wire 
-between the TX and the RX.     
+all combinations of data inputs (logical 1 and logical 0), termination voltage selections
+(ground terminated, supply terminated, or mid-rail terminated), and termination resistance 
+values. For example, a BoW TX must achieve between 36 &Omega; and 50 &Omega; resistance when driving 
+a load resistance (modeling the RX termination) of 50-69 &Omega; with any of the three termination options.     
 
-~ TableFigure {#tab-impedance; caption: "Transmit and Receive Termination Resistance Requirements vs. Mode"; width:100%;  }
+~ TableFigure {#tab-impedance; caption: "TX and RX Termination Resistance Requirements vs. Mode"; width:90%;  }
 |--------------|---------------------|-----------------------------|-----------------------------|
 |              |Unterminated         |Source-Terminated            | Doubly Terminated           |
 |              |                     |                             |                             |
@@ -896,13 +898,7 @@ requirements on DC termination resistance matching across all I/O's within a giv
 must be interpreted as capturing within-slice manufacturing variability across worst-case voltage/temperature operating conditions, and is expected to 
 be primarily influenced by some combination of transistor and explicit resistor matching (with the mix depending on the circuit implementation).   
 
-In doubly terminated modes of operation, the RX termination resistance must be connected to 0V, 
-the I/O voltage, or mid-rail of the I/O 
-voltage (e.g., 375 mV with a 0.75 V I/O voltage). 
-The selection of termination voltage is expected to be static (hardwired) in the RX, and must
-be specified in the receiver's datasheet. 
-It is expected that Source-Series-Terminated (SST) Transmitters will be largely agnostic to the choice 
-of termination voltage on the receiver.       
+       
 
 ## PHY protection
 
@@ -954,20 +950,20 @@ conformance with the "equivalent" capacitance metric is formally defined
 by requiring that the magnitude of the return loss of any BoW I/O
 must be lower than the maximum limits shown in Figures [#fig-s11-tx] and [#fig-S11] below.
 (Note that the return loss requirements are different for TX and RX because of the differences 
-in DC termination between the two sides.)  
-Similarly to DC termination resistance, the maximum s~11~ magnitude 
-in the figure must be met with logical 0, logical 1, and mid-scale between
-logic 0 and logic 1 voltages on the wire between the TX and RX.     
+in DC termination between the two sides.)  Similarly to DC termination resistance, the maximum s~11~ magnitude 
+in the figure must be met with all combinations of data inputs (logical 1 and logical 0), 
+termination voltage selections (ground terminated, supply terminated, or mid-rail terminated), 
+and termination resistance values.     
 
 ~ Figure { #fig-S11-tx; caption: "BoW TX Termination Maximum Return Loss" }
 ![S11-tx]
 ~
-[S11-tx]: images/s11_bow_tx.png {width:auto; max-width:80% }
+[S11-tx]: images/s11_bow_tx.png {width:auto; max-width:60% }
 
 ~ Figure { #fig-S11; caption: "BoW RX Termination Maximum Return Loss" }
 ![S11]
 ~
-[S11]: images/s11_max.png {width:auto; max-width:80% }
+[S11]: images/s11_max.png {width:auto; max-width:60% }
 
 ## Receiver Bandwidth
 
@@ -1236,20 +1232,20 @@ t~err,tot,RX~ = t~err,det,RX~ + 15.9 &sigma;~t~~err,random,RX~
 Since swing and signal integrity are expected to vary with termination as well as data-rate, the RX voltage
 and timing requirements are termination- and rate-dependent, as outlined in Table [#tab-eye].
 
-~ TableFigure { #tab-eye; caption: "Receiver Voltage and Timing Requirements for BoW-256"; width: 100%}
-|-------------------|------------------|------------------|-------------------------|------------------|-------------------------|
-|                   |BoW-256           |BoW-128           |BoW-128                  |BoW-64 or BoW-32  | BoW-64 or BoW-32        |
-|                   |------------------|------------------|-------------------------|------------------|-------------------------|
-|                   |Any Termination   |Doubly Terminated |Source- or Un-Terminated |Doubly Terminated |Source- or Un-Terminated |
-+:-----------------:+:----------------:+:----------------:+:-----------------------:+:----------------:+:-----------------------:+
-| **V~err,det,RX~** | **40 mV**        | **40 mV**        |**100 mV**               | **65 mV**       | **150 mV**              |
-+-------------------+------------------+------------------+-------------------------+------------------+-------------------------+
-| **V~err,tot,RX~** | **75 mV**        |**75 mV**         |**150 mV**               | **100 mV**       | **200 mV**              |
-+-------------------+------------------+------------------+-------------------------+------------------+-------------------------+
-| **t~err,det,RX~** | **32% T~bit~**   | **32% T~bit~**   |**32% T~bit~**           | **28% T~bit~**   | **28% T~bit~**          |
-+-------------------+------------------+------------------+-------------------------+------------------+-------------------------+
-| **t~err,tot,RX~** | **40.5% T~bit~** | **40.5% T~bit~** |**40.5% T~bit~**         | **36.5% T~bit~** | **36.5% T~bit~**        |
-|-------------------|------------------|------------------|-------------------------|------------------|-------------------------|
+~ TableFigure { #tab-eye; caption: "Receiver Voltage and Timing Requirements for BoW"; width: 93%}
+|-------------------|------------------|------------------|------------------------|------------------|------------------------|
+|                   |BoW-256           |BoW-128           |BoW-128                 |BoW-64 or BoW-32  | BoW-64 or BoW-32       |
+|                   |------------------|------------------|------------------------|------------------|------------------------|
+|                   |Any Termination   |Doubly Terminated |Source- or Unterminated |Doubly Terminated |Source- or Unterminated |
++:-----------------:+:----------------:+:----------------:+:----------------------:+:----------------:+:----------------------:+
+| **V~err,det,RX~** | **40 mV**        | **40 mV**        |**100 mV**              | **65 mV**        | **150 mV**             |
++-------------------+------------------+------------------+------------------------+------------------+------------------------+
+| **V~err,tot,RX~** | **75 mV**        |**75 mV**         |**150 mV**              | **100 mV**       | **200 mV**             |
++-------------------+------------------+------------------+------------------------+------------------+------------------------+
+| **t~err,det,RX~** | **32% T~bit~**   | **32% T~bit~**   |**32% T~bit~**          | **28% T~bit~**   | **28% T~bit~**         |
++-------------------+------------------+------------------+------------------------+------------------+------------------------+
+| **t~err,tot,RX~** | **40.5% T~bit~** | **40.5% T~bit~** |**40.5% T~bit~**        | **36.5% T~bit~** | **36.5% T~bit~**       |
+|-------------------|------------------|------------------|------------------------|------------------|------------------------|
 ~
 
 <XX COMMENT
@@ -1383,7 +1379,7 @@ shown in Figure [#fig-loss].
 ~ Figure { #fig-loss; caption: "BoW Doubly-Terminated Wire Channel Loss Limit" }
 ![loss]
 ~
-[loss]: images/bowspec_figure4.jpg { width:auto; max-width:60% }
+[loss]: images/bowspec_figure4.png { width:auto; max-width:60% }
 
 
 ### Crosstalk
@@ -1664,14 +1660,7 @@ The specifications for these adapters are outside the scope of this document.
 Figure [#fig-bow-pcie] shows how the
 BoW with an PIPE adapter may be interfaced to a PCIe controller.
 
-~ Framed {color: blue}
-Need to remove "serializer" and "deserializer" from the labels in Figure [#fig-bow-pcie]
- - these are part of the PHY, not the PIPE adaptor.j
-~
-
-
-
 ~ Figure {#fig-bow-pcie; caption: "BoW with a PIPE adapter for PCIe transactions"}
 ![bowspec_figcomponentspcie]
 ~
-[bowspec_figcomponentspcie]: images/fig-bow_pcie.jpg {width:auto; max-width: 100%}
+[bowspec_figcomponentspcie]: images/fig-bow_pcie.png {width:auto; max-width: 100%}

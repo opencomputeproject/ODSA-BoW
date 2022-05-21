@@ -28,7 +28,7 @@ Bunch of Wires PHY Specification
 The Open Domain-Specific Architecture BoW Workstream
 
 DRAFT 0.99  
-14 Feb 2022
+16 May 2022
 
 ~
 
@@ -1115,7 +1115,10 @@ account for deterministic (bounded) terms separately from random (unbounded) ter
 some degree of design flexibility on each of the TX and RX, a bound is always placed on the maximum deterministic
 error and on the maximum total error budget at the target error rate of 1e-15.  Thus, if a given BoW PHY design achieves
 deterministic error performance better than that requirement set by the deterministic component, the random errors
-introduced by that design may be increased as long as the total error requirement at 1e-15 probability is still met.    
+introduced by that design may be increased as long as the total error requirement at 1e-15 probability is still met.
+
+Note that the error rate of 1e-15 is at the level of any individual wire within a slice.  In other words, in a conformant
+BoW interface, no indvidual wire within the interface would have an error-rate exceeding 1e-15.     
 
 ### Transmitter Maximum Rise-Time
 
@@ -1153,8 +1156,8 @@ those jitter sources shall not be filtered by H~tx_jit~(j&omega;).  Since the to
 after filtering by this transfer function might not be monotonic with t~clk-d~, 
 and since receiver implementations 
 may realize varying values of t~clk-d~, a transmitter must meet all related specifications 
-for **t~clk-d~ = T~bit~**, for **t~clk-d~ = 2T~bit~**, **and** 
-for **t~clk-d~ = 3T~bit~**.
+for **t~clk-d~ = T~bit~**, for **t~clk-d~ = 2T~bit~**, for **t~clk-d~ = 3T~bit~**, 
+**and** for **t~clk-d~ = 4T~bit~**
 
 ### Transmitter Deterministic Timing Error {#tx-det-timing}
 
@@ -1410,7 +1413,7 @@ XX>
 
 These facilities must be provided outside the PHY:
 
-* a Link Controller (LC) which
+* A Link Controller (LC) which
 will manage initialization of the Link.
 It may reside on one of the chiplets of the Link, in a third chiplet in the package
 or outside the package.
@@ -1492,14 +1495,9 @@ PHY configuration is implementation dependent. It may include:
 PHY configuration may be hardwired in the chiplet implementation, or it may be programmable.
 
 
-
-
-~framed {color:Green}
-
 ##Link Training
 
-Link training will be addressed in a future revision of the spec
-~
+Link training will be addressed in a future revision of the specification.
 
 # Control Register Mapping
 

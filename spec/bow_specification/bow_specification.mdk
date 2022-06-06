@@ -252,10 +252,6 @@ Note to spec writers:
 Avoid using more than one of the above specification verbs in a single sentence to avoid confusion. 
 XX>
 
-# Overview
-
-
-
 # BoW Overview
 This section provides an overview of the BoW physical 
 interface (PHY) and its use in a multi-chiplet design.

@@ -32,7 +32,7 @@ WG Approved - 20 May 2022
 
 ~
 Authors:  
-Elad Alon: Blue Cheetah Analog  
+Elad Alon: Blue Cheetah Analog Design  
 Ken Poulton: Keysight  
 Boris Murmann: d-Matrix  
 Satya Venkata Rao: AnalogPort  
@@ -78,37 +78,37 @@ Mike Bartley: Tessolve
 This section provides glossary used in this specification.
 
 ~ TableFigure {#tab-glossary; caption: "Glossary of Terms"; }
-+---------------------------------+--------------+------------------------------------------------------+
-| Term                            | Abbreviation | Definition                                           |
-+---------------------------------+--------------+------------------------------------------------------+
-| Bunch of Wires                  | BoW          | The name for the PHYprotocol defined in this document|
-+---------------------------------+--------------+------------------------------------------------------+
-| Die-to-die                      | D2D          | Generic term used to refer to on-package interconnect|
-+---------------------------------+--------------+------------------------------------------------------+
-| BoW Mode                        |   N/A        | A specific defined mode of operation for a BoW interface|
-+---------------------------------+--------------+------------------------------------------------------+
-| picojoules per bit              | pJ/bit       | Energy required to transport a bit of data over a D2D interface|
-+---------------------------------+----------------------------------------------+----------------------+
-| PHY                             |              | The protocol encoding bits on wire                   |
-+---------------------------------+----------------------------------------------+----------------------+
-| Core Logic                      |              | The digital logic transmitting data to/from the PHY  |
-+---------------------------------+----------------------------------------------+----------------------+
-| Control Logic                   |              | Logic used to manage the operation of the PHY        |
-+---------------------------------+----------------------------------------------+----------------------+
-| Tera/Giga bits per second       | Tbps/Gbps    | Measures of the speed of data transmission on the PHY|
-+---------------------------------+----------------------------------------------+----------------------+
-| Beachfront                      |              | The length of die edge required by the D2D PHY       |
-+---------------------------------+----------------------------------------------+----------------------+
-| Clock                           |              | The signal that regulates the speed of data transmission|
-+---------------------------------+----------------------------------------------+----------------------+
-| Bump                            |              | Solder balls on die to terminate off-die wires                      |
-+---------------------------------+----------------------------------------------+----------------------+
-| Channel                         |              | A term for the package material conducting signals                      |
-+---------------------------------+----------------------------------------------+----------------------+
-| Test                            |              | The process of verifying functional correctness of a circuit                     |
-+---------------------------------+----------------------------------------------+----------------------+
-| Initialization                  |              | The process of preparing an interface for data transmission                     |
-+---------------------------------+----------------------------------------------+----------------------+
++---------------------------+--------------+----------------------------------------------------------------------------+
+| Term                      | Abbreviation | Definition                                                                 |
++---------------------------+--------------+----------------------------------------------------------------------------+
+| Bunch of Wires            | BoW          | The name for the PHY specification defined in this document                |
++---------------------------+--------------+----------------------------------------------------------------------------+
+| Die-to-die                | D2D          | Generic term used to refer to on-package interconnect                      |
++---------------------------+--------------+----------------------------------------------------------------------------+
+| BoW Mode                  | N/A          | A specific defined mode of operation for a BoW interface                   |
++---------------------------+--------------+----------------------------------------------------------------------------+
+| picojoules per bit        | pJ/bit       | Energy required to transport a bit of data over a D2D interface            |
++---------------------------+--------------+----------------------------------------------------------------------------+
+| PHY                       |              | The set of circuitry physically communicating bits from one die to another |
++---------------------------+--------------+----------------------------------------------------------------------------+
+| Core Logic                |              | Digital logic transmitting data to/from the PHY                            |
++---------------------------+--------------+----------------------------------------------------------------------------+
+| Control Logic             |              | Logic used to manage the operation of the PHY                              |
++---------------------------+--------------+----------------------------------------------------------------------------+
+| Tera/Giga bits per second | Tbps/Gbps    | Measures of the speed of data transmission on the PHY                      |
++---------------------------+--------------+----------------------------------------------------------------------------+
+| Beachfront                |              | The length of die edge required by a PHY implementation                    |
++---------------------------+--------------+----------------------------------------------------------------------------+
+| Clock                     |              | A signal that regulates the speed of data transmission                     |
++---------------------------+--------------+----------------------------------------------------------------------------+
+| Bump                      |              | Solder balls grown on a die to allow connection to off-die wires           |
++---------------------------+--------------+----------------------------------------------------------------------------+
+| Channel                   |              | A term for the physical connection between a transmitter and a receiver    |
++---------------------------+--------------+----------------------------------------------------------------------------+
+| Test                      |              | The process of verifying functional correctness of a circuit               |
++---------------------------+--------------+----------------------------------------------------------------------------+
+| Initialization            |              | The process of preparing an interface for data transmission                |
++---------------------------+--------------+----------------------------------------------------------------------------+
 ~
 #Language {-}
 
@@ -131,7 +131,7 @@ Contributions to this Specification are made under the terms and conditions set
 forth in the modified Open Web Foundation Contributor License Agreement (“OWF CLA 1.0”) 
 (“Contribution License”) by:
 
-ANALOG PORT, BLUE CHEETAH, D-MATRIX, IBM, KEYSIGHT, TESSOLVE, VENTANA MICRO
+ANALOG PORT, BLUE CHEETAH ANALOG DESIGN, D-MATRIX, IBM, KEYSIGHT, TESSOLVE, VENTANA MICRO
 
 You can review the signed copies of the applicable Contributor License(s) for this Specification
 on the OCP website at http://www.opencompute.org/products/specsanddesign

@@ -208,6 +208,19 @@ it can take advantage of the much-increased wire density.
 
 # Revision Table
 
++----------+---------+---------+---------------------------------+
+|Date      |Revision |Author   |Description                      |
++----------+---------+---------+---------------------------------+
+| 05/24/22 |1.0      |Elad Alon|Feedback from community          |
++----------+---------+---------+---------------------------------+
+| 03/15/22 |0.9      |Elad Alon|Channel simulations and models   |
++----------+---------+---------+---------------------------------+
+| 12/01/21 |0.8      |Ken Poulton|Figures following convention   |
++----------+---------+---------+---------------------------------+
+| 07/13/21 |0.7      |Ken Poulton|Control model                  |
++----------+---------+---------+---------------------------------+
+| 03/30/21 |0.5      |Ken Poulton|Final (current) definition of the basic BoW interface|          |
++----------+---------+---------+---------------------------------+
 
 # Scope
 The scope of this document has several levels.

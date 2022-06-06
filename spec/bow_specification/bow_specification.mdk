@@ -1666,4 +1666,26 @@ BoW with an PIPE adapter may be interfaced to a PCIe controller.
 
 #Appendix A - Requirements for IC Approval (to be completed Contributor(s) of this Spec){-}
 
+List all the requirements in one summary table with links from the sections.
+
++-------------------------------------------------------+-----------------------+---------------------------------+
+|Requirements                                           |Details                |Link to which section in the Spec|
++-------------------------------------------------------+-----------------------+---------------------------------+
+|Contribution License Agreement                         |OWF CLA 1.0 (modified) |Please refer to Section 1        |
++-------------------------------------------------------+-----------------------+---------------------------------+
+| Are All Contributors listed in Sec 1: License?        | Yes                   |                                 |
++-------------------------------------------------------+-----------------------+---------------------------------+
+|Did All the Contributors sign the appropriate          | Yes                   |                                 |
+|license for this spec? Final Spec Agreement/HW         |                       |                                 |
+|License?                                               |                       |                                 |
++-------------------------------------------------------+-----------------------+---------------------------------+
+|Which 3 of the 4 OCP Tenets are supported by this Spec?| All four              |                                 |
++-------------------------------------------------------+-----------------------+---------------------------------+
+|Is there a Supplier(s) that is building a product      |                       |                                 |
+|based on this Spec? (Supplier must be an OCP Solution Provider)|               |                                 |
++-------------------------------------------------------+-----------------------+---------------------------------+
+|Will Supplier(s) have the product                      |Seeking exception to have extended|                      |
+|available for                                          |period for silicon availability.|                        |
+|GENERAL AVAILABILITY within 120 days?                  |Test chips expected in 2H’2022 by multiple vendors.|     |
++-------------------------------------------------------+-----------------------+---------------------------------+
 #Appendix B {-}

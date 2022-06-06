@@ -27,11 +27,19 @@ Bunch of Wires PHY Specification
 ~ center {font-size: x-large ; page-break-after: always }
 The Open Domain-Specific Architecture BoW Workstream
 
-DRAFT 0.99  
-20 May 2022
+Release Candidate  
+WG Approved - 20 May 2022
 
 ~
-
+Authors:  
+Elad Alon: Blue Cheetah Analog  
+Ken Poulton: Keysight  
+Boris Murmann: d-Matrix  
+Satya Venkata Rao: AnalogPort  
+Greg Favor: Ventana Micro  
+Carrie Cox: IBM  
+Mike Bartley: Tessolve
+ 
 
 <XX The below escaped blank lines are in lieu of a working page break >
 \
@@ -60,144 +68,129 @@ DRAFT 0.99
 \
 
 
-
-
-[TITLE]
-
-~ center 
-DRAFT
-~
-
-
-This document is a draft and not an approved specification. It is to be released under 
-the following OCP copyright release when completed and approved.
-
-~center
-COPYRIGHT LICENSE AGREEMENT
-~
-
-This Agreement (“Agreement”) is entered into on the date set forth below, 
-(the “Effective Date”) by and between the Open Compute Project Foundation a 
-Delaware corporation (“OCP”) and the entity identified below (“Licensor”).
-
-WHEREAS, Licensor is the owner of and/or has certain rights in or to the 
-works of authorship identified in the attached Exhibits (collectively, the “Work”).
-
-WHEREAS, OCP desires to copy, distribute, make derivative works of and publish 
-the Work and derivate works thereof, including without limitation in one or more 
-OCP publications and/or on OCP’s website, and Licensor will benefit from OCP’s 
-use of the Work as described in this Agreement.
-
-NOW THEREFORE, in consideration of the promises in this Agreement, the parties 
-agree as follows:
-
-1.     Structure of the Agreement. There may be multiple Exhibits to this Agreement. 
-Each Exhibit will be signed by an authorized representative and will be governed by 
-and subject to the terms set forth in this Agreement, with the licenses applicable 
-to the Work described therein effective as of the date the Exhibit is signed.
-
-2.     License. Licensor hereby grants to OCP a non-exclusive, transferable (in 
-accordance with Section 7 below), royalty free, fully-paid, perpetual, irrevocable, 
-worldwide license, under Licensor’s copyrights in the Work, with the right to sublicense, 
-to use, reproduce, create derivative works, distribute, and publicly display and 
-perform the Work and derivative works thereof, in whole or in part, as a separate 
-work or as part of a collective work. The foregoing will apply to all mediums now 
-known or hereafter existing.
-
-3.     Ownership of the Work / Other Rights Reserved. Except for the foregoing 
-license, as between OCP and Licensor, Licensor retains all right, title and interest 
-in and to the Work and all intellectual property rights therein. Licensor hereby 
-reserves all rights not expressly granted in this Agreement. No additional licenses 
-or rights whatsoever (including without limitation any patent licenses) are granted 
-by implication, exhaustion, estoppel or otherwise.
-
-4.     Representations and Indemnification. Licensor represents to OCP that: (i) Licensor 
-is the sole and exclusive owner of the Work and all copyrights therein or Licensor has 
-the right and authority to grant the licenses set forth in this Agreement and (ii) OCP’s 
-exercise of the licenses set forth in this Agreement will not result in any infringement 
-of any third party’s copyrights or the misappropriation of any third party’s trade secrets. 
-Licensor agrees to indemnify and hold OCP harmless from and against any losses, damages, 
-liabilities, settlement amount, costs and expenses (including reasonable attorneys’ fees) 
-incurred by OCP in connection with any breach of the foregoing representations. This 
-Section will survive the termination of this Agreement.
-
-5.     Term and Termination. This Agreement will commence on the Effective Date and will 
-terminate upon the written agreement of the parties or by written notice by OCP.
-
-6.     Governing Law and Forum. This Agreement shall be solely and exclusively governed, 
-construed and enforced in accordance with the laws of the Texas, USA, without reference 
-to conflict of laws principles. Any suit, action or proceeding arising from or relating 
-to this Agreement must be brought, solely and exclusively, in courts located in Travis 
-County, Texas and each party irrevocably consents to the jurisdiction and venue of any 
-such court.
-
-7.     Assignment. OCP may assign this Agreement (a) with the consent of Licensor, not 
-to be unreasonably withheld or delayed, or (b) upon notice, but without such consent, in 
-connection with a merger, acquisition, change of control, or sale of substantially all 
-the assets of OCP. This Agreement shall be binding upon and inure to the benefit of the 
-parties and their successors and permitted assigns.
-
-8.     Mutual Limits on Liability. Except as set forth below, in no event shall either 
-party be liable to the other party in any manner, under any theory of liability, whether 
-in contract, tort (including negligence), or other theory, for any indirect, consequential, 
-incidental, exemplary, punitive, statutory or special damages, including lost profits, 
-regardless of whether such party was advised of or was aware of the possibility of such 
-damages. Except as set forth below, in no event shall the total, cumulative liability 
-of either party regarding any and all claims and causes of action, under any theory of 
-liability, whether in contract, tort (including negligence), or otherwise, exceed One 
-Thousand Dollars ($1,000). The limitations set forth in this Section will not apply to 
-liability arising under Section 4 (Representations and Indemnification) above. This 
-Section will survive termination of this Agreement.
-
-9.     Entire Agreement. This Agreement constitutes the entire agreement between the 
-parties with respect to its subject matter and it supersedes all prior or contemporaneous 
-oral or written agreements and representations concerning the subject matter herein. This 
-Agreement may be amended only in a written document signed by both parties. This Agreement 
-shall not be interpreted or construed against the party preparing it.
-10.  Counterparts and Facsimile Signatures. This Agreement may be executed in counterparts 
-all of which taken together shall constitute one single agreement between the parties. A 
-facsimile transmission of the executed signature page of this Agreement shall constitute 
-due and proper execution of this Agreement by the applicable party.
-{ page-break-after: always }
-
 [TOC] 
 
 \
 \
 
+#Glossary of Terms {-}
 
-[TITLE]
+This section provides glossary used in this specification.
 
-# Introduction 
+~ TableFigure {#tab-glossary; caption: "Glossary of Terms"; }
++---------------------------------+--------------+------------------------------------------------------+
+| Term                            | Abbreviation | Definition                                           |
++---------------------------------+--------------+------------------------------------------------------+
+| Bunch of Wires                  | BoW          | The name for the PHYprotocol defined in this document|
++---------------------------------+--------------+------------------------------------------------------+
+| Die-to-die                      | D2D          | Generic term used to refer to on-package interconnect|
++---------------------------------+--------------+------------------------------------------------------+
+| BoW Mode                        |   N/A        | A specific defined mode of operation for a BoW interface|
++---------------------------------+--------------+------------------------------------------------------+
+| picojoules per bit              | pJ/bit       | Energy required to transport a bit of data over a D2D interface|
++---------------------------------+----------------------------------------------+----------------------+
+| PHY                             |              | The protocol encoding bits on wire                   |
++---------------------------------+----------------------------------------------+----------------------+
+| Core Logic                      |              | The digital logic transmitting data to/from the PHY  |
++---------------------------------+----------------------------------------------+----------------------+
+| Control Logic                   |              | Logic used to manage the operation of the PHY        |
++---------------------------------+----------------------------------------------+----------------------+
+| Tera/Giga bits per second       | Tbps/Gbps    | Measures of the speed of data transmission on the PHY|
++---------------------------------+----------------------------------------------+----------------------+
+| Beachfront                      |              | The length of die edge required by the D2D PHY       |
++---------------------------------+----------------------------------------------+----------------------+
+| Clock                           |              | The signal that regulates the speed of data transmission|
++---------------------------------+----------------------------------------------+----------------------+
+| Bump                            |              | Solder balls on die to terminate off-die wires                      |
++---------------------------------+----------------------------------------------+----------------------+
+| Channel                         |              | A term for the package material conducting signals                      |
++---------------------------------+----------------------------------------------+----------------------+
+| Test                            |              | The process of verifying functional correctness of a circuit                     |
++---------------------------------+----------------------------------------------+----------------------+
+| Initialization                  |              | The process of preparing an interface for data transmission                     |
++---------------------------------+----------------------------------------------+----------------------+
+~
+#Language {-}
+
+This document uses the following terms as defined below.
+
+* "Shall" or "must" indicates a requirement.
+Failure to meet the requirement results in non-conformance
+* "Should" indicates a recommendation, but not a requirement.
+Failure to implement the recommendation does not result in non-conformance.
+* "May" indicates an implementation option.
+* The lack of one of the above verbs indicates the material is informative.
+* "Reference" indicates a reference design that is provided as example for explanation, 
+but is not a requirement.
+
+
+#License Agreement
+##Open Web Foundation (OWF) CLA
+
+Contributions to this Specification are made under the terms and conditions set 
+forth in the modified Open Web Foundation Contributor License Agreement (“OWF CLA 1.0”) 
+(“Contribution License”) by:
+
+ANALOG PORT, BLUE CHEETAH, D-MATRIX, IBM, KEYSIGHT, TESSOLVE, VENTANA MICRO
+
+You can review the signed copies of the applicable Contributor License(s) for this Specification
+on the OCP website at http://www.opencompute.org/products/specsanddesign
+
+Usage of this Specification is governed by the terms and conditions set forth in the modified Open Web
+Foundation Final Specification Agreement (“OWFa 1.0”) (“Specification License”).
+
+Notes:
+
+1) The above license does not apply to the Appendix or Appendices. The information in the
+Appendix or Appendices is for reference only and non-normative in nature.
+
+NOTWITHSTANDING THE FOREGOING LICENSES, THIS SPECIFICATION IS PROVIDED BY OCP "AS IS" 
+AND OCP EXPRESSLY DISCLAIMS ANY WARRANTIES (EXPRESS, IMPLIED, OR OTHERWISE), INCLUDING 
+IMPLIED WARRANTIES OF MERCHANTABILITY, NON-INFRINGEMENT, FITNESS FOR A PARTICULAR PURPOSE, 
+OR TITLE, RELATED TO THE SPECIFICATION. NOTICE IS HEREBY GIVEN, THAT OTHER RIGHTS NOT 
+GRANTED AS SET FORTH ABOVE, INCLUDING WITHOUT LIMITATION, RIGHTS OF THIRD PARTIES WHO 
+DID NOT EXECUTE THE ABOVE LICENSES, MAY BE IMPLICATED BY THE IMPLEMENTATION OF OR 
+COMPLIANCE WITH THIS SPECIFICATION. OCP IS NOT RESPONSIBLE FOR IDENTIFYING RIGHTS 
+FOR WHICH A LICENSE MAY BE REQUIRED IN ORDER TO IMPLEMENT THIS SPECIFICATION. THE 
+ENTIRE RISK AS TO IMPLEMENTING OR OTHERWISE USING THE SPECIFICATION IS ASSUMED BY YOU. 
+IN NO EVENT WILL OCP BE LIABLE TO YOU FOR ANY MONETARY DAMAGES WITH RESPECT TO ANY 
+CLAIMS RELATED TO, OR ARISING OUT OF YOUR USE OF THIS SPECIFICATION, INCLUDING BUT 
+NOT LIMITED TO ANY LIABILITY FOR LOST PROFITS OR ANY CONSEQUENTIAL, INCIDENTAL, 
+INDIRECT, SPECIAL OR PUNITIVE DAMAGES OF ANY CHARACTER FROM ANY CAUSES OF ACTION 
+OF ANY KIND WITH RESPECT TO THIS SPECIFICATION, WHETHER BASED ON BREACH OF CONTRACT, 
+TORT (INCLUDING NEGLIGENCE), OR OTHERWISE, AND EVEN IF OCP HAS BEEN ADVISED OF THE 
+POSSIBILITY OF SUCH DAMAGE.
+
+
+# OCP Tenets Compliance 
 The Bunch of Wires (BoW) is a simple, open and interoperable 
 physical interface between two chiplets or chip-scale-packages (CSP) 
 in a common package. This document specifies the BoW interface PHY layer.
-
-
-## Objectives
 The BoW interface is a set of die-to-die parallel 
 interfaces that provides the flexibility to trade off throughput/chipedge for 
-design complexity, cost, and packaging technology. 
-
+design complexity, cost, and packaging technology.
 The use of BoW is expected to be confined to connect die
 placed close to one another within the same package. 
 In this environment, signal attenuation is small and the interface can be simple.
+The definition of the BoW interface aims to meet the following OCP tenets as 
+follows:
 
-The definition of the BoW interface aims to meet the following design 
-objectives:
-
-* Inexpensive to implement 
-* Portable across IC process nodes ranging from 65 nm to 5 nm and beyond
-* Flexible to support both laminate and advancing packaging technologies
-* Portable across multiple bump pitches
+## Openness
 * Unencumbered by technology license costs
+
+##Efficiency
+* Inexpensive to implement 
 * Very low power (< 0.5 - 1 pJ/bit) as defined by TX IO Pad, wire and RX IO Pad.
 * Very low latency (<5 ns without FEC, <15 ns with FEC from logic interface to logic interface)
 * High throughput density (100-1000+ Gbps/mm-chip-edge)
 * Backwards compatible (across at least two major specification versions)
 
-## Advantages
+##Scale
+* Flexible to support both laminate and advancing packaging technologies
+* Portable across multiple bump pitches
+* Portable across IC process nodes ranging from 65 nm to 5 nm and beyond
 
+##Impact
 The Bunch of Wires interface provides several key advantages for chiplet-based systems:
 
 * Can operate at higher data rates per pin than existing parallel standards 
@@ -213,7 +206,23 @@ However the lower data rates allow use of single-ended signaling and denser wire
 In addition, in laminates, BoW can take advantage of multiple wiring layers and in advanced packaging
 it can take advantage of the much-increased wire density.
 
-## Scope
+# Revision Table
+
++----------+---------+---------+---------------------------------+
+|Date      |Revision |Author   |Description                      |
++----------+---------+---------+---------------------------------+
+| 05/24/22 |1.0      |Elad Alon|Feedback from community          |
++----------+---------+---------+---------------------------------+
+| 03/15/22 |0.9      |Elad Alon|Channel simulations and models   |
++----------+---------+---------+---------------------------------+
+| 12/01/21 |0.8      |Ken Poulton|Figures following convention   |
++----------+---------+---------+---------------------------------+
+| 07/13/21 |0.7      |Ken Poulton|Control model                  |
++----------+---------+---------+---------------------------------+
+| 03/30/21 |0.5      |Ken Poulton|Final (current) definition of the basic BoW interface|          |
++----------+---------+---------+---------------------------------+
+
+# Scope
 The scope of this document has several levels.
 
 1. The specification of the BoW interface includes these requirements:
@@ -247,22 +256,17 @@ of this specification:
   a. Simultaneous bidirectional data (full duplex on each wire)
   a. Security
 
-## Language
-* "Shall" or "must" indicates a requirement.
-Failure to meet the requirement results in non-conformance
-* "Should" indicates a recommendation, but not a requirement.
-Failure to implement the recommendation does not result in non-conformance.
-* "May" indicates an implementation option.
-* The lack of one of the above verbs indicates the material is informative.
-* "Reference" indicates a reference design that is provided as example for explanation, 
-but is not a requirement.
 
 <XX
 Note to spec writers: 
 Avoid using more than one of the above specification verbs in a single sentence to avoid confusion. 
 XX>
 
-## Conformance Summary
+# BoW Overview
+This section provides an overview of the BoW physical 
+interface (PHY) and its use in a multi-chiplet design.
+
+## Key Features and Conformance
 
 The specifications must be met over process variation, supply voltage range and 
 temperature range (PVT). 
@@ -322,9 +326,6 @@ Do we also need a discussion of interoperability?
 ~
 XX>
 
-# BoW Overview
-This section provides an overview of the BoW physical 
-interface (PHY) and its use in a multi-chiplet design.
 
 ## BoW Slice
 BoW is an energy-efficient, easy-to-use PHY
@@ -1662,3 +1663,29 @@ BoW with an PIPE adapter may be interfaced to a PCIe controller.
 ![bowspec_figcomponentspcie]
 ~
 [bowspec_figcomponentspcie]: images/fig-bow_pcie.png {width:auto; max-width: 100%}
+
+#Appendix A - Requirements for IC Approval (to be completed Contributor(s) of this Spec){-}
+
+List all the requirements in one summary table with links from the sections.
+
++-------------------------------------------------------+-----------------------+---------------------------------+
+|Requirements                                           |Details                |Link to which section in the Spec|
++-------------------------------------------------------+-----------------------+---------------------------------+
+|Contribution License Agreement                         |OWF CLA 1.0 (modified) |Please refer to Section 1        |
++-------------------------------------------------------+-----------------------+---------------------------------+
+| Are All Contributors listed in Sec 1: License?        | Yes                   |                                 |
++-------------------------------------------------------+-----------------------+---------------------------------+
+|Did All the Contributors sign the appropriate          | Yes                   |                                 |
+|license for this spec? Final Spec Agreement/HW         |                       |                                 |
+|License?                                               |                       |                                 |
++-------------------------------------------------------+-----------------------+---------------------------------+
+|Which 3 of the 4 OCP Tenets are supported by this Spec?| All four              |                                 |
++-------------------------------------------------------+-----------------------+---------------------------------+
+|Is there a Supplier(s) that is building a product      |                       |                                 |
+|based on this Spec? (Supplier must be an OCP Solution Provider)|               |                                 |
++-------------------------------------------------------+-----------------------+---------------------------------+
+|Will Supplier(s) have the product                      |Seeking exception to have extended|                      |
+|available for                                          |period for silicon availability.|                        |
+|GENERAL AVAILABILITY within 120 days?                  |Test chips expected in 2H’2022 by multiple vendors.|     |
++-------------------------------------------------------+-----------------------+---------------------------------+
+#Appendix B {-}

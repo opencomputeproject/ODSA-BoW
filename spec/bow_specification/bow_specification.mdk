@@ -261,12 +261,6 @@ Table [#tab-conformance] summarize the conformance points that shall be met in o
 with the BoW specification. Each of the 
 conformance points is discussed in the specification.
 
-<XX Done
-~ Framed {color: blue}
-Todo: Need to fill in this table - Shahab
-~
->
-
 ~ TableFigure {#tab-conformance; caption: "BoW Conformance Summary"; }
 +---------------------------------------+----------------------------------------------+----------------------+
 | Description                           | Section                                      | Detail               |
@@ -369,7 +363,7 @@ There is more detail on BoW Modes in section [#sec-bow-modes-and-reach].
 ~
 
 
-~ Figure {#fig-bowspec_tradeoff2; caption: "BoW Data Rate vs. Reach tradeoff"}
+~ Figure {#fig-bowspec_tradeoff2; caption: "BoW Data Rate vs. Reach tradeoff **TO BE UPDATED**"}
 ![bowspec_figtradeoff2]
 [bowspec_figtradeoff2]: images/Bow-tradeoff2.png {width:auto; max-width:70% }
 ~
@@ -413,7 +407,7 @@ each slice may have both TX and RX capability which is configured at runtime.
 A bidirectional link is composed of some number of slices configured for RX and some for TX.
 
 FEC (Forward Error Correction) is an optional signal that allows using FEC to 
-improve the bit error rate (BER). 
+improve the bit error rate (BER), or may be used for redundancy for defect repair. 
 By using an additional wire when FEC is enabled, the payload data rate is not affected
 and the wire data rate is unaffected.
 This allows F(PCLK) = F(TxClk) / 2^n^ with FEC off or on, 
@@ -506,16 +500,21 @@ The signals in Table [#tab-mac_ctrl_interface] shall constitute the control port
 of the logic interface of the PHY.
 
 ~ TableFigure {#tab-mac_ctrl_interface; caption: "Logic Interface Control Signals"; width:100%;  }
-|-----------+--------+----------+----------+------------------------------------|
-| Signal    | # Bits | TX Slice | RX Slice | Description                        |
-+-----------+--------+----------+----------+------------------------------------+
-| PHYResetB | 1      | In       | In       | Resets the BoW slice.              |
-|           |        |          |          | 0 causes a reset                   |
-+-----------+--------+----------+----------+------------------------------------+
-| PHYReady  | 1      | Out      | Out      | Indicates that the PHY is ready to |
-|           |        |          |          | transmit/receive mission mode data.|
-|           |        |          |          | 1 indicates ready                  |
-+-----------+--------+----------+----------+------------------------------------+
+|-----------+--------+----------+----------+--------------------------------------------|
+| Signal    | # Bits | TX Slice | RX Slice | Description                                |
++-----------+--------+----------+----------+--------------------------------------------+
+| PHYResetB | 1      | In       | In       | Resets the BoW slice.                      |
+|           |        |          |          | 0 causes a reset                           |
++-----------+--------+----------+----------+--------------------------------------------+
+| PHYReady  | 1      | Out      | Out      | Indicates that the PHY is ready to         |
+|           |        |          |          | transmit/receive mission mode data.        |
+|           |        |          |          | 1 indicates ready                          |
++-----------+--------+----------+----------+--------------------------------------------+
+| PHYIdle   | 1 or 0 | In       | N/A      | Active high indicates to the TX slice that |
+|           |        |          |          | it should enter the clock gated            |
+|           |        |          |          | state on the next parallel word            |
+|           |        |          |          | aligned clock edge                         |
++-----------+--------+----------+----------+--------------------------------------------+
 ~
 
 #### PHYResetB TX and RX
@@ -523,8 +522,7 @@ The PHYResetB pin shall be asserted by the link controller to initialize the PHY
 While the PHYResetB signal is asserted, the PHY shall stay in its reset state.
 When the PHYResetB signal is de-asserted, the PHY shall perform
 any necessary self-alignment. 
-The reset 
-states are otherwise implementation-dependent and shall be documented in the 
+The reset states are otherwise implementation-dependent and shall be documented in the 
 datasheet of a particular implementation. 
 
 #### PHYReady TX
@@ -540,6 +538,10 @@ PHYReady pin. How an RX PHY slice determines completion of the self-alignment is
 implementation-dependent. For instance, it may be determined by observing the 
 settling of the DLL or by a simple timer. PHYReady asserted indicates
 that any data received will be captured correctly.
+
+#### PHYIdle TX
+
+Further description of this optional signal and its functionality are provided in Section **TO BE UPDATED**.
 
 ### Programming
 
@@ -594,15 +596,19 @@ The minimum wire length in these technologies may be less than 1 mm.
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
 | **BoW Mode** | **Wire Bit Rate** | **TxClk** | **Reach** | **Reach** | **Reach** | **Reach** |
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
-|              | (Gbps/wire)            | (GHz)     | (mm)      | (mm)      | (mm)      | (mm)      |
+|              | (Gbps/wire)       | (GHz)     | (mm)      | (mm)      | (mm)      | (mm)      |
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
 | BoW-32       | 2                 | 1         | 10        | 20        | 25+       | 4         |
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
 | BoW-64       | 4                 | 2         | NA        | 10        | 25+       | 2         |
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
-| BoW-128      | 8                 | 4         | NA        | 5         | 25+       | 1         |
+| BoW-128      | 8                 | 4         | NA        | 5         | 25+       | 2         |
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
-| BoW-256      | 16                | 8         | NA        | NA        | 25+       | NA        |
+| BoW-256      | 16                | 8         | NA        | NA        | 25+       | 2         |
++--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
+| BoW-384      | 24                | 12        | NA        | NA        | 25+       | 2         |
++--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
+| BoW-512      | 32                | 16        | NA        | NA        | 25+       | 2         |
 +--------------+-------------------+-----------+-----------+-----------+-----------+-----------+
 
 ~

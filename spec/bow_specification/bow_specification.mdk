@@ -1116,18 +1116,24 @@ BoW interface, no indvidual wire within the interface would have an error-rate e
 ### Transmitter Maximum Rise-Time
 
 The maximum 20% - 80% rise-time at the output of BoW TX shall 
-not exceed **23% of a UI**.  For example, for a BoW-128 Transmitter, the 
-20% - 80% rise-time shall not exceed 31.25 ps.  This rise-time shall be simulated 
+not exceed **23% of a UI**.  For example, for a BoW-128 transmitter, the 
+20% - 80% rise-time shall not exceed 28.75 ps.  This rise-time shall be simulated 
 with the TX (including all of its parasitics) driving an ideal load of 50 &Omega; (Z~chan~).     
+
+### Transmitter Differential Clock Timing Mismatch
+
+The maximum timing mismatch between CLK+ and CLK- outputs at the TX shall not exceed **2.5% of a UI**.  For example, for a BoW-128 TX, 
+the timing mismatch shall not exceed 3.125 ps.
 
 ### Transmitter Correlated Jitter Filtering {#tx-jit-filt}
 
 For timing-error specifications provided in the following sections that are impacted by transmitter
-jitter, this jitter must be evaluated for CLK edges that are up to **3 UI** earlier than 
+jitter, this jitter must be evaluated for CLK edges that are up to **N~ck-d~ UI** earlier than 
 the CLK edge that launched the data bit being captured at the receiver.  This is due to the fact 
 that even though jitter on the data edges may be correlated with the CLK jitter, 
 the slicer in the RX side is likely to use a different CLK edge due to delays in the 
-RX-side clock alignment circuit (usually a DLL and clock distribution).
+RX-side clock alignment circuit (usually a DLL and clock distribution).  See Section [#rx_clk_data_delay] for the 
+receiver's requirements.  For **BoW-256 mode and lower rates, N~ck-d~ = 3 UI**.  For **BoW-384 mode and higher rates, N~ck-d~ = 6 UI**. 
 
 In order to properly account for the jitter filtering/peaking that will occur due to the 
 difference in delay between the data launching edge at the TX and the data capturing edge at the RX, 
@@ -1149,8 +1155,7 @@ those jitter sources shall not be filtered by H~tx_jit~(j&omega;).  Since the to
 after filtering by this transfer function might not be monotonic with t~clk-d~, 
 and since receiver implementations 
 may realize varying values of t~clk-d~, a transmitter must meet all related specifications 
-for **t~clk-d~ = T~bit~**, for **t~clk-d~ = 2T~bit~**, for **t~clk-d~ = 3T~bit~**, 
-**and** for **t~clk-d~ = 4T~bit~**
+for **t~clk-d~ = N~d~*T~bit~, with N~d~ taking all integer values between 1 and N~ck-d~+1**. 
 
 ### Transmitter Deterministic Timing Error {#tx-det-timing}
 
@@ -1189,6 +1194,11 @@ differential input by less than 4mV.
 
 Note that common-mode variations on the CLK+/CLK- lines of ~10-15% of the signal swing may be expected 
 on typical in BoW channels. 
+
+### Receiver Clock versus Data Path Delay {#rx_clk_data_delay}
+
+In order to be compatible with the TX jitter requirements provided in Section [#tx-jit-filt], a BoW receiver must 
+capture data using clock edges that were launched by the TX no more than **3UI** earlier than the data being captured.  
 
 ### Receiver Sensitivity and Timing Margin {#rx-eye}
 

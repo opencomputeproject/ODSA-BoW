@@ -688,8 +688,8 @@ The slice positions are designated A, B, C, etc, starting with the slice closest
 half-stacks placed along the chip edge. A half-link may not contain more than two half-stacks at which point the use of regular-width slices is recommended
 A half-link may be configured with equal numbers of RX and TX slices, or it may be asymmetric or one-way.
 
-### Minimal 8-bit Link
-The minimal bidirectional reference 8-bit link is shown in Figure [#fig-min_half-link] .
+### Minimal Half-Link
+The minimal bidirectional reference half-link is shown in Figure [#fig-min_half-link] .
 
 ~ Figure { #fig-min_half-link; caption: "BoW Minimal Bidirectional Reference Half-Link" }
 ![bowspec1.1_figure_min_half_link2]
@@ -699,7 +699,7 @@ The minimal bidirectional reference 8-bit link is shown in Figure [#fig-min_half
 In this example, each chiplet has one TX half-slice and one RX half-slice, 
 arranged in two half-slice stacks on each chiplet. This is a dead-bug view.
 
-### 8-bit Link to Regular Link Interoperability
+### Half-Link to Regular Link Interoperability
 A half-link shall be compatible with a regular-width link by fanning out the signal wires D0-D7, 
 the differential clock pins and optionally AUX and FEC, see Figure [#fig-half_to_full_link] . 
 Each half-slice shall be connected to a unique regular-width slice on the other chiplet. 
@@ -755,6 +755,7 @@ AUX, D0, D1, D2, D3, D4, D5, D6, D7, CLK+, CLK-, D8, D9, D10, D11, D12, D13, D14
 * The signals for an RX slice are in the reversed order (ascending goes counter-clockwise)
 * The same clockwise/counter-clockwise ordering is used on all four sides of a chiplet
 * The AUX and FEC signals may be omitted
+* For a half-slice D8, D9, D10, D11, D12, D13, D14, D15 shall be omitted
 
 
 ## Bump Arrangements

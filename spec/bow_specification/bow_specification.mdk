@@ -1331,11 +1331,14 @@ of whether the BoW RX selects to operate with or without termination.
 
 ### Slice-to-Clice CLK Skew
 
-The slice to slice clock skew t~skew~ across the width of a BoW link (along the chip edge) 
-should be less than 150 ps/stack. 
+The slice to slice clock skew t~skew~ across the width of a BoW transmit link (along the chip edge) 
+**must** be less than 150 ps/stack. 
 (E.g., for a 4-stack interface, the skew from end to end must be less than 600 ps.)
 This skew includes only analog delays and specifically does not include any 
 clock-related timing skew due to flip-flops/latches or varying reset states.  
+
+**The slice to slice clock skew within a stack (orthogonal to the chip edge) for slices that are 
+used within the same link must be less than 50ps/slice.**  
 
 This skew is expected to be dominated by the TxClk distribution network.
 

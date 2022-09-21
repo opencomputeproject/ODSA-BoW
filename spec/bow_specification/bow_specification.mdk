@@ -906,7 +906,8 @@ voltage (e.g., 375 mV with a 0.75 V I/O voltage).
 The selection of termination voltage is expected to be static (hardwired) in the RX, and must
 be specified in the receiver's datasheet. 
 It is expected that Source-Series-Terminated (SST) Transmitters will be largely agnostic to the choice 
-of termination voltage on the receiver.
+of termination voltage on the receiver.  Note that BoW receivers which support the optional data idle
+state described in Section [#data_idle] must terminate to 0V, and must not terminate to the I/O voltage or mid-rail.  
 
 Regardless of the value selected for the I/O supply voltage, BoW transmitters and receivers must meet the 
 DC termination resistance requirements defined in Table [#tab-impedance].
@@ -921,22 +922,22 @@ values. For example, a BoW TX must achieve between 36 &Omega; and 50 &Omega; res
 a load resistance (modeling the RX termination) of 50-69 &Omega; with any of the three termination options.     
 
 ~ TableFigure {#tab-impedance; caption: "TX and RX Termination Resistance Requirements vs. Mode"; width:90%;  }
-|--------------|---------------------|-----------------------------|-----------------------------|
-|              |Unterminated         |Source-Terminated            | Doubly Terminated           |
-|              |                     |                             |                             |
-+:------------:+:-------------------:+:---------------------------:+:----------------------------+
-| TX DC Term.  | As required to meet | **36 &Omega; - 50 &Omega;** | **36 &Omega; - 50 &Omega;** |
-|              | TX rise-time        | (0.72 - 1.0 Z~chan~)        | (0.72 - 1.0 Z~chan~)        |
-|              |                     |                             |                             |
-+--------------+---------------------+-----------------------------+-----------------------------+
-| RX DC Term.  | -                   |-                            | **50 &Omega; - 69 &Omega;** |
-|              |                     |                             | (1.0 - 1.38 Z~chan~)        |
-|              |                     |                             |                             |
-+--------------+---------------------+-----------------------------+-----------------------------+
-| Within-Slice | -                   | **&sigma; = 1.333%**        | **&sigma; = 0.667%**        |
-| DC Term.     |                     | (8% over 6 &sigma;)         | (4% over 6 &sigma;)         |
-| Matching     |                     |                             |                             |
-|--------------|---------------------|-----------------------------|-----------------------------|
+|--------------|--------------------------------|-----------------------------|-----------------------------|-----------------------------|
+|              |Unterminated                    |Source-Terminated            | Doubly Terminated           |Doubly Terminated            |
+|              |                                |(BoW-256 or lower)           | (BoW-256 or lower)          |(BoW-384 or higher)          |
++:------------:+:------------------------------:+:---------------------------:+:---------------------------:+:----------------------------+
+| TX DC Term.  | As required to meet TX risetime| **36 &Omega; - 50 &Omega;** | **36 &Omega; - 50 &Omega;** | **36 &Omega; - 43 &Omega;** |
+|              |                                | (0.72 - 1.0 Z~chan~)        | (0.72 - 1.0 Z~chan~)        | (0.72 - 0.86 Z~chan~)       |
+|              |                                |                             |                             |                             |
++--------------+--------------------------------+-----------------------------+-----------------------------+-----------------------------|
+| RX DC Term.  | -                              |-                            | **50 &Omega; - 69 &Omega;** | **59 &Omega; - 69 &Omega;** |
+|              |                                |                             | (1.0 - 1.38 Z~chan~)        | (1.18 - 1.38 Z~chan~)       |
+|              |                                |                             |                             |                             |
++--------------+--------------------------------+-----------------------------+-----------------------------+-----------------------------|
+| Within-Slice | -                              | **&sigma; = 1.333%**        | **&sigma; = 0.667%**        |                             |
+| DC Term.     |                                | (8% over 6 &sigma;)         | (4% over 6 &sigma;)         |                             |
+| Matching     |                                |                             |                             |                             |
+|--------------|--------------------------------|-----------------------------|-----------------------------|-----------------------------|
 ~  
 
 Especially in doubly terminated modes, within-slice variations of termination resistance would directly result in varying swing levels at each pin.
@@ -945,7 +946,6 @@ requirements on DC termination resistance matching across all I/O's within a giv
 must be interpreted as capturing within-slice manufacturing variability across worst-case voltage/temperature operating conditions, and is expected to 
 be primarily influenced by some combination of transistor and explicit resistor matching (with the mix depending on the circuit implementation).   
 
-       
 
 ## PHY protection {#phy_prot}
 
@@ -1251,8 +1251,9 @@ on typical in BoW channels.
 
 ### Receiver Clock versus Data Path Delay {#rx_clk_data_delay}
 
-In order to be compatible with the TX jitter requirements provided in Section [#tx-jit-filt], a BoW receiver must 
-capture data using clock edges that were launched by the TX no more than **3UI** earlier than the data being captured.  
+In order to be compatible with the TX jitter requirements provided in Section [#tx-jit-filt], for BoW-256 and low rate modes, a BoW receiver must 
+capture data using clock edges that were launched by the TX no more than **3UI** earlier than the data being captured.  For BoW-384 or BoW-512 
+receivers, data must be captured using clock edges that were launched by the TX no more than **6UI** earlier than the data being captured. 
 
 ### Receiver Sensitivity and Timing Margin {#rx-eye}
 
@@ -1337,8 +1338,8 @@ The slice to slice clock skew t~skew~ across the width of a BoW transmit link (a
 This skew includes only analog delays and specifically does not include any 
 clock-related timing skew due to flip-flops/latches or varying reset states.  
 
-**The slice to slice clock skew within a stack (orthogonal to the chip edge) for slices that are 
-used within the same link must be less than 50ps/slice.**  
+The slice to slice clock skew within a stack (orthogonal to the chip edge) for slices that are 
+used within the same link must be less than **50ps/slice**.  
 
 This skew is expected to be dominated by the TxClk distribution network.
 
@@ -1346,15 +1347,21 @@ This skew is expected to be dominated by the TxClk distribution network.
 
 BoW PHYs may optionally implement the features/states described in this section in order to reduce average power consumption.
 
-## Data Idle State
+## Data Idle State {#data_idle}
 
 The data idle state is defined by having the link layer set the value of all parallel data lines (including the optional AUX and FEC signals) 
 fed into the PHY to logical 0 (0V at the output of the TX).  In doubly terminated modes, a BoW PHY supporting this feature must connect 
-the receiver's termination to 0V (ground).     
+the receiver's termination to 0V (ground).  I.e., the selection of termination voltage is more restricted than as described in Section [#elec-specs].
 
-## Clock Gated State  
 
-TO BE UPDATED
+For the remainder of this section, a UI where all of the data lines are at logic 0 (0V) will be referred to as an "IDLE".  Note that real data with 
+values of all 0's can still be transmitted/received by BoW PHY's supporting this feature.  
+
+## Clock Gated State {#clock_gated} 
+
+~Framed {color: blue}
+To be updated
+~
 
 # Chip-to-Chip Channel Specifications
 
@@ -1478,9 +1485,16 @@ What is the origin of the Xtalk Limit equation?  Is there a paper reference?
 ~
 XX>
 
+# Redundancy
+
+# Sideband Slices
 
 
 # Reset and Initialization
+
+~ framed {color:blue}
+TO BE UPDATED; sideband slices must function immediately out of reset, mainband slices use the remainder of the text below
+~
 
 ## External Facilities
 

@@ -1301,7 +1301,7 @@ and timing requirements are termination- and rate-dependent, as outlined in Tabl
 +:-----------------:+:----------------:+:----------------:+:----------------------:+:----------------:+:----------------------:+
 | **V~err,det,RX~** | **40 mV**        | **40 mV**        |**100 mV**              | **65 mV**        | **150 mV**             |
 +-------------------+------------------+------------------+------------------------+------------------+------------------------+
-| **V~err,tot,RX~** | **75 mV**        |**75 mV**         |**150 mV**              | **100 mV**       | **200 mV**             |
+| **V~err,tot,RX~** | **75 mV**        |**75 mV**         |**150 mV**              | **100 mV**0       | **200 mV**             |
 +-------------------+------------------+------------------+------------------------+------------------+------------------------+
 | **t~err,det,RX~** | **32% T~bit~**   | **32% T~bit~**   |**32% T~bit~**          | **28% T~bit~**   | **28% T~bit~**         |
 +-------------------+------------------+------------------+------------------------+------------------+------------------------+
@@ -1363,12 +1363,28 @@ While in the clock gated state, a BoW PHY TX ceases toggling the forwarded diffe
 the PHY upon entry and exit from the clock gated state, a preamble and a postamble are appended to the payload data; these and further detailed 
 requirements for entry, exit, and occupancy in this state are defined in the subsections below.     
 
-### PHY_Idle Timing
+### Signal Levels During Clock Gated State
+
+During the clock gated state, a BoW PHY TX must drive differential low on the CLK+/CLK- signals.  Similarly, while the PHY is in the clock gated state,
+the data signals must be IDLE (i.e., set to the data idle state).   
+
+### Minimum Preamble, Postamble, and Payload Durations
+
+In order to avoid the need to adjust the time alignment of parallel data words at the input/output of the PHYs due to entry/exit from the 
+clock gated states, all durations of preamble, postamble, and payload must be set such that they are an integer number of the largest (between TX
+and RX) number of UI contained within a parallel input/output.  For example, if a BoW TX with 4:1 serialization is communicating with a BoW RX
+using 8:1 deserialization, the preamble, postamble, and payload must all have durations of N*8 UI, where N is an integer greater than 1. 
+
+### PHY_Idle Timing   
 
 ~ Figure { #fig-phy_idle; caption: "PHY_Idle timing for entry/exit from clock gated state" }
 ![phy_idle]
 ~
-[phy_idle]: images/phy_idle_timing.png {width:auto; max-width:60% }
+[phy_idle]: images/phy_idle_timing.png {width:auto; max-width:90% }
+
+### Maximum Duration of Occupancy Within Clock Gated State
+
+
 
 # Chip-to-Chip Channel Specifications
 

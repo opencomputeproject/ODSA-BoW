@@ -934,8 +934,8 @@ a load resistance (modeling the RX termination) of 50-69 &Omega; with any of the
 |              |                                |                             | (1.0 - 1.38 Z~chan~)        | (1.18 - 1.38 Z~chan~)       |
 |              |                                |                             |                             |                             |
 +--------------+--------------------------------+-----------------------------+-----------------------------+-----------------------------|
-| Within-Slice | -                              | **&sigma; = 1.333%**        | **&sigma; = 0.667%**        |                             |
-| DC Term.     |                                | (8% over 6 &sigma;)         | (4% over 6 &sigma;)         |                             |
+| Within-Slice | -                              | **&sigma; = 1.333%**        | **&sigma; = 0.667%**        | **&sigma; = 0.667%**        |
+| DC Term.     |                                | (8% over 6 &sigma;)         | (4% over 6 &sigma;)         | (4% over 6 &sigma;)         |
 | Matching     |                                |                             |                             |                             |
 |--------------|--------------------------------|-----------------------------|-----------------------------|-----------------------------|
 ~  
@@ -1359,9 +1359,16 @@ values of all 0's can still be transmitted/received by BoW PHY's supporting this
 
 ## Clock Gated State {#clock_gated} 
 
-~Framed {color: blue}
-To be updated
+While in the clock gated state, a BoW PHY TX ceases toggling the forwarded differential clocks CLK+/CLK-.  In order to ensure proper operation of 
+the PHY upon entry and exit from the clock gated state, a preamble and a postamble are appended to the payload data; these and further detailed 
+requirements for entry, exit, and occupancy in this state are defined in the subsections below.     
+
+### PHY_Idle Timing
+
+~ Figure { #fig-phy_idle; caption: "PHY_Idle timing for entry/exit from clock gated state" }
+![phy_idle]
 ~
+[phy_idle]: images/phy_idle_timing.png {width:auto; max-width:60% }
 
 # Chip-to-Chip Channel Specifications
 

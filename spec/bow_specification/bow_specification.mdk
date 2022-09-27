@@ -383,12 +383,10 @@ is implementation-dependent. Typically, PCLK will be the TxClk frequency divided
 power of 2, so 250, 500 and 1000 MHz are common rates. The data at the logic 
 interface is SDR (bit rate equal to PCLK frequency).
 
-
 ~ Figure {#fig-bow-logicin; caption: "BoW slice logic interface"}
 ![bowspec_figslicelogicint]
 ~
-[bowspec_figslicelogicint]: images/fig-bowphylogicint.png {width:auto; max-width: 90%}
-
+[bowspec_figslicelogicint]: images/fig-bowphylogicint.png {width:auto; max-width: 100%}
 
 # Signal Definitions
 
@@ -1371,20 +1369,41 @@ the data signals must be IDLE (i.e., set to the data idle state).
 ### Minimum Preamble, Postamble, and Payload Durations
 
 In order to avoid the need to adjust the time alignment of parallel data words at the input/output of the PHYs due to entry/exit from the 
-clock gated states, all durations of preamble, postamble, and payload must be set such that they are an integer number of the largest (between TX
+clock gated states, all durations of preamble, postamble, and payload must be set such that they are an integer multiple of the largest (between TX
 and RX) number of UI contained within a parallel input/output.  For example, if a BoW TX with 4:1 serialization is communicating with a BoW RX
-using 8:1 deserialization, the preamble, postamble, and payload must all have durations of N*8 UI, where N is an integer greater than 1. 
+using 8:1 deserialization, the preamble, postamble, and payload must all have durations of N~par~*8 UI, where N is an integer greater than 1. 
 
-### PHY_Idle Timing   
+Since arbitrary serializion/deserialization ratios could result in very large minimum UI durations (due to the need to find the lowest common 
+multiple), PHYs that support the clock gating mode must use only powers of 2 for the "Mux Ratio M" from Table [#tab-clock-ratios].      
 
-~ Figure { #fig-phy_idle; caption: "PHY_Idle timing for entry/exit from clock gated state" }
+BoW PHYs must publish as part of their datasheet the preamble, postamble, and payload lengths they support.  It is strongly 
+recommended that BoW inerfaces support a configurable set of preamble, postamble, and payload length - particularly 4, 8, 16, and 32 UI.   
+
+### PHY_Idle Timing and Parallel Data During Preamble / Postamble  
+
+As shown in Fig. [#fig-phy_idle], the PHY_Idle signal must be asserted (set to logic high) one TX parallel clock cycle earlier than the forwarded clocks 
+enter the gated state.  Similarly, the PHY_Idle signal must be deasserted (set to logic low) one TX parallel clock cycle earlier than the 
+forwarded clock restarts.   
+
+~ Figure { #fig-phy_idle; caption: "PHY_Idle timingfor entry/exit from clock gated state with M~ser~ = 4 and N~par~=1" }
 ![phy_idle]
 ~
 [phy_idle]: images/phy_idle_timing.png {width:auto; max-width:90% }
 
+The data driven into the PHY must be IDLE for all TX parallel clock cycles contained within the preamble, the postamble, or the clock 
+gated states.  Note that as shown in Fig. [#fig-phy_idle_extended], if the pre or postamble lengths extend beyond a single TX parallel clock
+cycle, the pre/postamble duration must be extended by the link layer by padding the payload with additional IDLE data. 
+
+~ Figure { #fig-phy_idle_extended; caption: "PHY_Idle timing with M~ser,TX~ = 4 and postamble N~par~=2" }
+![phy_idle_extended]
+~
+[phy_idle_extended]: images/phy_idle_extended_postamble.png {width:auto; max-width:90% }
+
 ### Maximum Duration of Occupancy Within Clock Gated State
 
-
+To mitigate potential issues with drifts in various control loops that depend on the clocks actively toggling 
+(e.g.,  the receiver's DLL), BoW interfaces must not leave the forwarded clock gated for more than 1024 UI or 128 largest (between TX and RX) 
+parallel words, whichever is smaller.  
 
 # Chip-to-Chip Channel Specifications
 
@@ -1394,7 +1413,7 @@ required error rate of 1e-15 in conjunction with reference transmitters and rece
 requirements provided in Section [#elec-specs] and Section [#clk-data-specs]. 
 
 To assist with evaluating conformance of a given channel, open-source software evaluating signal integrity and the overall 
-link budgets with the reference transmitters and receivers will be provided at a future date.
+link budgets with the reference transmitters and receivers will be provided at a future date.   
 
 ## Channel-Induced CLK Edge to D Transition Skew at RX {#chan-skew}
 

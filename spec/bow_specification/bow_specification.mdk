@@ -346,20 +346,20 @@ A BoW Mode defines the speed of clock and data of the PHY on the die-to-die wire
 In all modes, the data must be clocked DDR: 
 the chip-to-chip data wire bit rate is double the clock wire frequency.
 All BoW interfaces faster than BoW-64 should also be able to support BoW-64.
-Supporting rates other than the defined four modes is an implementation choice.
+Supporting rates other than the defined modes is an implementation choice.
 There is more detail on BoW Modes in section [#sec-bow-modes-and-reach].
 ~ TableFigure {#tab-levels; caption: "BoW Modes"; }
-+----------+-----------------+---------------+-------+
-|BoW Mode  | Slice Data Rate | Wire Bit Rate | TxClk |
-|          | Gbps            | Gbps/wire     | GHz   |
-+:--------:+:---------------:+:-------------:+:-----:+
-| BoW-32   | 32              | 2             | 1     |
-| BoW-64   | 64              | 4             | 2     |
-| BoW-128  | 128             | 8             | 4     |
-| BoW-256  | 256             | 16            | 8     |
++---------+-----------------+---------------+-------+
+|BoW Mode | Slice Data Rate | Wire Bit Rate | TxClk |
+|         | Gbps            | Gbps/wire     | GHz   |
++:-------:+:---------------:+:-------------:+:-----:+
+| BoW-32  | 32              | 2             | 1     |
+| BoW-64  | 64              | 4             | 2     |
+| BoW-128 | 128             | 8             | 4     |
+| BoW-256 | 256             | 16            | 8     |
 | BoW-384 | 384             | 24            | 12    |
 | BoW-512 | 512             | 32            | 16    |
-+----------+-----------------+---------------+-------+
++---------+-----------------+---------------+-------+
 ~
 
 
@@ -383,12 +383,10 @@ is implementation-dependent. Typically, PCLK will be the TxClk frequency divided
 power of 2, so 250, 500 and 1000 MHz are common rates. The data at the logic 
 interface is SDR (bit rate equal to PCLK frequency).
 
-
 ~ Figure {#fig-bow-logicin; caption: "BoW slice logic interface"}
 ![bowspec_figslicelogicint]
 ~
-[bowspec_figslicelogicint]: images/fig-bowphylogicint.png {width:auto; max-width: 90%}
-
+[bowspec_figslicelogicint]: images/fig-bowphylogicint.png {width:auto; max-width: 100%}
 
 # Signal Definitions
 
@@ -495,6 +493,10 @@ A BoW interface must provide the following control and status signals:
 
 * PHY Ready
 * PHY Reset
+
+A BoW interface may optionally provide the following additional control and status signals:
+
+* PHY Idle
 
 The signals in Table [#tab-mac_ctrl_interface] shall constitute the control portion
 of the logic interface of the PHY.
@@ -669,7 +671,7 @@ This is a dead-bug view.
 
 ## BoW Half-Link Components
 For low-bandwidth or constrained die-edge applications a half-link or 8-bit link 
-consisting of 8 data wires per half-slide is defined as shown in Figure [#fig-half-components].
+consisting of 8 data wires per half-slice is defined as shown in Figure [#fig-half-components].
 
 ~ Figure { #fig-half-components; caption: "BoW Half-Link Components" }
 ![bowspec_figure_half-components]
@@ -707,7 +709,7 @@ Connecting two half-slices on one chiplet to a regular slice on another chiplet 
 
 To accommodate this compatibility, the intended configuration (8-bit or 16-bit slices) shall be programmed into the PHY at startup via APB. 
 Unused transmit pins should be open-circuited to save power, 
-and unused receive pins should be disabled or make use of a weak pulldown (as discussed in Section XX).
+and unused receive pins should be disabled or make use of a weak pulldown (as discussed in Section [#phy_prot]).
 
 ~ Figure { #fig-half_to_full_link; caption: "Reference Example of Half-Link to Regular Link Compatibility" }
 ![bowspec1.1_figure_half_to_full_link3]
@@ -902,7 +904,8 @@ voltage (e.g., 375 mV with a 0.75 V I/O voltage).
 The selection of termination voltage is expected to be static (hardwired) in the RX, and must
 be specified in the receiver's datasheet. 
 It is expected that Source-Series-Terminated (SST) Transmitters will be largely agnostic to the choice 
-of termination voltage on the receiver.
+of termination voltage on the receiver.  Note that BoW receivers which support the optional data idle
+state described in Section [#data_idle] must terminate to 0V, and must not terminate to the I/O voltage or mid-rail.  
 
 Regardless of the value selected for the I/O supply voltage, BoW transmitters and receivers must meet the 
 DC termination resistance requirements defined in Table [#tab-impedance].
@@ -917,22 +920,22 @@ values. For example, a BoW TX must achieve between 36 &Omega; and 50 &Omega; res
 a load resistance (modeling the RX termination) of 50-69 &Omega; with any of the three termination options.     
 
 ~ TableFigure {#tab-impedance; caption: "TX and RX Termination Resistance Requirements vs. Mode"; width:90%;  }
-|--------------|---------------------|-----------------------------|-----------------------------|
-|              |Unterminated         |Source-Terminated            | Doubly Terminated           |
-|              |                     |                             |                             |
-+:------------:+:-------------------:+:---------------------------:+:----------------------------+
-| TX DC Term.  | As required to meet | **36 &Omega; - 50 &Omega;** | **36 &Omega; - 50 &Omega;** |
-|              | TX rise-time        | (0.72 - 1.0 Z~chan~)        | (0.72 - 1.0 Z~chan~)        |
-|              |                     |                             |                             |
-+--------------+---------------------+-----------------------------+-----------------------------+
-| RX DC Term.  | -                   |-                            | **50 &Omega; - 69 &Omega;** |
-|              |                     |                             | (1.0 - 1.38 Z~chan~)        |
-|              |                     |                             |                             |
-+--------------+---------------------+-----------------------------+-----------------------------+
-| Within-Slice | -                   | **&sigma; = 1.333%**        | **&sigma; = 0.667%**        |
-| DC Term.     |                     | (8% over 6 &sigma;)         | (4% over 6 &sigma;)         |
-| Matching     |                     |                             |                             |
-|--------------|---------------------|-----------------------------|-----------------------------|
+|--------------|--------------------------------|-----------------------------|-----------------------------|-----------------------------|
+|              |Unterminated                    |Source-Terminated            | Doubly Terminated           |Doubly Terminated            |
+|              |                                |(BoW-256 or lower)           | (BoW-256 or lower)          |(BoW-384 or higher)          |
++:------------:+:------------------------------:+:---------------------------:+:---------------------------:+:----------------------------+
+| TX DC Term.  | As required to meet TX risetime| **36 &Omega; - 50 &Omega;** | **36 &Omega; - 50 &Omega;** | **36 &Omega; - 43 &Omega;** |
+|              |                                | (0.72 - 1.0 Z~chan~)        | (0.72 - 1.0 Z~chan~)        | (0.72 - 0.86 Z~chan~)       |
+|              |                                |                             |                             |                             |
++--------------+--------------------------------+-----------------------------+-----------------------------+-----------------------------|
+| RX DC Term.  | -                              |-                            | **50 &Omega; - 69 &Omega;** | **59 &Omega; - 69 &Omega;** |
+|              |                                |                             | (1.0 - 1.38 Z~chan~)        | (1.18 - 1.38 Z~chan~)       |
+|              |                                |                             |                             |                             |
++--------------+--------------------------------+-----------------------------+-----------------------------+-----------------------------|
+| Within-Slice | -                              | **&sigma; = 1.333%**        | **&sigma; = 0.667%**        | **&sigma; = 0.667%**        |
+| DC Term.     |                                | (8% over 6 &sigma;)         | (4% over 6 &sigma;)         | (4% over 6 &sigma;)         |
+| Matching     |                                |                             |                             |                             |
+|--------------|--------------------------------|-----------------------------|-----------------------------|-----------------------------|
 ~  
 
 Especially in doubly terminated modes, within-slice variations of termination resistance would directly result in varying swing levels at each pin.
@@ -941,9 +944,8 @@ requirements on DC termination resistance matching across all I/O's within a giv
 must be interpreted as capturing within-slice manufacturing variability across worst-case voltage/temperature operating conditions, and is expected to 
 be primarily influenced by some combination of transistor and explicit resistor matching (with the mix depending on the circuit implementation).   
 
-       
 
-## PHY protection
+## PHY protection {#phy_prot}
 
 A BoW PHY should not draw excessive current nor be damaged under the following conditions:
 
@@ -1247,8 +1249,9 @@ on typical in BoW channels.
 
 ### Receiver Clock versus Data Path Delay {#rx_clk_data_delay}
 
-In order to be compatible with the TX jitter requirements provided in Section [#tx-jit-filt], a BoW receiver must 
-capture data using clock edges that were launched by the TX no more than **3UI** earlier than the data being captured.  
+In order to be compatible with the TX jitter requirements provided in Section [#tx-jit-filt], for BoW-256 and low rate modes, a BoW receiver must 
+capture data using clock edges that were launched by the TX no more than **3UI** earlier than the data being captured.  For BoW-384 or BoW-512 
+receivers, data must be captured using clock edges that were launched by the TX no more than **6UI** earlier than the data being captured. 
 
 ### Receiver Sensitivity and Timing Margin {#rx-eye}
 
@@ -1296,7 +1299,7 @@ and timing requirements are termination- and rate-dependent, as outlined in Tabl
 +:-----------------:+:----------------:+:----------------:+:----------------------:+:----------------:+:----------------------:+
 | **V~err,det,RX~** | **40 mV**        | **40 mV**        |**100 mV**              | **65 mV**        | **150 mV**             |
 +-------------------+------------------+------------------+------------------------+------------------+------------------------+
-| **V~err,tot,RX~** | **75 mV**        |**75 mV**         |**150 mV**              | **100 mV**       | **200 mV**             |
+| **V~err,tot,RX~** | **75 mV**        |**75 mV**         |**150 mV**              | **100 mV**0       | **200 mV**             |
 +-------------------+------------------+------------------+------------------------+------------------+------------------------+
 | **t~err,det,RX~** | **32% T~bit~**   | **32% T~bit~**   |**32% T~bit~**          | **28% T~bit~**   | **28% T~bit~**         |
 +-------------------+------------------+------------------+------------------------+------------------+------------------------+
@@ -1327,14 +1330,80 @@ of whether the BoW RX selects to operate with or without termination.
 
 ### Slice-to-Clice CLK Skew
 
-The slice to slice clock skew t~skew~ across the width of a BoW link (along the chip edge) 
-should be less than 150 ps/stack. 
+The slice to slice clock skew t~skew~ across the width of a BoW transmit link (along the chip edge) 
+**must** be less than 150 ps/stack. 
 (E.g., for a 4-stack interface, the skew from end to end must be less than 600 ps.)
 This skew includes only analog delays and specifically does not include any 
 clock-related timing skew due to flip-flops/latches or varying reset states.  
 
+The slice to slice clock skew within a stack (orthogonal to the chip edge) for slices that are 
+used within the same link must be less than **50ps/slice**.  
+
 This skew is expected to be dominated by the TxClk distribution network.
 
+# Power Management {#power-management} 
+
+BoW PHYs may optionally implement the features/states described in this section in order to reduce average power consumption.
+
+## Data Idle State {#data_idle}
+
+The data idle state is defined by having the link layer set the value of all parallel data lines (including the optional AUX and FEC signals) 
+fed into the PHY to logical 0 (0V at the output of the TX).  In doubly terminated modes, a BoW PHY supporting this feature must connect 
+the receiver's termination to 0V (ground).  I.e., the selection of termination voltage is more restricted than as described in Section [#elec-specs].
+
+
+For the remainder of this section, a UI where all of the data lines are at logic 0 (0V) will be referred to as an "IDLE".  Note that real data with 
+values of all 0's can still be transmitted/received by BoW PHY's supporting this feature.  
+
+## Clock Gated State {#clock_gated} 
+
+While in the clock gated state, a BoW PHY TX ceases toggling the forwarded differential clocks CLK+/CLK-.  In order to ensure proper operation of 
+the PHY upon entry and exit from the clock gated state, a preamble and a postamble are appended to the payload data; these and further detailed 
+requirements for entry, exit, and occupancy in this state are defined in the subsections below.     
+
+### Signal Levels During Clock Gated State
+
+During the clock gated state, a BoW PHY TX must drive differential low on the CLK+/CLK- signals.  Similarly, while the PHY is in the clock gated state,
+the data signals must be IDLE (i.e., set to the data idle state).   
+
+### Minimum Preamble, Postamble, and Payload Durations
+
+In order to avoid the need to adjust the time alignment of parallel data words at the input/output of the PHYs due to entry/exit from the 
+clock gated states, all durations of preamble, postamble, and payload must be set such that they are an integer multiple of the largest (between TX
+and RX) number of UI contained within a parallel input/output.  For example, if a BoW TX with 4:1 serialization is communicating with a BoW RX
+using 8:1 deserialization, the preamble, postamble, and payload must all have durations of N~par~*8 UI, where N is an integer greater than 1. 
+
+Since arbitrary serializion/deserialization ratios could result in very large minimum UI durations (due to the need to find the lowest common 
+multiple), PHYs that support the clock gating mode must use only powers of 2 for the "Mux Ratio M" from Table [#tab-clock-ratios].      
+
+BoW PHYs must publish as part of their datasheet the preamble, postamble, and payload lengths they support.  It is strongly 
+recommended that BoW inerfaces support a configurable set of preamble, postamble, and payload length - particularly 4, 8, 16, and 32 UI.   
+
+### PHY_Idle Timing and Parallel Data During Preamble / Postamble  
+
+As shown in Fig. [#fig-phy_idle], the PHY_Idle signal must be asserted (set to logic high) one TX parallel clock cycle earlier than the forwarded clocks 
+enter the gated state.  Similarly, the PHY_Idle signal must be deasserted (set to logic low) one TX parallel clock cycle earlier than the 
+forwarded clock restarts.   
+
+~ Figure { #fig-phy_idle; caption: "PHY_Idle timingfor entry/exit from clock gated state with M~ser~ = 4 and N~par~=1" }
+![phy_idle]
+~
+[phy_idle]: images/phy_idle_timing.png {width:auto; max-width:90% }
+
+The data driven into the PHY must be IDLE for all TX parallel clock cycles contained within the preamble, the postamble, or the clock 
+gated states.  Note that as shown in Fig. [#fig-phy_idle_extended], if the pre or postamble lengths extend beyond a single TX parallel clock
+cycle, the pre/postamble duration must be extended by the link layer by padding the payload with additional IDLE data. 
+
+~ Figure { #fig-phy_idle_extended; caption: "PHY_Idle timing with M~ser,TX~ = 4 and postamble N~par~=2" }
+![phy_idle_extended]
+~
+[phy_idle_extended]: images/phy_idle_extended_postamble.png {width:auto; max-width:90% }
+
+### Maximum Duration of Occupancy Within Clock Gated State
+
+To mitigate potential issues with drifts in various control loops that depend on the clocks actively toggling 
+(e.g.,  the receiver's DLL), BoW interfaces must not leave the forwarded clock gated for more than 1024 UI or 128 largest (between TX and RX) 
+parallel words, whichever is smaller.  
 
 # Chip-to-Chip Channel Specifications
 
@@ -1344,7 +1413,7 @@ required error rate of 1e-15 in conjunction with reference transmitters and rece
 requirements provided in Section [#elec-specs] and Section [#clk-data-specs]. 
 
 To assist with evaluating conformance of a given channel, open-source software evaluating signal integrity and the overall 
-link budgets with the reference transmitters and receivers will be provided at a future date.
+link budgets with the reference transmitters and receivers will be provided at a future date.   
 
 ## Channel-Induced CLK Edge to D Transition Skew at RX {#chan-skew}
 
@@ -1458,9 +1527,16 @@ What is the origin of the Xtalk Limit equation?  Is there a paper reference?
 ~
 XX>
 
+# Redundancy
+
+# Sideband Slices
 
 
 # Reset and Initialization
+
+~ framed {color:blue}
+TO BE UPDATED; sideband slices must function immediately out of reset, mainband slices use the remainder of the text below
+~
 
 ## External Facilities
 

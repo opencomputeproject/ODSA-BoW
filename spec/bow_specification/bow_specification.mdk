@@ -27,8 +27,8 @@ Bunch of Wires (BoW) PHY Specification
 ~ center {font-size: x-large ; page-break-after: always }
 The Open Domain-Specific Architecture BoW Workstream
 
-DRAFT Version 1.1  
-July 26th, 2022
+DRAFT Version 1.1b  
+September 30th, 2022
 
 ~
 
@@ -199,11 +199,14 @@ it can take advantage of the much-increased wire density.
 
 # Revision Table
 
-+----------+---------+---------+--------------------------------+
-|Date      |Revision |Author   |Description                     |
-+----------+---------+---------+--------------------------------+
-| 07/26/22 |1.1      |Elad Alon|Initial updates from 1.0 to 1.1 |
-+----------+---------+---------+--------------------------------+
++----------+-----------+--------------+--------------------------------------+
+|Date      |Revision   |Author        |Description                           |
++----------+-----------+--------------+--------------------------------------+
+| 07/26/22 |Draft 1.1a |Elad Alon     |Initial updates from 1.0 to 1.1       |
++----------+-----------+--------------+--------------------------------------+
+| 09/30/22 |Draft 1.1b |Marek Hempel, |Half-slice and power management added |
+|          |           |Elad Alon     |                                      |
++----------+-----------+--------------+--------------------------------------+
 
 
 # Scope
@@ -230,8 +233,7 @@ The scope of this document has several levels.
 
 1. The following activities are outside the scope of this document:
   a. Specific implementations of the interface
-  a. Integration of the interface with system-level data flow e.g. interface to a 
-   PHY-layer abstraction such as PIPE/PCIe interface to the BoW
+  a. Integration of the interface with system-level data flow
   a. The use of this interface outside of a package or entirely inside a chip
   a. Definition of protocols for logical data transfer
 
@@ -261,7 +263,7 @@ Table [#tab-conformance] summarize the conformance points that shall be met in o
 with the BoW specification. Each of the 
 conformance points is discussed in the specification.
 
-~ TableFigure {#tab-conformance; caption: "BoW Conformance Summary"; }
+~ TableFigure {#tab-conformance; caption: "BoW Conformance Summary **TO BE UPDATED**"; }
 +---------------------------------------+----------------------------------------------+----------------------+
 | Description                           | Section                                      | Detail               |
 +---------------------------------------+----------------------------------------------+----------------------+
@@ -979,13 +981,13 @@ it is recommended that BoW PHY implementations retain as low of a capacitance as
 and improve signal integrity.    
 
 ~ TableFigure {#tab-cap; caption: "Maximum Parasitic Capacitance at a BoW I/O vs. Mode"; width:100%;  }
-|------------------------|------------|------------|------------|
-|                        |BoW--32     |BoW-128     | BoW-256    |
-|                        |or BoW-64   |            |            |
-+:----------------------:+:----------:+:----------:+:-----------+
-| Maximum Equivalent     | **800 fF** | **400 fF** | **200 fF** |
-| Capacitance (TX or RX) |            |            |            |
-|------------------------|------------|------------|------------|
+|------------------------|------------------|------------|------------|--------------------|-------------------|
+|                        |BoW--32 or BoW-64 |BoW-128     | BoW-256    | BoW-384 or BoW-512 |BoW-384 or BoW-512 |
+|                        |                  |            |            | Source Term.       | Doubly Term.      |
++:----------------------:+:----------------:+:----------:+:----------:+:------------------:+:-----------------:+
+| Maximum Equivalent     | **800 fF**       | **400 fF** | **200 fF** | ** 200 fF**        |** 125 fF**        |
+| Capacitance (TX or RX) |                  |            |            |                    |                   |
+|------------------------|------------------|------------|------------|--------------------|-------------------|
 ~  
 
 
@@ -1000,12 +1002,12 @@ in the figure must be met with all combinations of data inputs (logical 1 and lo
 termination voltage selections (ground terminated, supply terminated, or mid-rail terminated), 
 and termination resistance values.     
 
-~ Figure { #fig-S11-tx; caption: "BoW TX Termination Maximum Return Loss" }
+~ Figure { #fig-S11-tx; caption: "BoW TX Termination Maximum Return Loss (TO BE UPDATED)" }
 ![S11-tx]
 ~
 [S11-tx]: images/s11_bow_tx.png {width:auto; max-width:60% }
 
-~ Figure { #fig-S11; caption: "BoW RX Termination Maximum Return Loss" }
+~ Figure { #fig-S11; caption: "BoW RX Termination Maximum Return Loss (TO BE UPDATED)" }
 ![S11]
 ~
 [S11]: images/s11_max.png {width:auto; max-width:60% }
@@ -1089,6 +1091,12 @@ For implementations in process nodes at 16 nm and below, supporting 1000 MHz is 
 |BoW-256 | 16    | 500  | 32   | 32x18 |
 |        |       | 1000 | 16   | 16x18 |
 |        |       | 2000 | 8    | 8x18  |
++--------+-------+------+------+-------+
+|BoW-384 | 24    | 750  | 32   | 32x18 |
+|        |       | 1500 | 16   | 16x18 |
++--------+-------+------+------+-------+
+|BoW-512 | 32    | 1000 | 32   | 32x18 |
+|        |       | 2000 | 16   | 16x18 |
 +--------+-------+------+------+-------+
 ~
 
@@ -1289,9 +1297,9 @@ t~err,tot,RX~ = t~err,det,RX~ + 15.9 &sigma;~t~~err,random,RX~
 ~
 
 Since swing and signal integrity are expected to vary with termination as well as data-rate, the RX voltage
-and timing requirements are termination- and rate-dependent, as outlined in Table [#tab-eye].
+and timing requirements are termination- and rate-dependent, as outlined in Table [#tab-eye] and Table [#tab-eye-high]
 
-~ TableFigure { #tab-eye; caption: "Receiver Voltage and Timing Requirements for BoW"; width: 93%}
+~ TableFigure { #tab-eye; caption: "Receiver Voltage and Timing Requirements for BoW-256 and Below"; width: 93%}
 |-------------------|------------------|------------------|------------------------|------------------|------------------------|
 |                   |BoW-256           |BoW-128           |BoW-128                 |BoW-64 or BoW-32  | BoW-64 or BoW-32       |
 |                   |------------------|------------------|------------------------|------------------|------------------------|
@@ -1299,7 +1307,7 @@ and timing requirements are termination- and rate-dependent, as outlined in Tabl
 +:-----------------:+:----------------:+:----------------:+:----------------------:+:----------------:+:----------------------:+
 | **V~err,det,RX~** | **40 mV**        | **40 mV**        |**100 mV**              | **65 mV**        | **150 mV**             |
 +-------------------+------------------+------------------+------------------------+------------------+------------------------+
-| **V~err,tot,RX~** | **75 mV**        |**75 mV**         |**150 mV**              | **100 mV**0       | **200 mV**             |
+| **V~err,tot,RX~** | **75 mV**        |**75 mV**         |**150 mV**              | **100 mV**       | **200 mV**             |
 +-------------------+------------------+------------------+------------------------+------------------+------------------------+
 | **t~err,det,RX~** | **32% T~bit~**   | **32% T~bit~**   |**32% T~bit~**          | **28% T~bit~**   | **28% T~bit~**         |
 +-------------------+------------------+------------------+------------------------+------------------+------------------------+
@@ -1307,14 +1315,21 @@ and timing requirements are termination- and rate-dependent, as outlined in Tabl
 |-------------------|------------------|------------------|------------------------|------------------|------------------------|
 ~
 
-<XX COMMENT
-Since these signals do not leave the package, these values must be verified with simulation.
-
-If the slice implementation allows programmatic control of the DLL alignment values, 
-varying those values after locking the DLL may provide timing margin information.
-If the slice implementation allows programmatic control of the receiver voltage 
-thresholds, varying those values may provide vertical margin information.
-XX>
+~ TableFigure { #tab-eye-high; caption: "Receiver Voltage and Timing Requirements for BoW-384 and Above"; width: 93%}
+|-------------------|-------------------|
+|                   |BoW-512 or BoW-384 |
+|                   |-------------------|
+|                   |Any Termination    |
++:-----------------:+:-----------------:+
+| **V~err,det,RX~** | **40 mV**         |
++-------------------+-------------------+
+| **V~err,tot,RX~** | **75 mV**         |
++-------------------+-------------------+
+| **t~err,det,RX~** | **25% T~bit~**    |
++-------------------+-------------------+
+| **t~err,tot,RX~** | **33.5% T~bit~**  |
+|-------------------|-------------------|
+~
 
 ### Voltage Overshoot
 
@@ -1366,6 +1381,10 @@ requirements for entry, exit, and occupancy in this state are defined in the sub
 During the clock gated state, a BoW PHY TX must drive differential low on the CLK+/CLK- signals.  Similarly, while the PHY is in the clock gated state,
 the data signals must be IDLE (i.e., set to the data idle state).   
 
+Note that the use of static clock gated and data idle levels might result in aging of the TX/RX circuits within the PHY.  PHY 
+implementations may hence need to budget for the impact of this aging and/or include mechanisms to compensate for the errors introduced
+by such aging.
+
 ### Minimum Preamble, Postamble, and Payload Durations
 
 In order to avoid the need to adjust the time alignment of parallel data words at the input/output of the PHYs due to entry/exit from the 
@@ -1373,7 +1392,7 @@ clock gated states, all durations of preamble, postamble, and payload must be se
 and RX) number of UI contained within a parallel input/output.  For example, if a BoW TX with 4:1 serialization is communicating with a BoW RX
 using 8:1 deserialization, the preamble, postamble, and payload must all have durations of N~par~*8 UI, where N is an integer greater than 1. 
 
-Since arbitrary serializion/deserialization ratios could result in very large minimum UI durations (due to the need to find the lowest common 
+Since arbitrary serialization/deserialization ratios could result in very large minimum UI durations (due to the need to find the lowest common 
 multiple), PHYs that support the clock gating mode must use only powers of 2 for the "Mux Ratio M" from Table [#tab-clock-ratios].      
 
 BoW PHYs must publish as part of their datasheet the preamble, postamble, and payload lengths they support.  It is strongly 
@@ -1401,9 +1420,9 @@ cycle, the pre/postamble duration must be extended by the link layer by padding 
 
 ### Maximum Duration of Occupancy Within Clock Gated State
 
-To mitigate potential issues with drifts in various control loops that depend on the clocks actively toggling 
+To mitigate potential issues with drifts in various circuitry and/or control loops that depend on the clocks actively toggling 
 (e.g.,  the receiver's DLL), BoW interfaces must not leave the forwarded clock gated for more than 1024 UI or 128 largest (between TX and RX) 
-parallel words, whichever is smaller.  
+parallel words, whichever is smaller.
 
 # Chip-to-Chip Channel Specifications
 

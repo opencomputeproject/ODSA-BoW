@@ -395,16 +395,19 @@ interface is SDR (bit rate equal to PCLK frequency).
 This section specifies the control data signals into and out of device logic and package
 for BoW RX and TX slices. 
 
+## Directionality
+
+* Each BoW PHY **slice** is unidirectional when in operation
+* A BoW **link** may be unidirectional (each chiplet's side contains only Tx or only Rx slices) or
+bidirectional (each side contains both Rx and Tx slices)
+* A BoW PHY slice is said to be bidirectional if it can be configured to operate in Tx or in Rx
+* This spec does not include full-duplex operation (simultaneous Tx and Rx over the same wires)
+
 ## Die-to-die Signals (Wires)
 
 As shown in Figure [#fig-bow_overview2],
 each BoW slice consists of a differential clock pair, 
 16 single-ended data wires, and an optional pair of wires FEC and AUX.
-
-Each BoW slice is unidirectional when in operation.
-A chiplet may be designed with RX-only and TX-only slices, or
-each slice may have both TX and RX capability which is configured at runtime. 
-A bidirectional link is composed of some number of slices configured for RX and some for TX.
 
 FEC (Forward Error Correction) is an optional signal that allows using FEC to 
 improve the bit error rate (BER), or may be used for redundancy for defect repair. 
@@ -873,8 +876,9 @@ must be observed.
 An alternate approach with more flexibility is to design every slice to operate as either 
 RX or TX, to be configured after assembly or upon powerup. 
 This allows complete flexibility in link configuration and interoperability and 
-also provides an opportunity for wafer-level loopback testing. 
-In this case, number the slices as if they are all TX slices.
+also provides an opportunity for wafer-level loopback testing before package assembly 
+(known good die). 
+In this case, number the slices and wires as if they are all TX slices.
 
 In BoW-256 at 16 Gbps/wire, the link in Figure [#fig-alt_slices] provides a total of 2.0 Tb/s 
 in each direction.
@@ -951,17 +955,38 @@ be primarily influenced by some combination of transistor and explicit resistor 
 
 A BoW PHY should not draw excessive current nor be damaged under the following conditions:
 
-* The bumps are open-circuited, e.g., at wafer test, or if not connected in a package assembly
- during power-up.
+* The bumps are open-circuited, e.g., at wafer test, or if not connected in a package assembly.
 * In the un-powered state when connected to a matching PHY which may be powered or un-powered.
 * In the reset state when connected to a matching PHY which may be powered or un-powered.
-* In the operational state.
+* In a properly-configured operational state.
 
-In particular, RX slices should avoid "crowbar" states. This may be done by disabling the receiver circuit
+~framed {color: blue}
+Do we spec "no damage" in an improperly configured state, e.g., TX on both sides when using bidi PHYs?
+Should the above conditions be "musts"?
+~
+
+In particular, RX slices should avoid "crowbar" states where a mid-range input voltage can 
+cause a large DC current to flow in the RX circuit. This may be done by disabling the receiver circuit
 or with a weak pulldown at the bumps (except CLK-, which may get a pullup or may be left open). 
 Pullups should not be used on bumps other than CLK-.
 
-A PHY slice which can be configured as TX or RX must have the TX 
+~framed {color: blue}
+Issue: how to ensure that the RX circuits do not draw a lot of current when open or unused.
+
+* If the CLK receiver is differential, then a pulldown on CLK+ suffices 
+and the pullup on CLK- is optional. 
+* If there are simple inverters on CLK+ and CLK-, then both sides need pulldown or pullup.
+* If two BiDi slices are connected, chiplet A's CLK+ is connected to chiplet B's CLK-. 
+Then the pullup and pulldown compete.
+
+Possible solutions:
+
+* Require that CLK receivers are turned off by PHYResetB and need an APB command to be turned on, or
+* Require 10 kohm pulldowns on all wires except CLK-, which gets a 100 kohm pullup.
+* Require pulldowns on all wires and that the CLK Rx circuit be low current with both CLK+ and CLK- low.
+~
+
+A bidirectional PHY slice (one which can be configured as TX or RX) must have the TX 
 circuit disabled when PHYResetB is asserted and an explicit APB command must be performed to 
 turn on the TX circuit.
 
@@ -970,6 +995,11 @@ BoW I/O shall be designed to withstand **50 V CDM** (Charged Device Model) and
 **250 V HBM** (Human Body Model) at the bumps.
 This requirement is deemed sufficient for intra-package signaling, 
 similar to other die-to-die interface standards.
+
+~framed {color:blue}
+50 V CDM corresponds to a variable amount of current depending on the package size. 
+Should we spec CDM current instead?  Ken calculates 1.3 A for 50 V CDM in a 65x65 mm package.
+~
 
 ## Return Loss and Parasitic Capacitance
 

@@ -492,12 +492,8 @@ N is the ratio of the chip-to-chip per-wire data rate to the logic interface per
 +--------+--------+----------+----------+-----------------------------------------+
 ~
 
-
-
+~ {color:green}
 ## Slice Logic (Link Layer) Interface for a Bidirectional PHY
-
-~ {color:blue}
-THIS WHOLE NEW SECTION NEEDS UPDATING FOR BIDI
 ~
 
 ~ Figure {#fig-bidi-block; caption: "BoW Bidirectional slice block diagram"}
@@ -550,7 +546,7 @@ N is the ratio of the chip-to-chip per-wire data rate to the logic interface per
 +--------+--------+----------+-----------------------------------------+
 ~
 
-~frame {color:blue}
+~frame {color:green}
 End of BIDI section
 ~
 
@@ -612,7 +608,7 @@ that any data received will be captured correctly.
 
 #### PHYIdle TX
 
-~frame {color:blue}
+~framed {color:blue}
 Further description of this optional signal and its functionality are provided in Section **TO BE UPDATED**.
 ~
 
@@ -823,7 +819,7 @@ the details on FEC and AUX usage, which is defined in the Link Layer.
 
 A BoW interface must conform to these wire order rules at the edge of the chip:
 
-* The signals for a TX slice are in the following order at the chip edge, 
+* The signals for a TX slice (or a bidirectional slice) are in the following order at the chip edge, 
 going clockwise around the chiplet in a dead-bug view: 
 AUX, D0, D1, D2, D3, D4, D5, D6, D7, CLK+, CLK-, D8, D9, D10, D11, D12, D13, D14, D15, FEC
 * The signals for an RX slice are in the reversed order (ascending goes counter-clockwise)
@@ -911,7 +907,7 @@ of the slice area.
 
 ## Slice Numbering
 
-A BoW interface must conform to these slice numbering rules:
+A BoW interface composed of unidirectional slices must conform to these slice numbering rules:
 
 * The TX slices in a link are numbered from 0 at the upper left edge of the link 
 (facing from the chip center to the edge in a dead-bug view) 
@@ -963,7 +959,8 @@ RX or TX, to be configured upon powerup.
 This allows complete flexibility in link configuration and interoperability and 
 also provides an opportunity for wafer-level loopback testing before package assembly 
 (known good die). 
-In this case, number the slices and wires as if they are all TX slices.
+
+In bidirectional slices, the wires and slices must be numbered as if they are all TX slices.
 
 Bidirectional slices are connected as in Figure [#fig-bidi-connections]: 
 AUX to FEC, D0 to D15, D1 to D14... FEC to AUX.
@@ -1666,7 +1663,8 @@ XX>
 # Reset and Initialization
 
 ~ framed {color:blue}
-TO BE UPDATED; sideband slices must function immediately out of reset, mainband slices use the remainder of the text below
+TO BE UPDATED; sideband slices must function immediately out of reset, 
+data slices use the remainder of the text below
 ~
 
 ## External Facilities
@@ -1696,7 +1694,7 @@ The BoW interface communicates to interface and core logic (I&C) blocks.
 [bow_system]: images/bow_system.png { width:auto; max-width:70% }
 
 ~ framed {color:blue}
-Replace this with a figure with the LC embedded rather than external
+Replace this with a figure with the LC embedded rather than external.
 ~
 
 ## Initialization Sequence

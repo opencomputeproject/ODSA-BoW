@@ -505,8 +505,11 @@ N is the ratio of the chip-to-chip per-wire data rate to the logic interface per
 Figure [#fig-bidi-block] shows the block diagram of a bidirectional slice.
 A bidirectional slice shall have one set of 18 or 20 signal bumps and wires and two 
 sets of signals connecting to the chiplet's core logic (or Link Layer). 
-In mission mode, only the TX or the RX part of the PHY is enabled.
-For loopback test, both may be enabled.
+
+In mission mode, each slice must have only the PHY TX or the PHY RX enabled.
+For loopback test, both may be enabled. 
+For loopback, it is recommended to enable testing one slice at a time to avoid drawing 
+both RX and TX power of all the slices in the whole link at the same time.
 The data at the slice logic interface must be SDR 
 (Single Data Rate - bit rate equal to the PCLK frequency). 
 

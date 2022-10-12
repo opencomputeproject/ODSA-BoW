@@ -474,11 +474,11 @@ N is the ratio of the chip-to-chip per-wire data rate to the logic interface per
 |--------+--------+----------+----------+-----------------------------------------|
 | Signal | # Bits | TX Slice | RX Slice | Description                             |
 +--------+--------+----------+----------+-----------------------------------------+
-| Data   | 16*N   | In       | Out      | Data                                    |
+| PD   | 16*N   | In       | Out      | Data                                    |
 +--------+--------+----------+----------+-----------------------------------------+
-| FEC    | N or 0 | In       | Out      | Forward Error Correction (optional)     |
+| PFEC    | N or 0 | In       | Out      | Forward Error Correction (optional)     |
 +--------+--------+----------+----------+-----------------------------------------+
-| AUX    | N or 0 | In       | Out      | Auxiliary uses (optional)               |
+| PAUX    | N or 0 | In       | Out      | Auxiliary uses (optional)               |
 +--------+--------+----------+----------+-----------------------------------------+
 | PCLK   | 1      | Out      | Out      |                                         |
 +--------+--------+----------+----------+-----------------------------------------+
@@ -492,67 +492,11 @@ N is the ratio of the chip-to-chip per-wire data rate to the logic interface per
 +--------+--------+----------+----------+-----------------------------------------+
 ~
 
-### Slice Logic Interface: Control Signals
 
-A BoW interface must provide the following control and status signals:
-
-* PHY Ready
-* PHY Reset
-
-A BoW interface may optionally provide the following additional control and status signals:
-
-* PHY Idle
-
-The signals in Table [#tab-mac_ctrl_interface] shall constitute the control portion
-of the logic interface of the PHY.
-
-~ TableFigure {#tab-mac_ctrl_interface; caption: "Logic Interface Control Signals"; width:100%;  }
-|-----------+--------+----------+----------+--------------------------------------------|
-| Signal    | # Bits | TX Slice | RX Slice | Description                                |
-+-----------+--------+----------+----------+--------------------------------------------+
-| PHYResetB | 1      | In       | In       | Resets the BoW slice.                      |
-|           |        |          |          | 0 causes a reset                           |
-+-----------+--------+----------+----------+--------------------------------------------+
-| PHYReady  | 1      | Out      | Out      | Indicates that the PHY is ready to         |
-|           |        |          |          | transmit/receive mission mode data.        |
-|           |        |          |          | 1 indicates ready                          |
-+-----------+--------+----------+----------+--------------------------------------------+
-| PHYIdle   | 1 or 0 | In       | N/A      | Active high indicates to the TX slice that |
-|           |        |          |          | it should enter the clock gated            |
-|           |        |          |          | state on the next parallel word            |
-|           |        |          |          | aligned clock edge                         |
-+-----------+--------+----------+----------+--------------------------------------------+
-~
-
-#### PHYResetB TX and RX
-The PHYResetB pin shall be asserted by the link controller to initialize the PHY.
-While the PHYResetB signal is asserted, the PHY shall stay in its reset state.
-When the PHYResetB signal is de-asserted, the PHY shall perform
-any necessary self-alignment. 
-The reset states are otherwise implementation-dependent and shall be documented in the 
-datasheet of a particular implementation. 
-
-#### PHYReady TX
-On a TX slice, the PHY shall assert PHYReady to indicate it is transmitting 
-appropriate CLK and PCLK signals, and that it is ready to transmit data.
-
-#### PHYReady RX
-On an RX slice, when PHYResetB is deasserted, the PHY assumes that the corresponding TX slice is 
-sending CLK and that the TX Link Layer is sending training data on the data wires.
-
-After the RX slice clock self-alignments are complete, each RX PHY slice shall assert its 
-PHYReady pin. How an RX PHY slice determines completion of the self-alignment is 
-implementation-dependent. For instance, it may be determined by observing the 
-settling of the DLL or by a simple timer. PHYReady asserted indicates
-that any data received will be captured correctly.
-
-#### PHYIdle TX
-
-Further description of this optional signal and its functionality are provided in Section **TO BE UPDATED**.
 
 ## Slice Logic (Link Layer) Interface for a Bidirectional PHY
 
-~frame {color:blue}
+~ {color:blue}
 THIS WHOLE NEW SECTION NEEDS UPDATING FOR BIDI
 ~
 
@@ -563,45 +507,54 @@ THIS WHOLE NEW SECTION NEEDS UPDATING FOR BIDI
 
 
 Figure [#fig-bidi-block] shows the block diagram of a bidirectional slice.
-A bidirectional slice has one set of 18 or 20 signal bumps and wires and two 
+A bidirectional slice shall have one set of 18 or 20 signal bumps and wires and two 
 sets of signals connecting to the chiplet's core logic (or Link Layer). 
 In mission mode, only the TX or the RX part of the PHY is enabled.
 For loopback test, both may be enabled.
 The data at the slice logic interface must be SDR 
 (Single Data Rate - bit rate equal to the PCLK frequency). 
 
-~frame {color:blue}
-BIDI updates done to here
-~
-
-
 ### Slice Logic Interface: Data Signals
 
 The signals in Table [#tab-mac_interface] shall constitute the data and clocks in the
-logic interface of the PHY. 
+logic interface of a bidirectional PHY. 
 N is the ratio of the chip-to-chip per-wire data rate to the logic interface per-wire data rate.
 
-~ TableFigure {#tab-mac_interface; caption: "Logic Interface Signals"; width:100%;  }
-|--------+--------+----------+----------+-----------------------------------------|
-| Signal | # Bits | TX Slice | RX Slice | Description                             |
-+--------+--------+----------+----------+-----------------------------------------+
-| Data   | 16*N   | In       | Out      | Data                                    |
-+--------+--------+----------+----------+-----------------------------------------+
-| FEC    | N or 0 | In       | Out      | Forward Error Correction (optional)     |
-+--------+--------+----------+----------+-----------------------------------------+
-| AUX    | N or 0 | In       | Out      | Auxiliary uses (optional)               |
-+--------+--------+----------+----------+-----------------------------------------+
-| PCLK   | 1      | Out      | Out      |                                         |
-+--------+--------+----------+----------+-----------------------------------------+
-| TxClk  | 1      | In       | NA       | Comes from a PLL or other clock source, |
-|        |        |          |          | not the Link Layer.                     |
-|        |        |          |          | The TxClk source is usually shared      |
-|        |        |          |          | among many TX slices.                   |
-|        |        |          |          | May be differential                     |
-+--------+--------+----------+----------+-----------------------------------------+
-| RxClk  | 1 or 0 | NA       | Out      | May be differential                     |
-+--------+--------+----------+----------+-----------------------------------------+
+~ TableFigure {#tab-mac_interface; caption: "Bidirectional Logic Interface Signals"; width:100%;  }
+|--------+--------+----------+-----------------------------------------|
+| Signal | # Bits | TX Slice |  Description                             |
++--------+--------+----------+------------------------------------------+
+| TXD    | 16*N   | In       |  TX Data                                    |
++--------+--------+----------+------------------------------------------+
+| TXFEC  | N or 0 | In       |  Forward Error Correction (optional)     |
++--------+--------+----------+-----------------------------------------+
+| TXAUX  | N or 0 | In       |  Auxiliary uses (optional)               |
++--------+--------+----------+-----------------------------------------+
+| TXPCLK | 1      | Out      |  SDR clock for the TXD, TXFEC, TXAUX bits    |                                    |
++--------+--------+----------+------------------------------------------+
+| TXCLK  | 1      | In       | Comes from a PLL or other clock source, |
+|        |        |          |  not the Link Layer.                     |
+|        |        |          |  The TxClk source is usually shared      |
+|        |        |          |  among many TX slices.                   |
+|        |        |          |  May be differential                     |
++--------+--------+-----------+-----------------------------------------+
+| RXD    | 16*N   |  Out      | RX Data                                    |
++--------+--------+-----------+-----------------------------------------+
+| RXFEC  | N or 0 |  Out      | Forward Error Correction (optional)     |
++--------+--------+-----------+-----------------------------------------+
+| RXAUX  | N or 0 |  Out      | Auxiliary uses (optional)               |
++--------+--------+-----------+-----------------------------------------+
+| RXPCLK | 1      |  Out      | SDR clock for the RXD, RXFEC, RXAUX bits  |
++--------+--------+----------+-----------------------------------------+
+| RXCLK  | 1 or 0 |  Out      | May be differential                     |
++--------+--------+----------+-----------------------------------------+
 ~
+
+~frame {color:blue}
+End of BIDI section
+~
+
+## Slice Logic (Link Layer) Interface aspects common to unidirectional and bidirectional PHYs
 
 ### Slice Logic Interface: Control Signals
 
@@ -659,13 +612,10 @@ that any data received will be captured correctly.
 
 #### PHYIdle TX
 
-Further description of this optional signal and its functionality are provided in Section **TO BE UPDATED**.
-
 ~frame {color:blue}
-End of BIDI section
+Further description of this optional signal and its functionality are provided in Section **TO BE UPDATED**.
 ~
 
-## Slice Logic (Link Layer) Interface - aspects for all PHYs
 
 ### Programming
 
@@ -990,12 +940,6 @@ of the link.
 Asymmetric and unidirectional links may use any slice pattern, but the slice numbering rules 
 must be observed. 
 
-An alternate approach with more flexibility is to design every slice to operate as either 
-RX or TX, to be configured after assembly or upon powerup. 
-This allows complete flexibility in link configuration and interoperability and 
-also provides an opportunity for wafer-level loopback testing before package assembly 
-(known good die). 
-In this case, number the slices and wires as if they are all TX slices.
 
 In BoW-256 at 16 Gbps/wire, the link in Figure [#fig-alt_slices] provides a total of 2.0 Tb/s 
 in each direction.
@@ -1004,6 +948,25 @@ with a bump pitch is 130 um,
 the total edge width is 5.2 mm (4.16 mm without AUX and FEC); the depth from the edge is 1.35 mm.
 In an interposer, if the bump pitch is 40 um, the edge width is 1.60 mm (or 1.28 mm) 
 and the depth is 0.42 mm.
+
+~ {color:green}
+## Connecting Bidirectional Slices
+~
+
+~ Figure { #fig-bidi-connections; caption: "Alternating-Stacks Pattern of TX and RX Slices in a Link" }
+![bidi-connections]
+[bidi-connections]: images/BiDi_connections.png { width:auto; max-width:100% }
+~
+
+A bidirectional BoW PHY slice is designed to operate as 
+RX or TX, to be configured upon powerup. 
+This allows complete flexibility in link configuration and interoperability and 
+also provides an opportunity for wafer-level loopback testing before package assembly 
+(known good die). 
+In this case, number the slices and wires as if they are all TX slices.
+
+Bidirectional slices are connected as in Figure [#fig-bidi-connections]: 
+AUX to FEC, D0 to D15, D1 to D14... FEC to AUX.
 
 # BoW PHY Electrical Specifications {#elec-specs}
 
@@ -1733,7 +1696,7 @@ The BoW interface communicates to interface and core logic (I&C) blocks.
 [bow_system]: images/bow_system.png { width:auto; max-width:70% }
 
 ~ framed {color:blue}
-Add another figure with the LC embedded rather than external
+Replace this with a figure with the LC embedded rather than external
 ~
 
 ## Initialization Sequence
@@ -1768,6 +1731,23 @@ Implementation dependent:
 * How the Link Layer performs channel bonding or start of data transmission
 * Any PHY registers required to implement this process 
 
+~ {color:green}
+## Bidirectional slice turnaround
+~
+
+There are several ways that reversing direction on a given slice within a link may be 
+implemented:
+
+* Full realignment: LC sends commands to each Link Layer to stop, reconfigures TX vs. RX on both
+chiplets, reruns the initialization sequence. 
+Takes 10-500 us, mostly depending on DLL settling time.
+* Skip DLL re-alignment: same as above, but skip the DLL settling. ~10 us.
+Requires that the DLL settings are digital and drift of all timing-critical elements is small.
+* Sideband control: if there is a sideband control slice and the DLL is digital, 
+direction switching might be done in a few dozen core clock cycles. 
+Clock domain crossing FIFOs delays might limit this to 20-100 ns.
+
+The first method will work on all implementations; the others are implementation-dependent.
 
 ## Unspecified Items
 

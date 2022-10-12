@@ -464,7 +464,7 @@ through a slice and the control and management of a slice are the responsibility
 link controller. 
 XX>
 
-### Slice Logic Interface: Data Signals
+### Slice Logic Interface: Clock and Data Signals
 
 The signals in Table [#tab-mac_interface] shall constitute the data and clocks in the
 logic interface of the PHY. 
@@ -513,7 +513,7 @@ both RX and TX power of all the slices in the whole link at the same time.
 The data at the slice logic interface must be SDR 
 (Single Data Rate - bit rate equal to the PCLK frequency). 
 
-### Slice Logic Interface: Data Signals
+### Slice Logic Interface: Clock and Data Signals
 
 The signals in Table [#tab-mac_interface] shall constitute the data and clocks in the
 logic interface of a bidirectional PHY. 
@@ -521,7 +521,7 @@ N is the ratio of the chip-to-chip per-wire data rate to the logic interface per
 
 ~ TableFigure {#tab-mac_interface; caption: "Bidirectional Logic Interface Signals"; width:100%;  }
 |--------+--------+----------+-----------------------------------------|
-| Signal | # Bits | TX Slice |  Description                             |
+| Signal | # Bits | Direction |  Description                             |
 +--------+--------+----------+------------------------------------------+
 | TXD    | 16*N   | In       |  TX Data                                    |
 +--------+--------+----------+------------------------------------------+
@@ -557,34 +557,26 @@ End of BIDI section
 
 ### Slice Logic Interface: Control Signals
 
-A BoW interface must provide the following control and status signals:
-
-* PHY Ready
-* PHY Reset
-
-A BoW interface may optionally provide the following additional control and status signals:
-
-* PHY Idle
-
-The signals in Table [#tab-mac_ctrl_interface] shall constitute the control portion
-of the logic interface of the PHY.
+A BoW interface slice must provide the control and status signals shown in 
+Table [#tab-mac_ctrl_interface].
 
 ~ TableFigure {#tab-mac_ctrl_interface; caption: "Logic Interface Control Signals"; width:100%;  }
-|-----------+--------+----------+----------+--------------------------------------------|
-| Signal    | # Bits | TX Slice | RX Slice | Description                                |
-+-----------+--------+----------+----------+--------------------------------------------+
-| PHYResetB | 1      | In       | In       | Resets the BoW slice.                      |
-|           |        |          |          | 0 causes a reset                           |
-+-----------+--------+----------+----------+--------------------------------------------+
-| PHYReady  | 1      | Out      | Out      | Indicates that the PHY is ready to         |
-|           |        |          |          | transmit/receive mission mode data.        |
-|           |        |          |          | 1 indicates ready                          |
-+-----------+--------+----------+----------+--------------------------------------------+
-| PHYIdle   | 1 or 0 | In       | N/A      | Active high indicates to the TX slice that |
-|           |        |          |          | it should enter the clock gated            |
-|           |        |          |          | state on the next parallel word            |
-|           |        |          |          | aligned clock edge                         |
-+-----------+--------+----------+----------+--------------------------------------------+
+|-----------+--------+----------+----------+------------------------------------------------------------|
+| Signal    | # Bits | TX Slice | RX Slice | Description                                                |
++-----------+--------+----------+----------+------------------------------------------------------------+
+| PHYResetB | 1      | In       | In       | Resets the BoW slice.                                      |
+|           |        |          |          | 0 causes a reset                                           |
++-----------+--------+----------+----------+------------------------------------------------------------+
+| PHYReady  | 1      | Out      | Out      | Indicates that the PHY is ready to                         |
+|           |        |          |          | transmit/receive mission mode data.                        |
+|           |        |          |          | 1 indicates ready                                          |
++-----------+--------+----------+----------+------------------------------------------------------------+
+| PHYIdle   | 1 or 0 | In       | N/A      | Optional signal                                            |
+|           |        |          |          | Active high indicates to the TX slice that                 |
+|           |        |          |          | it should enter the clock gated                            |
+|           |        |          |          | state on the next parallel word                            |
+|           |        |          |          | aligned clock edge                                         |
++-----------+--------+----------+----------+------------------------------------------------------------+
 ~
 
 #### PHYResetB TX and RX

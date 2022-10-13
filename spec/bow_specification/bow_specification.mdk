@@ -678,7 +678,7 @@ consisting of 8 data wires per half-slice is defined as shown in Figure [#fig-ha
 ~ Figure { #fig-half-components; caption: "BoW Half-Link Components" }
 ![bowspec_figure_half-components]
 ~
-[bowspec_figure_half-components]: images/bowspec1.1_figure_half_components2.png { width:auto; max-width:70% }
+[bowspec_figure_half-components]: images/bowspec1.1_figure_half_components3.png { width:auto; max-width:70% }
 
 * A **half-slice** is a smaller version of a slice with 10 or 12 signal bumps.
 It must have 10 or 12 signal bumps. 

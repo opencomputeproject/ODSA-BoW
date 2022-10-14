@@ -397,11 +397,11 @@ for BoW RX and TX slices.
 
 ## Directionality
 
+* A BoW **link** may be bidirectional (each side contains both RX and TX slices) or
+unidirectional (each chiplet's side contains only TX or only RX slices)
 * Each BoW PHY **slice** is unidirectional when in operation
-* A BoW **link** may be unidirectional (each chiplet's side contains only Tx or only Rx slices) or
-bidirectional (each side contains both Rx and Tx slices)
-* A BoW PHY slice is said to be bidirectional if it can be configured to operate in Tx or in Rx
-* This spec does not include full-duplex operation (simultaneous Tx and Rx over the same wires)
+* A BoW PHY slice is said to be bidirectional if it can be configured to operate in TX or in RX
+* This spec does not include full-duplex operation (simultaneous TX and RX over the same wires)
 
 ## Die-to-die Signals (Wires)
 
@@ -501,6 +501,7 @@ N is the ratio of the chip-to-chip per-wire data rate to the logic interface per
 ~
 [bidi-block]: images/BiDi_block_diagram.png {width:auto; max-width: 100%}
 
+~ {color:green}
 
 Figure [#fig-bidi-block] shows the block diagram of a bidirectional slice.
 A bidirectional slice shall have one set of 18 or 20 signal bumps and wires and two 
@@ -510,14 +511,16 @@ In mission mode, each slice must have only the PHY TX or the PHY RX enabled.
 For loopback test, both may be enabled. 
 For loopback, it is recommended to enable testing one slice at a time to avoid drawing 
 both RX and TX power of all the slices in the whole link at the same time.
+
 The data at the slice logic interface must be SDR 
-(Single Data Rate - bit rate equal to the PCLK frequency). 
+(Single Data Rate - bit rate equal to the TXPCLK/RXPCLK frequency). 
 
 ### Slice Logic Interface: Clock and Data Signals
 
 The signals in Table [#tab-mac_interface] shall constitute the data and clocks in the
 logic interface of a bidirectional PHY. 
 N is the ratio of the chip-to-chip per-wire data rate to the logic interface per-wire data rate.
+~
 
 ~ TableFigure {#tab-mac_interface; caption: "Bidirectional Logic Interface Signals"; width:100%;  }
 |--------+--------+----------+-----------------------------------------|
@@ -533,7 +536,7 @@ N is the ratio of the chip-to-chip per-wire data rate to the logic interface per
 +--------+--------+----------+------------------------------------------+
 | TXCLK  | 1      | In       | Comes from a PLL or other clock source, |
 |        |        |          |  not the Link Layer.                     |
-|        |        |          |  The TxClk source is usually shared      |
+|        |        |          |  The TXCLK source is usually shared      |
 |        |        |          |  among many TX slices.                   |
 |        |        |          |  May be differential                     |
 +--------+--------+-----------+-----------------------------------------+
@@ -604,7 +607,9 @@ that any data received will be captured correctly.
 #### PHYIdle TX
 
 ~framed {color:blue}
-Further description of this optional signal and its functionality are provided in Section **TO BE UPDATED**.
+Further description of this optional signal and its functionality are provided in Section ? 
+
+**TO BE UPDATED**.
 ~
 
 
@@ -814,7 +819,7 @@ the details on FEC and AUX usage, which is defined in the Link Layer.
 
 A BoW interface must conform to these wire order rules at the edge of the chip:
 
-* The signals for a TX slice (or a bidirectional slice) are in the following order at the chip edge, 
+* The signals for a TX slice or a bidirectional slice are in the following order at the chip edge, 
 going clockwise around the chiplet in a dead-bug view: 
 AUX, D0, D1, D2, D3, D4, D5, D6, D7, CLK+, CLK-, D8, D9, D10, D11, D12, D13, D14, D15, FEC
 * The signals for an RX slice are in the reversed order (ascending goes counter-clockwise)
@@ -957,7 +962,7 @@ also provides an opportunity for wafer-level loopback testing before package ass
 
 In bidirectional slices, the wires and slices must be numbered as if they are all TX slices.
 
-Bidirectional slices are connected as in Figure [#fig-bidi-connections]: 
+Bidirectional slices are connected from chiplet to chiplet as in Figure [#fig-bidi-connections]: 
 AUX to FEC, D0 to D15, D1 to D14... FEC to AUX.
 
 # BoW PHY Electrical Specifications {#elec-specs}
@@ -1028,41 +1033,34 @@ be primarily influenced by some combination of transistor and explicit resistor 
 A BoW PHY should not draw excessive current nor be damaged under the following conditions:
 
 * The bumps are open-circuited, e.g., at wafer test, or if not connected in a package assembly.
-* In the un-powered state when connected to a matching PHY which may be powered or un-powered.
-* In the reset state when connected to a matching PHY which may be powered or un-powered.
+* In the un-powered state when connected to a BoW PHY which may be powered or un-powered.
+* In the reset state when connected to a BoW PHY which may be powered or un-powered.
 * In a properly-configured operational state.
 
 ~framed {color: blue}
-Do we spec "no damage" in an improperly configured state, e.g., TX on both sides when using bidi PHYs?
-
 Should the above conditions be "musts"?
 ~
 
-A bidirectional PHY slice (one which can be configured as TX or RX) shall have the TX 
-circuit disabled (high impedance) when PHYResetB is asserted and it shall remain disabled until an 
-explicit APB command is sent to turn on the TX circuit.
+~ {color:green}
+A BoW PHY implementation must document how long it can withstand without damage 
+an accidental incorrect state with TX configured and enabled on both ends of a wire.
+
+A bidirectional PHY slice shall have the TX 
+circuits disabled (high impedance) upon assertion of
+PHYResetB and require an APB command to be turn them on.
 
 A unidirectional PHY TX slice need not be disabled at reset.
 
-RX slices should avoid "crowbar" states where a mid-range input voltage can 
+All RX slices must avoid "crowbar" states where a floating or mid-range input voltage can 
 cause a large DC current to flow in the RX circuit. 
-This may be done by disabling the receiver circuit or with a weak pulldown at the bumps.
+Therefore a PHY must either:
 
-~framed {color: blue}
-Issue: how to ensure that the RX CLK circuits do not draw a lot of current when open or unused.
-
-* If the CLK receiver is differential, then a pulldown on CLK+ suffices 
-and the pullup on CLK- is optional. 
-* If there are simple inverters on CLK+ and CLK-, then both sides need pulldown or pullup.
-* If two BiDi slices are connected, chiplet A's CLK+ is connected to chiplet B's CLK-. 
-Then the pullup and pulldown compete.
-
-Possible solutions:
-
-* Require that CLK receivers are turned off by PHYResetB and need an APB command to be turned on, or
-* Require pulldowns on all wires and that the CLK Rx circuit be low current with both CLK+ and CLK- low.
+* Turn off the RX circuits upon assertion of PHYResetB and 
+require an APB command to be turn them on, or
+* Include pulldown resistors on all bumps, including CLK+ and CLK-
+and ensure that all the RX circuits be in a low current state including 
+the CLK RX circuit with both CLK+ and CLK- low.
 ~
-
 
 ## ESD 
 BoW I/O shall be designed to withstand **50 V CDM** (Charged Device Model) and 
@@ -1070,9 +1068,10 @@ BoW I/O shall be designed to withstand **50 V CDM** (Charged Device Model) and
 This requirement is deemed sufficient for intra-package signaling, 
 similar to other die-to-die interface standards.
 
-~framed {color:blue}
-50 V CDM corresponds to a variable amount of current depending on the package size. 
-Should we spec CDM current instead?  Ken calculates 1.3 A for 50 V CDM in a 65x65 mm package.
+~ {color:green}
+Note that for CDM, the ESD current corresponding to 50 V depends on the package size.
+(E.g., 50 V CDM on a 65 x 65 mm package is 1.3 A.)
+A BoW PHY shall document the package size assumed for CDM.
 ~
 
 ## Return Loss and Parasitic Capacitance
@@ -1247,7 +1246,7 @@ That is, for the data flow from Chiplet A to Chiplet B,
 the TxClk distribution on Chiplet A probably dominates the 
 the clock skew of the TX slices on Chiplet A and the clock skew of the RX slices on Chiplet B,
 and vice versa for flow from B to A. 
-The skew between Tx CLK signals within one direction of a link 
+The skew between TX CLK signals within one direction of a link 
 should be no more than 150 ps/stack along the chip edge.
 There is no specification of the skew between TxClk on Chiplet A vs. TxClk on Chiplet B nor between
 different links.
@@ -1658,8 +1657,10 @@ XX>
 # Reset and Initialization
 
 ~ framed {color:blue}
-TO BE UPDATED; sideband slices must function immediately out of reset, 
-data slices use the remainder of the text below
+TO BE UPDATED
+
+Sideband slices must function immediately out of reset with no training or calibration. 
+Data slices use the remainder of the text below.
 ~
 
 ## External Facilities
@@ -1699,17 +1700,19 @@ Replace this with a figure with the LC embedded rather than external.
 ### A TX-RX Link should be brought up as follows:
 
 1. The Link Controller (LC) asserts PHYResetB to the PHY slices on both ends of the link.
-1. The Link Controller (LC) **de-asserts PHYResetB to the TX** PHY slices
+1. The Link Controller (LC) **de-asserts PHYResetB to the TX** PHY slices 
+including bidirectional slices which will be used as TX slices
 1. The LC performs any needed configuration of the TX PHY 
 slices via the APB interface. This is implementation dependent. 
-If the TX needs to be enabled (see section [#phy_prot]), it happens here.
+1. The LC enables the TX slices if necessary (see section [#phy_prot])
 1. Once its outgoing CLK and PCLK stabilize, each TX PHY slice asserts PHYReady to the LC
 1. When all TX PHY slices are ready, the LC signals the TX Link Layer to 
 send the training pattern (repeating) specified by the RX PHY
-1. The Link Controller (LC) **de-asserts PHYResetB to the RX** PHY slices
+1. The Link Controller (LC) **de-asserts PHYResetB to the RX** PHY slices 
+including bidirectional slices which will be used as RX slices
 1. The LC performs any needed configuration of the RX PHY 
 slices via the APB interface. This is implementation dependent. 
-If the RX needs to be enabled, it happens here.
+1. The LC enables the RX slices if necessary (see section [#phy_prot])
 1. Each RX PHY slice performs clock and data alignment and signals PHYReady to the LC when done
 1. When all RX PHY slices are ready, the LC signals the TX and RX 
 Link Layers to proceed with channel bonding
@@ -1720,27 +1723,17 @@ to interoperate with other BoW PHY implementations.
 Implementation dependent:
 
 * Whether the up and down links are initialized one at a time or in parallel
-* How the signals from the the LC get from and to the PHYReady and PHYResetB pins of the PHY
+* How the signals from the the LC get to and from the PHYResetB and PHYReady pins of the PHY
 * How the Link Layer performs channel bonding or start of data transmission
 * Any PHY registers required to implement this process 
 
 ~ {color:green}
 ## Bidirectional slice turnaround
+
+To reverse direction on a link with bidirectional slices on both ends, 
+perform a full reset, reconfiguration and initialization. 
+This will likely take 10-500 us, probably limited by DLL settling time.
 ~
-
-There are several ways that reversing direction on a given slice within a link may be 
-implemented:
-
-* Full realignment: LC sends commands to each Link Layer to stop, reconfigures TX vs. RX on both
-chiplets, reruns the initialization sequence. 
-Takes 10-500 us, mostly depending on DLL settling time.
-* Skip DLL re-alignment: same as above, but skip the DLL settling. ~10 us.
-Requires that the DLL settings are digital and drift of all timing-critical elements is small.
-* Sideband control: if there is a sideband control slice and the DLL is digital, 
-direction switching might be done in a few dozen core clock cycles. 
-Clock domain crossing FIFOs delays might limit this to 20-100 ns.
-
-The first method will work on all implementations; the others are implementation-dependent.
 
 ## Unspecified Items
 
@@ -1753,6 +1746,7 @@ PLL or DLL losing lock are possible causes.
 (that are on the chip but have no partner on another chiplet)
 * There is no definition of logical addressing of chiplets, Links or slices
 * Possible use of PRBS patterns for training
+* Fast turnaround of bidirectional slices.
 
 
 # Configuration

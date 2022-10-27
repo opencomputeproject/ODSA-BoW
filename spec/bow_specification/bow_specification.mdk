@@ -27,8 +27,8 @@ Bunch of Wires (BoW) PHY Specification
 ~ center {font-size: x-large ; page-break-after: always }
 The Open Domain-Specific Architecture BoW Workstream
 
-DRAFT Version 1.1b  
-September 30th, 2022
+DRAFT Version 1.1c  
+October 26th, 2022
 
 ~
 
@@ -164,7 +164,7 @@ interfaces that implementers / adopters the the flexibility to trade off through
 design complexity, cost, and packaging technology.
 The use of BoW is expected to be confined to connect die placed close to one another within the same package. 
 In this environment, signal attenuation is small and the interface can be simple.
-The definition of the BoWx interface aims to meet the following OCP tenets as 
+The definition of the BoW interface aims to meet the following OCP tenets as 
 follows:
 
 ## Openness
@@ -199,14 +199,18 @@ it can take advantage of the much-increased wire density.
 
 # Revision Table
 
-+----------+-----------+--------------+--------------------------------------+
-|Date      |Revision   |Author        |Description                           |
-+----------+-----------+--------------+--------------------------------------+
-| 07/26/22 |Draft 1.1a |Elad Alon     |Initial updates from 1.0 to 1.1       |
-+----------+-----------+--------------+--------------------------------------+
-| 09/30/22 |Draft 1.1b |Marek Hempel, |Half-slice and power management added |
-|          |           |Elad Alon     |                                      |
-+----------+-----------+--------------+--------------------------------------+
++----------+-----------+---------------+----------------------------------------+
+|Date      |Revision   |Author         |Description                             |
++----------+-----------+---------------+----------------------------------------+
+| 07/26/22 |Draft 1.1a |Elad Alon      |Initial updates from 1.0 to 1.1         |
++----------+-----------+---------------+----------------------------------------+
+| 09/30/22 |Draft 1.1b |Marek Hempel,  |Half-slice and power management added   |
+|          |           |Elad Alon      |                                        |
++----------+-----------+---------------+----------------------------------------+
+| 10/26/22 |Draft 1.1c |Ken Poulton,   |Configurable directionality, redundancy |
+|          |           |Shahab Ardalan |added                                   |
+|          |           |Elad Alon      |                                        |
++----------+-----------+---------------+----------------------------------------+
 
 
 # Scope
@@ -264,39 +268,39 @@ with the BoW specification. Each of the
 conformance points is discussed in the specification.
 
 ~ TableFigure {#tab-conformance; caption: "BoW Conformance Summary **TO BE UPDATED**"; }
-+---------------------------------------+----------------------------------------------+----------------------+
-| Description                           | Section                                      | Detail               |
-+---------------------------------------+----------------------------------------------+----------------------+
-| BoW Modes                             | [#sec-bow-modes]                             |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-| Die-to-die Signals (Wires)            | [#sec-die-to-die-signals-wires]              |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-| Slice Logic Interface                 | [#sec-slice-logic-interface]                 |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-| BoWx Modes and Reach                   | [#sec-bow-modes-and-reach]                   | Table [#tab-reaches] |
-+---------------------------------------+----------------------------------------------+----------------------+
-| Wire and Slice Ordering               | [#sec-bow-physical-configuration]            |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-| Voltages and Termination Resistance   | [#sec-voltages-and-termination-resistance]   |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-| PHY Protection                        | [#sec-phy-protection]                        |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-| ESD                                   | [#sec-esd]                                   |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-| Return Loss and Parasitic Capacitance | [#sec-return-loss-and-parasitic-capacitance] |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-| Clocking                              | [#sec-clocking]                              |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-| Clock and Data Specs                  | 7.2                                          |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-| Channel Skew                          | 8.1                                          |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-| External Facilities                   | [#sec-external-facilities]                   |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-| Initialization                        | [#sec-initialization-sequence]               |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
-| Control Register Mapping              | [#sec-control-register-mapping]              |                      |
-+---------------------------------------+----------------------------------------------+----------------------+
++---------------------------------------+------------------------------------------------------+----------------------+
+| Description                           | Section                                              | Detail               |
++---------------------------------------+------------------------------------------------------+----------------------+
+| BoW Modes                             | [#sec-bow-modes]                                     |                      |
++---------------------------------------+------------------------------------------------------+----------------------+
+| Die-to-die Signals (Wires)            | [#sec-die-to-die-signals-wires]                      |                      |
++---------------------------------------+------------------------------------------------------+----------------------+
+| Slice Logic Interface                 | [#sec-slice-logic-interface--clock-and-data-signals] |                      |
++---------------------------------------+------------------------------------------------------+----------------------+
+| BoWx Modes and Reach                  | [#sec-bow-modes-and-reach]                           | Table [#tab-reaches] |
++---------------------------------------+------------------------------------------------------+----------------------+
+| Wire and Slice Ordering               | [#sec-bow-physical-configuration]                    |                      |
++---------------------------------------+------------------------------------------------------+----------------------+
+| Voltages and Termination Resistance   | [#sec-voltages-and-termination-resistance]           |                      |
++---------------------------------------+------------------------------------------------------+----------------------+
+| PHY Protection                        | [#phy_prot]                                          |                      |
++---------------------------------------+------------------------------------------------------+----------------------+
+| ESD                                   | [#sec-esd]                                           |                      |
++---------------------------------------+------------------------------------------------------+----------------------+
+| Return Loss and Parasitic Capacitance | [#sec-return-loss-and-parasitic-capacitance]         |                      |
++---------------------------------------+------------------------------------------------------+----------------------+
+| Clocking                              | [#sec-clocking]                                      |                      |
++---------------------------------------+------------------------------------------------------+----------------------+
+| Clock and Data Specs                  | [#sec-bow-phy-timing-specifications]                 |                      |
++---------------------------------------+------------------------------------------------------+----------------------+
+| Channel Skew                          | [#chan-skew]                                         |                      |
++---------------------------------------+------------------------------------------------------+----------------------+
+| External Facilities                   | [#sec-external-facilities]                           |                      |
++---------------------------------------+------------------------------------------------------+----------------------+
+| Initialization                        | [#sec-initialization-sequence]                       |                      |
++---------------------------------------+------------------------------------------------------+----------------------+
+| Control Register Mapping              | [#sec-control-register-mapping]                      |                      |
++---------------------------------------+------------------------------------------------------+----------------------+
 
 ~
 
@@ -606,11 +610,7 @@ that any data received will be captured correctly.
 
 #### PHYIdle TX
 
-~framed {color:blue}
-Further description of this optional signal and its functionality are provided in Section ? 
-
-**TO BE UPDATED**.
-~
+Further description of this optional signal and its functionality are provided in Section [#power-management].
 
 
 ### Programming
@@ -945,9 +945,7 @@ the total edge width is 5.2 mm (4.16 mm without AUX and FEC); the depth from the
 In an interposer, if the bump pitch is 40 um, the edge width is 1.60 mm (or 1.28 mm) 
 and the depth is 0.42 mm.
 
-~ {color:green}
 ## Connecting Bidirectional Slices
-~
 
 ~ Figure { #fig-bidi-connections; caption: "Alternating-Stacks Pattern of TX and RX Slices in a Link" }
 ![bidi-connections]
@@ -1030,37 +1028,30 @@ be primarily influenced by some combination of transistor and explicit resistor 
 
 ## PHY protection {#phy_prot}
 
-A BoW PHY should not draw excessive current nor be damaged under the following conditions:
+The lifetime of a BoW PHY should not be negatively impacted (i.e., the PHY should not be damaged) 
+despite exposure to the following conditions: 
 
 * The bumps are open-circuited, e.g., at wafer test, or if not connected in a package assembly.
 * In the un-powered state when connected to a BoW PHY which may be powered or un-powered.
 * In the reset state when connected to a BoW PHY which may be powered or un-powered.
 * In a properly-configured operational state.
 
-~framed {color: blue}
-Should the above conditions be "musts"?
-~
-
-~ {color:green}
 A BoW PHY implementation must document how long it can withstand without damage 
-an accidental incorrect state with TX configured and enabled on both ends of a wire.
+(i.e., without degradation in part lifetime) an accidental incorrect state with TX configured and enabled on both ends of a wire.
 
-A bidirectional PHY slice shall have the TX 
-circuits disabled (high impedance) upon assertion of
+A bidirectional PHY slice shall have the TX circuits disabled (high impedance) upon assertion of
 PHYResetB and require an APB command to be turn them on.
 
 A unidirectional PHY TX slice need not be disabled at reset.
 
 All RX slices must avoid "crowbar" states where a floating or mid-range input voltage can 
-cause a large DC current to flow in the RX circuit. 
-Therefore a PHY must either:
+cause a large DC current to flow in the RX circuit. Therefore a PHY must either:
 
 * Turn off the RX circuits upon assertion of PHYResetB and 
 require an APB command to be turn them on, or
 * Include pulldown resistors on all bumps, including CLK+ and CLK-
 and ensure that all the RX circuits be in a low current state including 
 the CLK RX circuit with both CLK+ and CLK- low.
-~
 
 ## ESD 
 BoW I/O shall be designed to withstand **50 V CDM** (Charged Device Model) and 
@@ -1068,11 +1059,9 @@ BoW I/O shall be designed to withstand **50 V CDM** (Charged Device Model) and
 This requirement is deemed sufficient for intra-package signaling, 
 similar to other die-to-die interface standards.
 
-~ {color:green}
 Note that for CDM, the ESD current corresponding to 50 V depends on the package size.
-(E.g., 50 V CDM on a 65 x 65 mm package is 1.3 A.)
+(E.g., 50 V CDM on a 65 x 65 mm package is ~1.3 A.)
 A BoW PHY shall document the package size assumed for CDM.
-~
 
 ## Return Loss and Parasitic Capacitance
 
@@ -1194,6 +1183,12 @@ For implementations in process nodes at 16 nm and below, supporting 1000 MHz is 
 |BoW-256 | 16    | 500  | 32   | 32x18 |
 |        |       | 1000 | 16   | 16x18 |
 |        |       | 2000 | 8    | 8x18  |
++--------+-------+------+------+-------+
+|BoW-384 | 24    | 750  | 32   | 32x18 |
+|        |       | 1500 | 16   | 16x18 |
++--------+-------+------+------+-------+
+|BoW-512 | 32    | 1000 | 32   | 32x18 |
+|        |       | 2000 | 16   | 16x18 |
 +--------+-------+------+------+-------+
 |BoW-384 | 24    | 750  | 32   | 32x18 |
 |        |       | 1500 | 16   | 16x18 |
@@ -1433,6 +1428,7 @@ and timing requirements are termination- and rate-dependent, as outlined in Tabl
 | **t~err,tot,RX~** | **33.5% T~bit~**  |
 |-------------------|-------------------|
 ~
+<!-- end merge -->
 
 ### Voltage Overshoot
 
@@ -1488,6 +1484,10 @@ Note that the use of static clock gated and data idle levels might result in agi
 implementations may hence need to budget for the impact of this aging and/or include mechanisms to compensate for the errors introduced
 by such aging.
 
+Note that the use of static clock gated and data idle levels might result in aging of the TX/RX circuits within the PHY.  PHY 
+implementations may hence need to budget for the impact of this aging and/or include mechanisms to compensate for the errors introduced
+by such aging.
+
 ### Minimum Preamble, Postamble, and Payload Durations
 
 In order to avoid the need to adjust the time alignment of parallel data words at the input/output of the PHYs due to entry/exit from the 
@@ -1499,7 +1499,7 @@ Since arbitrary serialization/deserialization ratios could result in very large 
 multiple), PHYs that support the clock gating mode must use only powers of 2 for the "Mux Ratio M" from Table [#tab-clock-ratios].      
 
 BoW PHYs must publish as part of their datasheet the preamble, postamble, and payload lengths they support.  It is strongly 
-recommended that BoW inerfaces support a configurable set of preamble, postamble, and payload length - particularly 4, 8, 16, and 32 UI.   
+recommended that BoW interfaces support a configurable set of preamble, postamble, and payload length - particularly 4, 8, 16, and 32 UI.   
 
 ### PHY_Idle Timing and Parallel Data During Preamble / Postamble  
 
@@ -1651,6 +1651,37 @@ XX>
 
 # Redundancy
 
+Particularly in advanced package applications, it is expected that I/O redundancy 
+will be utilized to improve overall product yield.  This section hence describes the
+requirements BoW slices supporting redundancy must meet in order to ensure interoperability.
+
+* BoW slices supporting redundancy must include the AUX and FEC signals, and these signals must
+be utilized as redundant I/O's.
+* BoW slices supporting redundancy must be able to repair around any two of the data lines 
+(including AUX/FEC) being defective.  
+* Redundancy for the CLK+/CLK- bumps is **not** supported by BoW.
+* Repair for defective bumps shall be realized as follows:
+  * If none of the physical lines D[15:0] are defective, AUX/FEC must be unused.
+  * If only a single data line is defective, all data lines logically equal 
+  to or below the defective line must be downshifted  by 1 (at both the TX and the RX). Note that unless AUX is defective, this implies that logical D[0] would be carried on the
+  physical AUX line. 
+  * If two data lines are defective, all logical data lines equal to or 
+  below the lowest defective line must be downshifted by 1 (at both the TX and the RX), 
+  and all logical data lines equal to or above the highest defective line must be upshifted by 1
+  (at both the TX and the RX).  Note that unless AUX is defective, this implies that logical D[0] would be carried on the
+  physical AUX line.  
+  * For the purposes of redundancy and logical ordering, AUX shall be treated 
+  as the lowest possible line, FEC as the highest possible line, and the 
+  other lines ordered by their numbering (e.g., D[0] is lower than D[1]).
+
+To illustrate a few examples of how the redundancy mechanism would be implemented:
+
+* If none of the physical D[15:0] lines are defective, logical D[15:0] will be transmitted on physical D[15:0]
+* If physical line D[4] is defective, logical D[4:0] will be transmitted on physical {D[3:0], AUX}, 
+and logical D[15:5] will be transmitted on physical D[15:5].
+* If physical lines D[4] and D[6] are defective, logical D[4:0] will be transmitted on physical {D[3:0], AUX}, 
+logical D[5] will be transmitted on physical D[5], and logical D[15:6] will be transmitted on physical {FEC, D[15:7]}.           
+
 # Sideband Slices
 
 
@@ -1727,13 +1758,11 @@ Implementation dependent:
 * How the Link Layer performs channel bonding or start of data transmission
 * Any PHY registers required to implement this process 
 
-~ {color:green}
 ## Bidirectional slice turnaround
 
 To reverse direction on a link with bidirectional slices on both ends, 
-perform a full reset, reconfiguration and initialization. 
-This will likely take 10-500 us, probably limited by DLL settling time.
-~
+it is expected that a full reset, reconfiguration and initialization of the slices will be performed. 
+This full procedure is expected to require us to ms, but will be implementation dependent.
 
 ## Unspecified Items
 

@@ -1923,11 +1923,9 @@ how the Open Domain-Specific Architecture stack may be used as an underlay for
 popular transaction protocols.
 
 ## BoW for Common Transaction Protocols
-Two connected die in a multi-chiplet device need to exchange logical information. 
-The ODSA aims to define an open physical and logical interface for chiplets, as shown in 
+The ODSA aims to define an open physical and logical interface stack for chiplets, as shown in 
 Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
-integrated in a multi-die package. The Bunch of Wires is an open D2D PHY option in the
-interface. The logical component of the ODSA interface aims to 
+integrated in a multi-die package. The ODSA stack The logical component of the ODSA interface aims to 
 support protocols used for the two most common chiplet use cases, package 
 aggregation and die disaggregation across a wide range of open and proprietary D2D PHYs
 such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. 
@@ -1948,13 +1946,16 @@ through either the PIPE or LPIF interfaces to support common transaction protoco
 For this use case, some BoW-specific adapter logic will be needed to support the requirements of PIPE 
 or LPIF.
 The specifications for these adapters are outside the scope of this document. 
+
+
 Figure [#fig-bow-pcie] shows how the
 BoW with an PIPE adapter may be interfaced to a PCIe controller.
 
 ~ Figure {#fig-bow-pcie; caption: "BoW with a PIPE adapter for PCIe transactions"}
 ![bowspec_figcomponentspcie]
 ~
-[bowspec_figcomponentspcie]: images/fig-bow_pcie.png {width:auto; max-width: 100%}
+[bowspec_figcomponentspcie]: images/bow_link.jpg {width:auto; max-width: 100%}
+
 
 #Appendix A - Requirements for IC Approval (to be completed Contributor(s) of this Spec){-}
 

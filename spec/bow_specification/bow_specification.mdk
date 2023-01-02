@@ -211,6 +211,9 @@ it can take advantage of the much-increased wire density.
 |          |           |Shahab Ardalan |added                                   |
 |          |           |Elad Alon      |                                        |
 +----------+-----------+---------------+----------------------------------------+
+| 1/2/23   |Draft 1.1d |Elad Alon      |Updated timing requirements, sideband   |
+|          |           |               |slice definition added                  |
++----------+-----------+---------------+----------------------------------------+
 
 
 # Scope
@@ -496,16 +499,13 @@ N is the ratio of the chip-to-chip per-wire data rate to the logic interface per
 +--------+--------+----------+----------+-----------------------------------------+
 ~
 
-~ {color:green}
 ## Slice Logic (Link Layer) Interface for a Bidirectional PHY
-~
 
 ~ Figure {#fig-bidi-block; caption: "BoW Bidirectional slice block diagram"}
 ![bidi-block]
 ~
 [bidi-block]: images/BiDi_block_diagram.png {width:auto; max-width: 100%}
-
-~ {color:green}
+~ 
 
 Figure [#fig-bidi-block] shows the block diagram of a bidirectional slice.
 A bidirectional slice shall have one set of 18 or 20 signal bumps and wires and two 
@@ -554,10 +554,6 @@ N is the ratio of the chip-to-chip per-wire data rate to the logic interface per
 +--------+--------+----------+-----------------------------------------+
 | RXCLK  | 1 or 0 |  Out      | May be differential                     |
 +--------+--------+----------+-----------------------------------------+
-~
-
-~frame {color:green}
-End of BIDI section
 ~
 
 ## Slice Logic (Link Layer) Interface aspects common to unidirectional and bidirectional PHYs
@@ -1291,7 +1287,8 @@ the CLK edge that launched the data bit being captured at the receiver.  This is
 that even though jitter on the data edges may be correlated with the CLK jitter, 
 the slicer in the RX side is likely to use a different CLK edge due to delays in the 
 RX-side clock alignment circuit (usually a DLL and clock distribution).  See Section [#rx_clk_data_delay] for the 
-receiver's requirements.  For **BoW-256 mode and lower rates, N~ck-d~ = 3 UI**.  For **BoW-384 mode and higher rates, N~ck-d~ = 6 UI**. 
+receiver's requirements.  For **BoW-256 mode and lower rates, N~ck-d~ = 3 UI**.  For **BoW-384 mode, N~ck~d = 5 UI, 
+and for BoW-512 mode, N~ck-d~ = 6 UI**. 
 
 In order to properly account for the jitter filtering/peaking that will occur due to the 
 difference in delay between the data launching edge at the TX and the data capturing edge at the RX, 
@@ -1318,7 +1315,7 @@ for **t~clk-d~ = N~d~*T~bit~, with N~d~ taking all integer values between 1 and 
 ### Transmitter Deterministic Timing Error {#tx-det-timing}
 
 The total deterministic (bounded) timing errors introduced by the TX
-shall not exceed **14% of a UI peak-to-peak**.  The evaluation of these timing errors must
+shall not exceed **18% of a UI peak-to-peak**.  The evaluation of these timing errors must
 include all possible deterministic contributors, such as reference clock, clock distribution
 networks, duty cycle error (i.e., deviation from 50% duty cycle), skew between CLK and any D line, 
 and power supply variation induced jitter or skew.  Note that any such time-dependent error terms (i.e., jitter) 
@@ -1329,7 +1326,7 @@ would imply that it can achieve a TX deterministic timing error of no better tha
 ### Transmitter Total Timing Error {#tx-tot-timing}
 
 The total timing error introduced between the CLK and any data (D) line at the output of the TX
-shall not exceed **25% of a UI peak-to-peak at an error rate of 1e-15**. 
+shall not exceed **29% of a UI peak-to-peak at an error rate of 1e-15**. 
 The evaluation of errors must encompass all possible deterministic as well as random timing error 
 contributors, including all sources of random jitter in addition to the representative deterministic 
 error sources described in Section [#tx-det-timing]. 
@@ -1356,7 +1353,8 @@ on typical in BoW channels.
 ### Receiver Clock versus Data Path Delay {#rx_clk_data_delay}
 
 In order to be compatible with the TX jitter requirements provided in Section [#tx-jit-filt], for BoW-256 and low rate modes, a BoW receiver must 
-capture data using clock edges that were launched by the TX no more than **3UI** earlier than the data being captured.  For BoW-384 or BoW-512 
+capture data using clock edges that were launched by the TX no more than **3UI** earlier than the data being captured.  For BoW-384 receivers, 
+data must be captured using clock edges that were launched by the TX no more than **5UI** earlier than the data being captured.  For BoW-512 
 receivers, data must be captured using clock edges that were launched by the TX no more than **6UI** earlier than the data being captured. 
 
 ### Receiver Sensitivity and Timing Margin {#rx-eye}
@@ -1407,9 +1405,9 @@ and timing requirements are termination- and rate-dependent, as outlined in Tabl
 +-------------------+------------------+------------------+------------------------+------------------+------------------------+
 | **V~err,tot,RX~** | **75 mV**        |**75 mV**         |**150 mV**              | **100 mV**       | **200 mV**             |
 +-------------------+------------------+------------------+------------------------+------------------+------------------------+
-| **t~err,det,RX~** | **32% T~bit~**   | **32% T~bit~**   |**32% T~bit~**          | **28% T~bit~**   | **28% T~bit~**         |
+| **t~err,det,RX~** | **28% T~bit~**   | **28% T~bit~**   |**28% T~bit~**          | **28% T~bit~**   | **28% T~bit~**         |
 +-------------------+------------------+------------------+------------------------+------------------+------------------------+
-| **t~err,tot,RX~** | **40.5% T~bit~** | **40.5% T~bit~** |**40.5% T~bit~**        | **36.5% T~bit~** | **36.5% T~bit~**       |
+| **t~err,tot,RX~** | **36.5% T~bit~** | **36.5% T~bit~** |**36.5% T~bit~**        | **36.5% T~bit~** | **36.5% T~bit~**       |
 |-------------------|------------------|------------------|------------------------|------------------|------------------------|
 ~
 
@@ -1423,9 +1421,9 @@ and timing requirements are termination- and rate-dependent, as outlined in Tabl
 +-------------------+-------------------+
 | **V~err,tot,RX~** | **75 mV**         |
 +-------------------+-------------------+
-| **t~err,det,RX~** | **25% T~bit~**    |
+| **t~err,det,RX~** | **24% T~bit~**    |
 +-------------------+-------------------+
-| **t~err,tot,RX~** | **33.5% T~bit~**  |
+| **t~err,tot,RX~** | **32.5% T~bit~**  |
 |-------------------|-------------------|
 ~
 <!-- end merge -->
@@ -1682,17 +1680,7 @@ and logical D[15:5] will be transmitted on physical D[15:5].
 * If physical lines D[4] and D[6] are defective, logical D[4:0] will be transmitted on physical {D[3:0], AUX}, 
 logical D[5] will be transmitted on physical D[5], and logical D[15:6] will be transmitted on physical {FEC, D[15:7]}.           
 
-# Sideband Slices
-
-
 # Reset and Initialization
-
-~ framed {color:blue}
-TO BE UPDATED
-
-Sideband slices must function immediately out of reset with no training or calibration. 
-Data slices use the remainder of the text below.
-~
 
 ## External Facilities
 
@@ -1913,8 +1901,118 @@ to loop back the data from the transmitter of chiplet-A to the receiver of chipl
 ~
 
 
+# Sideband Slices
 
+This section defines the requirements and characteristics of BoW slices that are nominally intended to be used for
+carrying sideband information associated with one or more mainband BoW interfaces between a pair of chiplets.  The BoW
+specification does not require the use of BoW sideband slices; this definition is provided only as a PHY option implementers
+may select.
 
+BoW sideband slices have a number of primary differentiators relative to mainband slices:
+
+* Sideband slices must be capable of operating correctly (i.e., transmitting/receiving data) without any further
+configuration after exiting reset.
+* Sideband slices always include both transmit and receive functionality.
+* Sideband slices operate in Single-Data Rate (SDR).  Data transitions at the TX must be aligned with the rising edge of the forwarded clock,
+and data must be captured at the receiver with the falling edge of the clock that follows the rising (launching) edge.
+* BoW sideband slices are allowed to operate at up to 1Gb/s.  A sideband slice does not include any serialization/deserialization relative to
+its input (root) clock.
+* BoW sideband slices are always unterminated or source terminated.
+* BoW sideband slices must achieve a raw bit error rate of 1e-25.
+
+An implementer may optionally choose to implement slices that serve the functionality of a mainband or a sideband slice, so long as
+the implementation meets all of the requirements of both the mainband and sideband specifications in the respective modes. 
+
+## Sideband Slice Die-to-Die Signals (Wires)
+
+Table [#tab-sideband-signals-d2d] summarizes these signals.
+
+~ TableFigure {#tab-sideband-signals-d2d; caption: "BoW Sideband Signals at the Die To Die Interface"; }
+|----------|---------|------------|-------|
+| Function | # Wires | Signal Name| Notes |
++:---------+:-------:+:-----------+:------+
+| TX Clock | 1       | TCLK       |       |
+|----------|---------|------------|-------|
+| TX Data  | 1       | TD         |       |
+|----------|---------|------------|-------|
+|TX Frame  | 1       |TF          |       |
+|----------|---------|------------|-------|
+|RX Clock  | 1       |RCLK        |       |
+|----------|---------|------------|-------|
+|RX Data   | 1       |RD          |       |
+|----------|---------|------------|-------|
+|RX Frame  | 1       |RF          |       |
++----------+---------+------------+-------|
+~
+
+## Sideband Slice Logic Interface
+
+Table [#tab-sideband-signals-logic] summarizes these signals.
+
+~ TableFigure {#tab-sideband-signals-logic; caption: "BoW Sideband Signals at the Logic Interface"; }
+|----------|---------|------------|-------|
+| Function | # Wires | Signal Name| Notes |
++:---------+:-------:+:-----------+:------+
+| TX Clock | 1       | TCLK       |       |
+|----------|---------|------------|-------|
+| TX Data  | 1       | TD         |       |
+|----------|---------|------------|-------|
+|TX Frame  | 1       |TF          |       |
+|----------|---------|------------|-------|
+|RX Clock  | 1       |RCLK        |       |
+|----------|---------|------------|-------|
+|RX Data   | 1       |RD          |       |
+|----------|---------|------------|-------|
+|RX Frame  | 1       |RF          |       |
+|----------|---------|------------|-------|
+|SB Reset  | 1       |SB_Reset_b  |       |
++----------+---------+------------+-------|
+~
+
+## Sideband Slice Electrical Specifications {#sb-elec-specs}
+
+Sideband must meet the requirements described in Table [#tab-impedance] for unterminated
+or source terminated operation.  Similarly, the parasitic capacitance and return loss 
+requirements for sideband slices are identical to those of BoW-64 or lower rate mainband slices, 
+and are provided in Table [#tab-cap] and Figure [#fig-s11-tx]. 
+
+### Sideband Slice Receiver Bandwidth
+A BoW sideband slice receiver should maintain an effective 3dB bandwidth of at least 
+**(1.0/T~bit~) Hz**.  For example, for a sideband slice that supports up to the maximum
+rate of 1 Gb/s, the receiver bandwidth should be at least 1 GHz.
+
+## Sideband Slice Timing Specifications {#sb-timing-specs}
+
+Using the same definitions from Section [#clk-data-specs] (unless otherwise defined 
+differently below), sideband transmitters and receivers must meet the following requirements:
+
+* Transmitter Maximum Rise-Time: **11.5% of a UI**
+* Transmitter Deterministic Timing Error: **18% of a UI peak-to-peak**
+* Transmitter Total Timing Error: **29% of a UI peak-to-peak at an error rate of 1e-25**
+* Receiver Clock versus Data Path Delay: Data captured on same cycle as launch
+* Receiver timing and voltage total errors are defined at an **error rate of 1e-25**, and must meet the 
+requirements provided in Table [#tab-eye-sideband] below.
+* Note that for Gaussian random noise, 20.85 &sigma; corresponds to the peak-to-peak noise 
+contribution at an error rate of 1e-25.
+
+~ TableFigure { #tab-eye-sideband; caption: "Sideband Receiver Voltage and Timing Requirements"; width: 93%}
++:-----------------:+:-----------------:+
+| **V~err,det,RX~** | **250 mV**         |
++-------------------+-------------------+
+| **V~err,tot,RX~** | **355 mV**         |
++-------------------+-------------------+
+| **t~err,det,RX~** | **28% T~bit~**    |
++-------------------+-------------------+
+| **t~err,tot,RX~** | **36.5% T~bit~**  |
+|-------------------|-------------------|
+~
+
+## Sideband Slice Channel Requirements
+
+As with BoW mainband slices, the specification does not place any direct requirements on characteristics such as channel 
+loss or crosstalk for BoW sideband slice channels.  Instead, BoW sideband channels are considered conforming if they 
+are able to achieve the required error rate of 1e-25 in conjunction with reference transmitters and receivers that meet all of the
+requirements provided in Section [#sb-elec-specs] and Section [#sb-timing-specs].
 
 # BoW in an ODSA Design
 Chiplet-based designs require logical connectivity between the die in a

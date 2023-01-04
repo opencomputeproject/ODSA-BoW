@@ -1922,7 +1922,7 @@ between the die within a package, either in a proprietary protocol or in
 protocols such as AXI or PCIe.
 
 Figure [#fig-bow-pcie] 
-shows how a BoW interface can be used to transport transactions in multiple protocols.
+shows how a BoW interface may be used to transport transactions in multiple protocols.
 A BoW-based link between two chiplets requires and consists of the following components:
 
 * A PHY component (specified in this document)
@@ -1932,9 +1932,14 @@ is specified in a companion document.
 will publish reference profiles (such as the DiPort for example), but they may also be
 private.
 * A link control element that initializes and manages the operation of the link to
-be sepecified in a separate document.
+be sepecified in a separate document. The link control requires one or both of the logical
+and BoW sideband modules to exist.
 
-~ Figure {#fig-bow-pcie; caption: "BoW PHY and Link Layers"}
+Figure [#fig-bow-pcie] depicts the mapping of functionality to ODSA specifications.
+The actual implementation of functionality in hardware blocks may not match the
+specific block decomposition in the figure.
+
+~ Figure {#fig-bow-pcie; caption: "BoW link components: specifications and functionality"}
 ![bowspec_figcomponentspcie]
 ~
 [bowspec_figcomponentspcie]: images/bow_link.jpg {width:auto; max-width: 100%}

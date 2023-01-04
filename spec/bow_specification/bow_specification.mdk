@@ -1917,41 +1917,24 @@ to loop back the data from the transmitter of chiplet-A to the receiver of chipl
 
 
 # BoW in an ODSA Design
-Chiplet-based designs require logical connectivity between the die in a
-single package, in addition to physical connectivity. This section provides an overview of 
-how the Open Domain-Specific Architecture stack may be used as an underlay for 
-popular transaction protocols.
+In addition to physical connectivity, chiplet-based designs require logical connectivity 
+between the die within a package, either in a proprietary protocol or in 
+protocols such as AXI or PCIe.
 
-## BoW for Common Transaction Protocols
-The ODSA aims to define an open physical and logical interface stack for chiplets, as shown in 
-Figure [#fig-odsa-stack] to enable chiplets from multiple vendors to interoperate and be 
-integrated in a multi-die package. The ODSA stack The logical component of the ODSA interface aims to 
-support protocols used for the two most common chiplet use cases, package 
-aggregation and die disaggregation across a wide range of open and proprietary D2D PHYs
-such as PCIe, CXL, CCIX, AXI and proprietary streaming protocols. 
+Figure [#fig-bow-pcie] 
+shows how a BoW interface can be used to transport transactions in multiple protocols.
+A BoW-based link between two chiplets requires and consists of the following components:
 
-~ Figure {#fig-odsa-stack; caption: "The BoW PHY in the ODSA Stack"}
-![bowspec_figstack]
-~
-[bowspec_figstack]: images/bowspec_odsa_stack.jpg "bowspec_figure1" {width:auto; max-width:100%}
+* A PHY component (specified in this document)
+* A Link and Transaction protocol (LTP) that specifies data organization. The Link and Transaction
+is specified in a companion document.
+* Specific protocols are mapped to the LTP in individual profile documents. The ODSA
+will publish reference profiles (such as the DiPort for example), but they may also be
+private.
+* A link control element that initializes and manages the operation of the link to
+be sepecified in a separate document.
 
-The ODSA stack abstracts
-the PHY layer from the logical interface by using the well-defined abstraction interfaces
-PIPE and LPIF. 
-Any logic transaction controller, such as a PCIe controller, that
-supports a PIPE or LPIF interface may use any D2D PHY that also supports that
-interface as its physical layer.
-As shown in Figure [#fig-odsa-stack], the BoW interface may receive data
-through either the PIPE or LPIF interfaces to support common transaction protocols. 
-For this use case, some BoW-specific adapter logic will be needed to support the requirements of PIPE 
-or LPIF.
-The specifications for these adapters are outside the scope of this document. 
-
-
-Figure [#fig-bow-pcie] shows how the
-BoW with an PIPE adapter may be interfaced to a PCIe controller.
-
-~ Figure {#fig-bow-pcie; caption: "BoW with a PIPE adapter for PCIe transactions"}
+~ Figure {#fig-bow-pcie; caption: "BoW PHY and Link Layers"}
 ![bowspec_figcomponentspcie]
 ~
 [bowspec_figcomponentspcie]: images/bow_link.jpg {width:auto; max-width: 100%}

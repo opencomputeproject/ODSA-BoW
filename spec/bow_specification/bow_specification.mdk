@@ -214,7 +214,9 @@ it can take advantage of the much-increased wire density.
 | 1/2/23   |Draft 1.1d |Elad Alon      |Updated timing requirements, sideband   |
 |          |           |               |slice definition added                  |
 +----------+-----------+---------------+----------------------------------------+
-
+| 1/18/23  |Draft 1.9  |Bapi Vinnakota |Updated ODSA overview                   |
+|          |           |               |                                        |
++----------+-----------+---------------+----------------------------------------+
 
 # Scope
 The scope of this document has several levels.

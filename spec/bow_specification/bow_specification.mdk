@@ -1092,12 +1092,12 @@ in the figure must be met with all combinations of data inputs (logical 1 and lo
 termination voltage selections (ground terminated, supply terminated, or mid-rail terminated), 
 and termination resistance values.     
 
-~ Figure { #fig-S11-tx; caption: "BoW TX Termination Maximum Return Loss (TO BE UPDATED)" }
+~ Figure { #fig-S11-tx; caption: "BoW TX Termination Maximum Return Loss" }
 ![S11-tx]
 ~
 [S11-tx]: images/s11_bow_tx.png {width:auto; max-width:60% }
 
-~ Figure { #fig-S11; caption: "BoW RX Termination Maximum Return Loss (TO BE UPDATED)" }
+~ Figure { #fig-S11; caption: "BoW RX Termination Maximum Return Loss" }
 ![S11]
 ~
 [S11]: images/s11_max.png {width:auto; max-width:60% }
@@ -1351,6 +1351,24 @@ differential input by less than 4mV.
 
 Note that common-mode variations on the CLK+/CLK- lines of ~10-15% of the signal swing may be expected 
 on typical in BoW channels. 
+
+#### Equalization {#equalization}
+
+In order to ensure robust operation on common channels, BoW-384 and BoW-512 receivers must include continuous-time linear 
+equalizer (CTLE).  BoW-384 and BoW-512 may also optionally include transmit feedforforward equalization (FFE), but this 
+functionality can only be included in addition to (and not instead of) RX CTLE.
+
+Implementers are expected to design and optimize their CTLE transfer functions as well as the tunability of those transfer functions.
+Note however that all implementations must offer the ability to "bypass" the CTLE (i.e., convert it to a frequency flat transfer function
+within the bandwidth of a reference receiver) in order to allow for operation on crosstalk-dominated channels.
+
+For the purposes of conformance, BoW-384 and BoW-512 channels are checked with the CTLE bypassed or with the following transfer function:
+
+~ center
+H~CTLE~(s) = (1/A~pk~)*(1+s/&omega;~z~)/(1+s/(A~pk~*&omega;~z~))
+~
+
+where A~pk~ = 1.3 and &omega;~z~ = &pi;/(2*T~bit~).
 
 ### Receiver Clock versus Data Path Delay {#rx_clk_data_delay}
 
